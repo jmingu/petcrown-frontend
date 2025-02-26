@@ -1,0 +1,118 @@
+@import '@/styles/variables.scss'; // 공통 스타일 파일
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  padding: 10px 20px;
+  background: white;
+
+  .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  .nav {
+    display: flex;
+    gap: 20px;
+
+    a {
+      text-decoration: none;
+      color: black;
+      font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  .loginButton {
+    background: $primary-color;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+
+    @media (max-width: 768px) {
+      display: none; // 모바일에서는 숨김
+    }
+  }
+
+  .hamburger {
+    display: none;
+    background: none;
+    font-size: 24px;
+    border: none;
+    cursor: pointer;
+
+    @media (max-width: 768px) {
+      display: block;
+      position: absolute;
+      left: 10px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .logo {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+}
+
+/* 오버레이 */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+/* 사이드 메뉴 */
+.sideMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100%;
+  background: white;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  z-index: 20;
+
+  a {
+    text-decoration: none;
+    color: black;
+    font-size: 18px;
+    margin: 15px 0;
+  }
+
+  .closeButton {
+    font-size: 24px;
+    align-self: flex-end;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .mobileLogin {
+    margin-top: auto;
+    padding: 10px;
+    background: #007aff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+}
