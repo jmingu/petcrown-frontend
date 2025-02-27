@@ -1,0 +1,17 @@
+// styles/layout.module.scss
+.bodyContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; // 화면 전체 높이만큼 확장
+
+  .content {
+    flex: 1; // 본문이 남은 공간을 차지하도록 설정
+  }
+
+  .footer {
+    background: #222;
+    color: white;
+    text-align: center;
+    padding: 10px;
+  }
+}

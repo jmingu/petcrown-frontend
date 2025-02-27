@@ -1,6 +1,13 @@
-import '@/styles/page.module.scss';
+import '@/styles/layout.module.scss';
 import Header from '@/components/header/Header';
 import Footer from '@/components/footer/Footer';
+import { Noto_Sans_KR } from 'next/font/google';
+// 폰트 설정
+const notoSans = Noto_Sans_KR({
+  subsets: ['latin'],
+  weight: ['400', '700'], // 사용할 굵기 지정
+  display: 'swap',
+});
 
 export default function RootLayout({
   children,
@@ -9,9 +16,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>
+      <body className={`${notoSans.className} bodyContainer`}>
         <Header />
-        <main className="container">{children}</main>
+        <main className="content">{children}</main>
         <Footer />
       </body>
     </html>

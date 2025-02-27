@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import styles from '@/components/header/styles/header.module.scss';
 
-const MENU_ITEMS = ['역대 랭킹', '투표하기', '커뮤니티', '공지사항'];
+const MENU_ITEMS = ['역대랭킹', '투표하기', '커뮤니티', '공지사항'];
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

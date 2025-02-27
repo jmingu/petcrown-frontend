@@ -1,0 +1,118 @@
+.rankingContainer {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.podium {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 200px;
+  margin-top: 20px;
+}
+
+.podiumItem {
+  width: 100px;
+  text-align: center;
+  position: relative;
+}
+
+.petImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid gold;
+  object-fit: cover;
+}
+
+.rankLabel {
+  font-size: 14px;
+  font-weight: bold;
+  background: gold;
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.petName {
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+/* 각 순위별 시상대 스타일 */
+.rank1 {
+  height: 120px;
+  background: gold;
+}
+
+.rank2 {
+  height: 100px;
+  background: silver;
+}
+
+.rank3 {
+  height: 80px;
+  background: #cd7f32; /* 동메달색 */
+}
+
+/* 시상대 스타일 */
+.rank1,
+.rank2,
+.rank3 {
+  width: 80px;
+  border-radius: 10px 10px 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+}
+
+/* 📱 반응형 - 모바일 화면에서 시상대 크기 축소 */
+@media (max-width: 768px) {
+  .podium {
+    height: 150px; /* 전체 높이 축소 */
+    gap: 10px;
+  }
+
+  .podiumItem {
+    width: 70px;
+  }
+
+  .petImage {
+    width: 60px;
+    height: 60px;
+  }
+
+  .rankLabel {
+    font-size: 12px;
+    top: -15px;
+  }
+
+  .rank1 {
+    height: 90px;
+  }
+
+  .rank2 {
+    height: 75px;
+  }
+
+  .rank3 {
+    height: 60px;
+  }
+
+  .rank1,
+  .rank2,
+  .rank3 {
+    width: 70px;
+    font-size: 14px;
+    padding: 5px;
+  }
+}
