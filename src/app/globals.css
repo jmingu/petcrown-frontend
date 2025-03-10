@@ -19,6 +19,13 @@
   }
 }
 
+/* 공통 */
+@layer components {
+  .global-wrapper {
+    @apply mx-auto max-w-[1000px]; /* 공통 wrapper 스타일 */
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
