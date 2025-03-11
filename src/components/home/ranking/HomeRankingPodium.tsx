@@ -24,7 +24,7 @@ export default function Ranking({ title, pets }: RankingProps) {
             <Image
               src={pet.img}
               alt="이미지"
-              className="w-20 h-20 rounded-full border-4 border-yellow-500 object-cover mb-6"
+              className="w-20 h-20 rounded-full border-2 object-cover mb-6"
               width={80}
               height={80}
             />

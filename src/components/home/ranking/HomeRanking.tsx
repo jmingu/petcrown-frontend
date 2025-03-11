@@ -12,7 +12,7 @@ export default function HomeRanking() {
   };
 
   const dogRanking = [
-    { id: 2, name: '이미지', img: '/pets/coco.jpg', rank: 2 },
+    { id: 2, name: '멍멍이', img: '/pets/coco.jpg', rank: 2 },
     { id: 1, name: '바둑이', img: '/pets/badugi.jpg', rank: 1 },
     { id: 3, name: '몽이', img: '/pets/mong.jpg', rank: 3 },
   ];
@@ -33,7 +33,7 @@ export default function HomeRanking() {
       </div>
 
       <div className="mx-[10%] mt-4">
-        <div className="flex justify-evenly border-b-2 border-gray-300">
+        <div className="flex justify-evenly">
           {['daily', 'weekly', 'monthly'].map((tab) => (
             <div
               key={tab}
