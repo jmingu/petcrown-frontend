@@ -6,16 +6,8 @@ import Image from "next/image";
 import { Edit2 } from "lucide-react";
 import EditProfileModal from "@/app/profile/components/EditPfrofileModal";
 import EditPetModal from "@/app/profile/components/EditPetModal";
+import UserInfoDto from "@/model/user/dto/UserSignUpDto";
 
-// 사용자 정보 타입
-interface UserInfo {
-  id: number;
-  name: string;
-  email: string;
-  gender: string;
-  birthdate: string;
-  profileImageUrl: string;
-}
 
 // 반려동물 정보 타입
 type Pet = {
@@ -30,7 +22,7 @@ type Pet = {
 
 export default function Profile() {
   const router = useRouter();
-  const [user, setUser] = useState<UserInfo>({
+  const [user, setUser] = useState<UserInfoDto>({
     id: 1,
     name: '홍길동',
     email: 'hong@example.com',
@@ -156,7 +148,7 @@ export default function Profile() {
         <EditProfileModal
           user={user}
           onClose={() => setIsEditModalOpen(false)}
-          onSave={(updatedUser: UserInfo) => {
+          onSave={(updatedUser: UserInfoDto) => {
             setUser(updatedUser);
             setIsEditModalOpen(false);
           }}

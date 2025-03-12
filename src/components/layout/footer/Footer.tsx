@@ -3,8 +3,8 @@ export default function Footer() {
     <footer className="mt-12 bg-white border-t border-gray-200">
       <div className="global-wrapper text-center py-6">
         {/* 상단 정보 */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm border-b border-gray-300 pb-4">
-          <div className="flex flex-col md:flex-row gap-6 text-gray-600">
+        <div className="flex flex-col md:flex-row justify-center items-center gap-4 text-sm border-b border-gray-300 pb-4">
+          <div className="flex flex-col md:flex-row gap-3 text-gray-600">
             <a href="/terms" className="hover:underline">이용약관</a>
             <a href="/privacy" className="hover:underline">개인정보처리방침</a>
             <a href="/contact" className="hover:underline">문의하기</a>

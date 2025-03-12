@@ -2,30 +2,34 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Button from "@/components/common/button/Button"
+import Alert from "@/components/common/alert/Alert";
+import UserService from "@/model/user/service/UserService";
 
 export default function SignupPage() {
+  
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isEmailChecked, setIsEmailChecked] = useState(false);
+  const userService = new UserService(); // 인스턴스 생성
+  const [alertMessage, setAlertMessage] = useState("");
 
-  // 이메일 중복 확인
-  const checkEmailDuplicate = async () => {
-    if (!email) {
-      alert("이메일을 입력해주세요.");
-      return;
+  const handleCheckEmail = async () => {
+    const isAvailable = await userService.checkEmailDuplicate(email);
+    if (isAvailable) {
+      setAlertMessage("이메일 사용 가능!");
+      setIsEmailChecked(true);
+    } else {
+      setAlertMessage("이메일이 이미 사용 중입니다.");
     }
-
-    // TODO: 실제 API 연동
-    console.log("이메일 중복 확인 요청:", email);
-    alert("이메일 사용 가능! (임시 처리)");
-    setIsEmailChecked(true);
   };
 
   // 회원가입 처리
   const handleSignup = async () => {
+
     if (!email || !nickname || !password || !confirmPassword) {
       alert("모든 항목을 입력해주세요.");
       return;
@@ -64,12 +68,8 @@ export default function SignupPage() {
               setIsEmailChecked(false); // 이메일 변경 시 중복 확인 상태 초기화
             }}
           />
-          <button
-            onClick={checkEmailDuplicate}
-            className="bg-gray-500 text-white px-3 rounded"
-          >
-            중복 확인
-          </button>
+          <Button onClick={handleCheckEmail} type="gray">중복 확인</Button>
+        
         </div>
 
         <input
@@ -94,13 +94,14 @@ export default function SignupPage() {
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
 
-        <button
+        <Button
           onClick={handleSignup}
-          className="w-full bg-blue-500 text-white p-3 rounded font-bold"
+          className="w-full"
         >
           회원가입
-        </button>
+        </Button>
       </div>
+      <Alert message={alertMessage} onClose={() => setAlertMessage("")} />
     </div>
   );
 }
