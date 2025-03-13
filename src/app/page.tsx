@@ -5,7 +5,7 @@ import HomeCommunity from '@/components/home/community/HomeCommunity';
 
 export default function Home() {
   return (
-    <div className="global-wrapper">
+    <div className="global-wrapper px-3">
       <HomeBanner />
       <HomeNotice />
       <HomeRanking />
