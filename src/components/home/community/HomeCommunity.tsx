@@ -1,10 +1,9 @@
-"use client";
+'use client';
 import Link from 'next/link';
 
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
 export default function Community() {
-  
   const router = useRouter();
   const posts = [
     {
@@ -35,8 +34,11 @@ export default function Community() {
 
       <ul className="list-none mt-4">
         {posts.map((post) => (
-          <li key={post.id} className="p-3 border-b border-gray-300"
-            onClick={() => router.push(`/community/${post.id}`)}>
+          <li
+            key={post.id}
+            className="p-3 border-b border-gray-300 cursor-pointer"
+            onClick={() => router.push(`/community/${post.id}`)}
+          >
             <div className="text-left text-lg font-semibold">{post.title}</div>
             <div className="flex gap-4 text-sm text-gray-500 mt-2">
               <span>👤 {post.author}</span>
