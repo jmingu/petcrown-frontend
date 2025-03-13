@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/common/button/Button"
+import Input from "@/components/common/input/Input"
 import Alert from "@/components/common/alert/Alert";
 import UserService from "@/model/user/service/UserService";
 
 export default function SignupPage() {
+  const userService = new UserService(); // 인스턴스 생성
   
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -14,7 +16,6 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isEmailChecked, setIsEmailChecked] = useState(false);
-  const userService = new UserService(); // 인스턴스 생성
   const [alertMessage, setAlertMessage] = useState("");
 
   const handleCheckEmail = async () => {
@@ -25,6 +26,18 @@ export default function SignupPage() {
     } else {
       setAlertMessage("이메일이 이미 사용 중입니다.");
     }
+  };
+
+
+  const [form, setForm] = useState({
+    nickname: "",
+    email: "",
+    password: "",
+    age: "",
+  });
+
+  const handleChange = (name: string, value: string) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   // 회원가입 처리
@@ -58,40 +71,49 @@ export default function SignupPage() {
 
         {/* 이메일 입력 + 중복 확인 버튼 */}
         <div className="flex gap-2 mb-3">
-          <input
-            type="email"
-            placeholder="이메일"
-            className="flex-1 p-3 border rounded"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setIsEmailChecked(false); // 이메일 변경 시 중복 확인 상태 초기화
-            }}
-          />
-          <Button onClick={handleCheckEmail} type="gray">중복 확인</Button>
+        <Input
+          name="email"
+          placeholder="이메일"
+          value={""}
+          onChange={(value) => handleChange("email", value)}
+          maxLength={12}
+          minLength={2}
+          required
+        />
+          <Button onClick={handleCheckEmail} type="accent">중복 확인</Button>
         
         </div>
 
-        <input
-          type="text"
+        <Input
+          name="nickname"
           placeholder="닉네임"
-          className="w-full p-3 mb-3 border rounded"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
+          value={""}
+          onChange={(value) => handleChange("nickname", value)}
+          maxLength={12}
+          minLength={2}
+          required
         />
-        <input
+        <Input
           type="password"
+          name="비밀번호"
           placeholder="비밀번호"
-          className="w-full p-3 mb-3 border rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={""}
+          onlyNumbers={true}
+          onChange={(value) => handleChange("password", value)}
+          max={12}
+          min={2}
+          required
         />
-        <input
+        <Input
           type="password"
+          name="비밀번호 확인"
           placeholder="비밀번호 확인"
-          className="w-full p-3 mb-3 border rounded"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          value={""}
+          onlyNumbers={true}
+          onChange={(value) => handleChange("password", value)}
+          max={12}
+          min={2}
+          required
         />
 
         <Button

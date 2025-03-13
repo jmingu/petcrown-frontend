@@ -14,13 +14,13 @@ const Button: React.FC<ButtonProps> = ({
 	className = "", // 기본값 빈 문자열
 }) => {
   const baseStyle =
-    "font-bold py-2 px-4 rounded transition-colors duration-200";
+    "py-2 px-4 rounded transition-colors duration-200";
 
   const buttonStyle = {
-    primary: "bg-green-500 hover:bg-green-600 text-white",
-    disabled: "bg-green-300 text-gray-500 cursor-not-allowed",
-    accent: "bg-yellow-400 hover:bg-yellow-500 text-white", // 포인트 색상
-		gray: "bg-gray-300 text-gray-600"
+    primary: "bg-theme-green text-white",
+    disabled: "bg-green-300 text-white cursor-not-allowed",
+    accent: "bg-theme-sky text-white", 
+		gray: "bg-theme-gray text-white"
   };
 
   return (

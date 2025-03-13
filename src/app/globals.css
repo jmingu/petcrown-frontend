@@ -3,6 +3,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --color-theme-green: #22c55e; /* green-500 */
+  --color-theme-sky: #0ea5e9; /* sky-500 */
+  --color-theme-lime: #a3e635; /* lime-400 */
+  --color-theme-gray: #9ca3af; /* gray-400 */
+  
+
 }
 
 @theme inline {
@@ -12,18 +18,35 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+/* 다크모드 */
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 /* 공통 */
-@layer components {
-  .global-wrapper {
-    @apply mx-auto max-w-[1000px]; /* 공통 wrapper 스타일 */
-  }
+.global-wrapper {
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.bg-theme-green {
+  background-color: var(--color-theme-green);
+}
+
+.bg-theme-sky {
+  background-color: var(--color-theme-sky);
+}
+
+.bg-theme-lime {
+  background-color: var(--color-theme-lime);
+}
+
+.bg-theme-gray {
+  background-color: var(--color-theme-gray);
 }
 
 body {
