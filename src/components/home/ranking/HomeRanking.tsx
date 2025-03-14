@@ -27,7 +27,7 @@ export default function HomeRanking() {
     <div>
       <div className="flex items-center justify-between">
         <h2 className="text-left text-xl font-bold">랭킹</h2>
-        <Link href="/vote" className="text-blue-500 hover:underline">
+        <Link href="/vote" className="text-[var(--color-theme-sky)] hover:underline">
           투표하러가기 {' >'}
         </Link>
       </div>
@@ -39,8 +39,8 @@ export default function HomeRanking() {
               key={tab}
               className={`text-lg py-2 px-5 cursor-pointer transition-all duration-300 text-center ${
                 rankingPeriod === tab
-                  ? 'font-bold text-blue-500 border-b-2 border-blue-500'
-                  : 'hover:text-blue-500'
+                  ? 'font-bold text-[var(--color-theme-sky)] border-b-2 border-[var(--color-theme-sky)]'
+                  : 'hover:text-[var(--color-theme-sky)]'
               }`}
               onClick={() => handleTabChange(tab)}
             >

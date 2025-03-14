@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+
+import Button from '@/components/common/button/Button';
+
 export default function CommunityWrite() {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -57,10 +60,10 @@ export default function CommunityWrite() {
           />
         </div>
         <div className="flex gap-4">
-          <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">등록</button>
-          <button type="button" onClick={() => router.back()} className="px-4 py-2 bg-gray-400 text-white rounded">
+          <Button>등록</Button>
+          <Button type="gray" onClick={() => router.back()}>
             취소
-          </button>
+          </Button>
         </div>
       </form>
     </div>

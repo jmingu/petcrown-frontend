@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Pagination from 'react-js-pagination';
+import Button from '@/components/common/button/Button';
 
 const VOTE_ITEMS = [
   { id: 1, name: '코코', gender: '♀', type: 'dog', image: '/images/coco.jpg', period: 'daily' },
@@ -60,9 +61,9 @@ export default function VotePage() {
       <h1 className="text-2xl font-bold text-center mb-6">투표하기</h1>
       <div className="flex justify-end mb-4">
         <Link href="/vote/register">
-          <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+          <Button>
             등록
-          </button>
+          </Button>
         </Link>
       </div>
 
@@ -73,8 +74,8 @@ export default function VotePage() {
             key={tab}
             className={`text-lg py-2 px-5 cursor-pointer transition-all duration-300 text-center ${
               rankingPeriod === tab
-                ? 'font-bold text-blue-500 border-b-2 border-blue-500'
-                : 'hover:text-blue-500'
+                ? 'font-bold text-[var(--color-theme-sky)] border-b-2 border-[var(--color-theme-sky)]'
+                : 'hover:text-[var(--color-theme-sky)]'
             }`}
             onClick={() => {
               setRankingPeriod(tab as 'daily' | 'weekly' | 'monthly');
@@ -89,18 +90,19 @@ export default function VotePage() {
       {/* 🔹 강아지/고양이 필터 버튼 */}
       <div className="flex justify-center gap-4 mb-6">
         {['all', 'dog', 'cat'].map((type) => (
-          <button
+          <Button
+            type='accent'
             key={type}
             onClick={() => {
               setSelectedType(type as 'all' | 'dog' | 'cat');
               setCurrentPage(1); // 필터 변경 시 페이지 리셋
             }}
             className={`px-4 py-2 rounded-lg transition-all ${
-              selectedType === type ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
+              selectedType === type ? '' : '!bg-gray-200 !text-black'
             }`}
           >
             {type === 'all' ? '전체' : type === 'dog' ? '강아지' : '고양이'}
-          </button>
+          </Button>
         ))}
       </div>
 

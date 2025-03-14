@@ -1,7 +1,7 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import Comment from "@/app/community/commponents/Comment"; // 댓글 컴포넌트 추가
+import Button from '@/components/common/button/Button';
 
 const allPosts = [
   { id: 1, title: "강아지 산책 꿀팁", author: "멍멍이", date: "2025-03-10", views: 120, likes: 30, content: "강아지를 산책할 때 중요한 팁입니다..." },
@@ -35,13 +35,13 @@ export default function PostDetail() {
 
       {/* 좋아요 버튼 */}
       <div className="flex justify-center mt-6">
-        <button 
-          className={`px-6 py-2 rounded-lg text-white ${liked ? "bg-gray-400" : "bg-red-500 hover:bg-red-600"}`}
+        <Button 
+          className={`px-6 py-2 rounded-lg text-white ${liked ? "!bg-gray-400" : "!bg-red-500"}`}
           onClick={handleLike}
           disabled={liked}
         >
           ❤️ 좋아요 {likes}
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Pagination from "react-js-pagination";
 
+import Button from '@/components/common/button/Button';
+
 import Link from 'next/link';
 
 const tabs = ["전체", "강아지", "고양이", "토끼", "햄스터", "파충류", "기타"];
@@ -70,9 +72,9 @@ export default function CommunityBoard() {
       <h1 className="text-2xl font-bold mb-6">커뮤니티</h1>
       <div className="flex justify-end mb-4">
         <Link href="/community/register">
-          <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+          <Button>
             등록
-          </button>
+          </Button>
         </Link>
       </div>
       {/* 🔹 탭 메뉴 */}
@@ -83,7 +85,7 @@ export default function CommunityBoard() {
               key={tab}
               onClick={() => { setCurrentTab(tab); setCurrentPage(1); }}
               className={`px-4 py-2 text-sm font-medium rounded-t-md ${
-                currentTab === tab ? "border-b-2 border-blue-500 text-blue-500" : "text-gray-500"
+                currentTab === tab ? "border-b-2 [var(--color-theme-sky)] text-[var(--color-theme-sky)]" : "text-gray-500"
               }`}
             >
               {tab}

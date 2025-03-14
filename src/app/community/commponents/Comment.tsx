@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Pagination from "react-js-pagination";
+import Button from '@/components/common/button/Button';
 
 interface Comment {
   id: number;
@@ -65,9 +66,9 @@ export default function Comment({ postId }: { postId: number }) {
           className="flex-1 border rounded-md p-2"
           placeholder="댓글을 입력하세요..."
         />
-        <button onClick={() => handleAddComment(null, newComment)} className="bg-blue-500 text-white px-4 py-2 rounded-md">
+        <Button onClick={() => handleAddComment(null, newComment)}>
           등록
-        </button>
+        </Button>
       </div>
 
       <ul className="mt-4">
