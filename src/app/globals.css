@@ -47,14 +47,13 @@
 
 /* Swiper 페이지네이션 색상 변경 */
 .swiper-pagination-bullet {
-  background-color: gray !important;  /* 기본 색상 */
+  background-color: gray !important; /* 기본 색상 */
   opacity: 0.6;
 }
 .swiper-pagination-bullet-active {
-  background-color: var(--color-theme-sky) !important;  /* 활성화된 색상 */
+  background-color: var(--color-theme-sky) !important; /* 활성화된 색상 */
   opacity: 1;
 }
-
 
 body {
   background: var(--background);
