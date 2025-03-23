@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
@@ -7,8 +7,6 @@
   --color-theme-sky: #0ea5e9; /* sky-500 */
   --color-theme-lime: #a3e635; /* lime-400 */
   --color-theme-gray: #9ca3af; /* gray-400 */
-  
-
 }
 
 @theme inline {
