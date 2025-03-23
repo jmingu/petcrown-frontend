@@ -3,6 +3,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
+import Button from '@/components/common/button/Button';
+import Input from '@/components/common/input/Input';
+
+import RadioGroup from '@/components/common/input/RadioGroup';
+
+import DateInput from '@/components/common/input/DateInput';
+
 interface Pet {
   id: number;
   name: string;
@@ -59,7 +66,7 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50">
       <motion.div 
         initial={{ opacity: 0, y: -50 }} 
         animate={{ opacity: 1, y: 0 }}
@@ -69,22 +76,56 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
         <h2 className="text-xl font-bold mb-4">
           {isEditMode ? '반려동물 수정' : '반려동물 등록'}
         </h2>
-        <div className="flex flex-col gap-3">
-          <input type="text" placeholder="이름" value={name} onChange={(e) => setName(e.target.value)} className="border p-2 rounded" />
-          <select value={gender} onChange={(e) => setGender(e.target.value)} className="border p-2 rounded">
-            <option value="">성별 선택</option>
-            <option value="남아">남아</option>
-            <option value="여아">여아</option>
-          </select>
-          <input type="date" value={birthdate} onChange={(e) => setBirthdate(e.target.value)} className="border p-2 rounded" />
-          <input type="text" placeholder="종 (예: 강아지, 고양이)" value={species} onChange={(e) => setSpecies(e.target.value)} className="border p-2 rounded" />
+        <div className="flex flex-col">
+        <label className="block text-gray-700 font-bold">이름</label>
+          <Input
+            name="name"
+            placeholder="이름"
+            value={name}
+            onChange={(e) => setName(e)}
+            maxLength={10}
+          />
+          {/* 성별 선택 */}
+          <div className="mb-4">
+            <label className="block text-gray-700 font-bold">성별</label>
+            <RadioGroup
+              name="gender"
+              options={[
+                { label: '남아', value: '남아' },
+                { label: '여아', value: '여아' },
+              ]}
+              selectedValue={gender}
+              onChange={(e) => setGender(e)}
+            />
+          </div>
+          {/* 생년월일 (캘린더) */}
+          <div className="mb-4">
+            <label className="block text-gray-700 font-bold">생년월일</label>
+            <DateInput
+              value={birthdate}
+              onChange={(e) => setBirthdate(e)}
+              placeholder="YYYY-MM-DD"
+              maxDate={new Date()}  // 미래 날짜 선택 방지
+            />
+          </div>
+          {/* 성별 선택 */}
+          <div className="mb-4">
+            <label className="block text-gray-700 font-bold">종류</label>
+            <RadioGroup
+              name="type"
+              options={[
+                { label: '고양이', value: '고양이' },
+                { label: '강아지', value: '강아지' },
+              ]}
+              selectedValue={species}
+              onChange={(e) => setSpecies(e)}
+            />
+          </div>
           <input type="text" placeholder="사진 URL (선택)" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="border p-2 rounded" />
         </div>
         <div className="flex justify-end mt-4 gap-2">
-          <button onClick={onClose} className="bg-gray-400 text-white px-4 py-2 rounded">취소</button>
-          <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded">
-            {isEditMode ? '수정' : '등록'}
-          </button>
+          <Button type='gray' onClick={onClose}>취소</Button>     
+          <Button onClick={handleSave}>{isEditMode ? '수정' : '등록'}</Button>
         </div>
       </motion.div>
     </div>

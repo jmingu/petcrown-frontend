@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 interface InputProps {
-  type?: 'text' | 'email' | 'password' | 'number' | 'date';
+  type?: 'text' | 'email' | 'password' | 'number';
   name: string;
   placeholder: string;
   value: string;
@@ -73,9 +73,7 @@ const Input: React.FC<InputProps> = ({
         type={onlyNumbers ? 'text' : type}
         name={name}
         placeholder={placeholder}
-        className={`w-full p-3 mb-3 border rounded ${
-          error ? 'border-red-500' : 'border-gray-300'
-        } ${className}`} // 추가된 부분
+        className={`w-full p-3 mb-3 border rounded ${error ? 'border-red-500' : 'border-gray-300'} ${className}`} 
         value={value}
         onChange={handleChange}
         min={type === 'number' ? min : undefined}

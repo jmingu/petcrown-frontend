@@ -8,6 +8,8 @@ import EditProfileModal from "@/app/profile/components/EditPfrofileModal";
 import EditPetModal from "@/app/profile/components/EditPetModal";
 import UserInfoDto from "@/model/user/dto/UserSignUpDto";
 
+import Button from '@/components/common/button/Button';
+
 
 // 반려동물 정보 타입
 type Pet = {
@@ -73,7 +75,7 @@ export default function Profile() {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">내 프로필</h2>
+      <h3 className="text-xl font-bold mt-8 mb-4">내 프로필</h3>
 
       {/* 사용자 정보 */}
       {user ? (
@@ -82,7 +84,7 @@ export default function Profile() {
             onClick={() => setIsEditModalOpen(true)}
             className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
           >
-            <Edit2 size={20} />
+            <Edit2 size={20} className="cursor-pointer"/>
           </button>
           <div className="mb-6">
             <p className="text-lg"><strong>이름:</strong> {user.name}</p>
@@ -104,7 +106,7 @@ export default function Profile() {
                 onClick={() => setSelectedPet(pet)}
                 className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
               >
-                <Edit2 size={20} />
+                <Edit2 size={20} className="cursor-pointer"/>
               </button>
               <Image src={pet.imageUrl} alt={pet.name} width={150} height={150} className="rounded-full mb-4" />
               <p className="text-lg"><strong>이름:</strong> {pet.name}</p>
@@ -120,12 +122,12 @@ export default function Profile() {
       )}
       
       {/* 반려동물 등록 버튼 */}
-      <button
+      <Button
         onClick={() => setSelectedPet({ id: 0, name: "", gender: "", birthdate: "", species: "", imageUrl: "", awards: 0 })}
-        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md"
+        className="mt-4"
       >
         반려동물 추가하기
-      </button>
+      </Button>
 
       {/* 반려동물 수정 모달 */}
       {selectedPet && (

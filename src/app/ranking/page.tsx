@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import PeriodRanking from "@/app/ranking/components/PeriodRanking";
+import Button from '@/components/common/button/Button';
 
 interface RankingItem {
   name: string;
@@ -25,37 +26,37 @@ interface Rankings {
 
 const dogRankings: Rankings = {
   daily: {
-    Monday: [
+    "월요일": [
       { name: "코코", image: "/images/coco.jpg" },
       { name: "바둑이", image: "/images/baduk.jpg" },
       { name: "초코", image: "/images/choco.jpg" },
     ],
-    Tuesday: [
+    "화요일": [
       { name: "흰둥이", image: "/images/whindung.jpg" },
       { name: "몽이", image: "/images/mong.jpg" },
       { name: "밤비", image: "/images/bambi.jpg" },
     ],
-    Wednesday: [
+    "수요일": [
       { name: "탄이", image: "/images/tani.jpg" },
       { name: "루이", image: "/images/lui.jpg" },
       { name: "바둑이", image: "/images/baduk.jpg" },
     ],
-    Thursday: [
+    "목요일": [
       { name: "초코", image: "/images/choco.jpg" },
       { name: "코코", image: "/images/coco.jpg" },
       { name: "흰둥이", image: "/images/whindung.jpg" },
     ],
-    Friday: [
+    "금요일": [
       { name: "밤비", image: "/images/bambi.jpg" },
       { name: "몽이", image: "/images/mong.jpg" },
       { name: "탄이", image: "/images/tani.jpg" },
     ],
-    Saturday: [
+    "토요일": [
       { name: "루이", image: "/images/lui.jpg" },
       { name: "바둑이", image: "/images/baduk.jpg" },
       { name: "코코", image: "/images/coco.jpg" },
     ],
-    Sunday: [
+    "일요일": [
       { name: "초코", image: "/images/choco.jpg" },
       { name: "흰둥이", image: "/images/whindung.jpg" },
       { name: "밤비", image: "/images/bambi.jpg" },
@@ -109,8 +110,8 @@ export default function RankingView() {
     <div className="p-6 global-wrapper">
       <h1 className="text-2xl font-bold text-center mb-6">랭킹 보기</h1>
       <div className="flex justify-center gap-4 mb-6">
-        <button onClick={() => setCategory("dog")} className={`px-4 py-2 rounded-md ${category === "dog" ? "bg-blue-500 text-white" : "bg-gray-200"}`}>🐶 강아지</button>
-        <button onClick={() => setCategory("cat")} className={`px-4 py-2 rounded-md ${category === "cat" ? "bg-blue-500 text-white" : "bg-gray-200"}`}>🐱 고양이</button>
+        <Button type="accent" onClick={() => setCategory("dog")} className={`px-4 py-2 rounded-md ${category === "dog" ? "" : "!bg-gray-200 !text-black"}`}>🐶 강아지</Button>
+        <Button type="accent" onClick={() => setCategory("cat")} className={`px-4 py-2 rounded-md ${category === "cat" ? "" : "!bg-gray-200 !text-black"}`}>🐱 고양이</Button>
       </div>
 
       <div className="flex flex-col gap-6">

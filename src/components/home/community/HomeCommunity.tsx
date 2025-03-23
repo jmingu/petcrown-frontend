@@ -27,7 +27,7 @@ export default function Community() {
     <div>
       <div className="flex items-center justify-between">
         <h2 className="text-left text-xl font-bold">인기 글</h2>
-        <Link href="/community" className="text-blue-500 hover:underline">
+        <Link href="/community" className="text-[var(--color-theme-sky)] hover:underline">
           더보기 {' >'}
         </Link>
       </div>

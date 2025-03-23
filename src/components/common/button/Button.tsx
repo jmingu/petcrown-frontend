@@ -14,7 +14,7 @@ const Button: React.FC<ButtonProps> = ({
 	className = "", // 기본값 빈 문자열
 }) => {
   const baseStyle =
-    "py-2 px-4 rounded transition-colors duration-200";
+    "py-2 px-4 rounded transition-colors duration-200 cursor-pointer";
 
   const buttonStyle = {
     primary: "bg-theme-green text-white",
