@@ -15,8 +15,8 @@ export default function LoginPage() {
   const handleLogin = async () => {
     const fetchData = async () => {
       try {
-        const response = await api.get('/healthcheck/ok');
-        console.log(response.data);
+        const response = await api.get('/health-check/ok');
+        console.log(response);
       } catch (error) {
         console.error('Error fetching data:', error);
       }

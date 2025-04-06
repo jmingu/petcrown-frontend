@@ -27,7 +27,10 @@ api.interceptors.request.use(
 
 // 응답 인터셉터: 에러 처리
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(response);
+    return response.data;
+  },
   (error) => {
     if (error.response) {
       const { status } = error.response;
