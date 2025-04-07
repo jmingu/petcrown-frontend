@@ -1,15 +1,14 @@
 import axios from 'axios';
 
-// 기본 axios 인스턴스 생성
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL, // 환경 변수로 API URL 관리
-  timeout: 10000, // 요청 타임아웃 설정 (10초)
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// 요청 인터셉터: 인증 토큰 자동 추가
+// 요청 인터셉터
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
@@ -20,34 +19,54 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// 응답 인터셉터: 에러 처리
+// 응답 인터셉터
 api.interceptors.response.use(
   (response) => {
-    console.log(response);
     return response.data;
   },
-  (error) => {
-    if (error.response) {
-      const { status } = error.response;
+  async (error) => {
+    const originalRequest = error.config;
 
-      // 401 에러 처리 (로그인 필요)
-      if (status === 401) {
-        console.error('Unauthorized! Redirecting to login...');
+    if (error.response?.data?.resultCode === 440 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        const res = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/refresh-token`,
+          {
+            refreshToken,
+          }
+        );
+
+        const { accessToken, refreshToken: newRefreshToken } = res.data.result;
+
+        // 토큰 저장
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', newRefreshToken);
+
+        // 새 토큰으로 헤더 갱신하고 재요청
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        console.error('리프레시 토큰 재발급 실패:', refreshError);
         window.location.href = '/login';
+        return Promise.reject(refreshError);
       }
+    }
 
-      // 403 에러 처리 (권한 없음)
-      if (status === 403) {
-        console.error('Forbidden! You do not have access.');
-      }
-
-      // 기타 에러 로그 출력
-      console.error('API Error:', error.response.data);
+    // 기타 에러 처리
+    const status = error.response?.status;
+    if (status === 401) {
+      console.error('Unauthorized! Redirecting to login...');
+      window.location.href = '/login';
+    } else if (status === 403) {
+      console.error('Forbidden! You do not have access.');
+    } else {
+      console.error('API Error:', error.response?.data);
     }
 
     return Promise.reject(error);
