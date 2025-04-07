@@ -6,7 +6,7 @@ import Comment from "@/app/community/commponents/Comment"; // 댓글 컴포넌�
 import Button from '@/components/common/button/Button';
 
 const allPosts = [
-  { id: 1, title: "강아지 산책 꿀팁", author: "멍멍이", date: "2025-03-10", views: 120, likes: 30, content: "강아지를 산책할 때 중요한 팁입니다..." },
+  { id: 1, title: "강아지 산책 꿀팁!", author: "멍멍이", date: "2025-03-10", views: 120, likes: 30, content: "강아지를 산책할 때 중요한 팁입니다..." },
   { id: 2, title: "고양이 캣타워 추천", author: "냐옹이", date: "2025-03-09", views: 85, likes: 22, content: "고양이에게 적합한 캣타워를 추천합니다..." },
   { id: 3, title: "반려동물 건강 관리법", author: "펫러버", date: "2025-03-08", views: 150, likes: 45, content: "반려동물 건강을 위해 신경 써야 할 것들..." },
 ];
