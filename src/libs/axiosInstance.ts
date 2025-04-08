@@ -27,7 +27,7 @@ api.interceptors.response.use(
 
       try {
         // 쿠키 기반이므로 refresh-token 요청에 쿠키가 자동 포함됨
-        const res = await axios.post(
+        await axios.post(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/v1/refresh-token`,
           {},
           {
