@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Button from "@/components/common/button/Button";
+import { useUserStore } from '@/libs/store/user/userStore';
+import { findUser } from "@/libs/api/user/userApi"; // ✅ 유저 정보 API import
 
 const MENU_ITEMS = [
   { name: "랭킹보기", path: "/ranking" },
@@ -14,29 +16,40 @@ const MENU_ITEMS = [
 ];
 
 export default function Header() {
+  // 1. Zustand에서 값 받아오기
+  const { user, setUser, clearUser } = useUserStore();
+  const [hasFetched, setHasFetched] = useState(false);
+
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [nickname, setNickname] = useState("");
+  const isLoggedIn = !!user;
+  const nickname = user?.nickname || "사용자";
 
   useEffect(() => {
-    const loginData = localStorage.getItem("login");
-    if (loginData) {
-      try {
-        const user = JSON.parse(loginData);
-        setIsLoggedIn(true);
-        setNickname(user.nickname || "사용자");
-      } catch (error) {
-        console.error("로그인 데이터 오류:", error);
-        setIsLoggedIn(false);
+    const fetchUserIfNeeded = async () => {
+      if (!user && !hasFetched) {
+        try {
+          const userData = await findUser();
+          setUser(userData);
+        } catch (error) {
+          console.error("유저 정보 로드 실패:", error);
+          clearUser();
+        } finally {
+          setHasFetched(true); // ✅ 재요청 막기
+        }
       }
-    }
-  }, []);
+    };
+  
+    fetchUserIfNeeded();
+  }, [user, hasFetched, setUser, clearUser]);
 
+
+  // 로그아웃 함수
   const handleLogout = () => {
-    localStorage.removeItem("login");
-    setIsLoggedIn(false);
-    setNickname("");
+    clearUser(); // Zustand 상태 초기화
+     // 또는 쿠키를 썼다면 제거
+     document.cookie = "A_ID=; path=/; max-age=0";
+     document.cookie = "R_ID=; path=/; max-age=0";
   };
 
   const truncatedNickname =

@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/common/button/Button';
 import Input from '@/components/common/input/Input';
-import api from '@/libs/axiosInstance';
+import {login, findUser} from '@/libs/api/user/userApi';
+import { useUserStore } from '@/libs/store/user/userStore';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,37 +14,24 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    const fetchData = async () => {
-      try {
-        const response = await api.get('/health-check/ok');
-        console.log(response);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    console.log(fetchData());
+    
     try {
-      // TODO: 백엔드 API 연결
-      console.log('로그인 시도:', { email, password });
+      await login({ email, password }); // 로그인 요청
 
-      // 예제 사용자 데이터 (실제로는 API 응답에서 받아야 함)
-      const userData = {
-        email,
-        nickname: '사용자닉네임', // 실제 닉네임 값으로 변경
-        token: 'abc123xyz', // JWT 토큰 등 실제 로그인 정보
-      };
+      const user = await findUser(); // 로그인 후 사용자 정보 받아오기
+      
+      console.log('로그인 성공, 사용자 정보:', user);
 
-      // localStorage에 저장
-      localStorage.setItem('login', JSON.stringify(userData));
-
-      alert('로그인 성공! (임시 처리)');
-
-      // 홈으로 이동
-      // router.push('/');
-    } catch (error) {
-      console.error('로그인 오류:', error);
-      alert('로그인 실패!');
+      useUserStore.getState().setUser(user); // 전역 상태에 저장
+      // 로그인 성공 시 사용자 정보 조회 or 메인 페이지 이동
+      router.push('/'); // 또는 getMyInfo()로 사용자 상태 업데이트
+    } catch (err) {
+      console.error('로그인 실패:', err);
+      alert('로그인 정보가 올바르지 않습니다.');
     }
+
+
+
   };
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
@@ -64,7 +52,7 @@ export default function LoginPage() {
           <Input
             name="password"
             placeholder="비밀번호"
-            value={email}
+            value={password}
             onChange={(e) => setPassword(e)}
           />
         </div>
