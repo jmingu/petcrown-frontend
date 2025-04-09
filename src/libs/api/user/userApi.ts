@@ -31,6 +31,7 @@ export const findUser = async (): Promise<UserResponse> => {
  */
 export const checkEmail = async (email: string): Promise<boolean> => {
   const response = await api.get(`/user/v1/check-email?email=${email}`);
+  console.log(response)
   return response.data;
 };
 

@@ -14,6 +14,7 @@ interface InputProps {
   max?: number;
   className?: string; // 추가된 부분
   divClass?: string; // 추가된 부분
+  autoComplete?: string; // 추가된 부분
 }
 
 const Input: React.FC<InputProps> = ({
@@ -30,6 +31,7 @@ const Input: React.FC<InputProps> = ({
   max,
   className = '', // 기본값 설정
   divClass = '',
+  autoComplete = 'off', // 기본값 설정
 }) => {
   const [error, setError] = useState('');
 
@@ -78,6 +80,7 @@ const Input: React.FC<InputProps> = ({
         onChange={handleChange}
         min={type === 'number' ? min : undefined}
         max={type === 'number' ? max : undefined}
+        autoComplete={autoComplete} // 추가된 부분
       />
       {error && <p className="text-red-500 text-sm">{error}</p>}
     </div>

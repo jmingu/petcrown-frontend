@@ -1,14 +1,13 @@
-import React from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import React, { useState } from 'react';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
 interface DateInputProps {
-  value: string;
+  value: string; // YYYY-MM-DD 형식의 문자열
   onChange: (value: string) => void;
   placeholder?: string;
   minDate?: Date; // 과거 날짜 선택 방지
   maxDate?: Date; // 미래 날짜 선택 방지
-  showTimeSelect?: boolean; // 시간 선택 활성화
   disabled?: boolean; // 비활성화
   inputClassName?: string;
   wrapperClassName?: string;
@@ -20,25 +19,40 @@ const DateInput: React.FC<DateInputProps> = ({
   placeholder,
   minDate,
   maxDate,
-  showTimeSelect = false,
   disabled = false,
   inputClassName = '',
   wrapperClassName = '',
 }) => {
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  const handleDateChange = (date: Date | null) => {
+    if (date) {
+      onChange(date.toISOString().split('T')[0]); // YYYY-MM-DD 형식으로 변환
+    }
+    setIsCalendarOpen(false); // 날짜 선택 후 달력 닫기
+  };
+
   return (
     <div className={`relative ${wrapperClassName} w-full`}>
-      <DatePicker
-        selected={value ? new Date(value) : null}
-        onChange={(date) => onChange(date ? date.toISOString().split('T')[0] : '')}
-        dateFormat={showTimeSelect ? 'yyyy-MM-dd HH:mm' : 'yyyy-MM-dd'}
-        minDate={minDate}
-        maxDate={maxDate}
-        showTimeSelect={showTimeSelect}
+      <input
+        type="text"
+        value={value}
+        onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+        placeholder={placeholder}
+        readOnly
         disabled={disabled}
         className={`w-full p-3 border rounded bg-white border-gray-300 focus:ring focus:ring-theme-sky ${inputClassName}`}
-				wrapperClassName={`w-full ${wrapperClassName}`}
-        placeholderText={placeholder}
       />
+      {isCalendarOpen && (
+        <div className="absolute z-10 bg-white shadow-lg rounded mt-2" style={{ maxWidth: '100%', width: '300px' }}>
+          <Calendar
+            onChange={(date) => handleDateChange(date as Date | null)} // 타입 캐스팅 추가
+            value={value ? new Date(value) : null} // value를 Date 또는 null로 설정
+            minDate={minDate}
+            maxDate={maxDate}
+          />
+        </div>
+      )}
     </div>
   );
 };

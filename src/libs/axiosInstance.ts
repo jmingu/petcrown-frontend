@@ -19,6 +19,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // console.log(error.response.data)
     const originalRequest = error.config;
 
     // 440: 토큰 만료 -> 리프레시 요청
@@ -46,12 +47,12 @@ api.interceptors.response.use(
 
     const status = error.response?.status;
     if (status === 401) {
-      console.error('Unauthorized! Redirecting to login...');
+      // console.error('Unauthorized! Redirecting to login...');
       window.location.href = '/login';
     } else if (status === 403) {
-      console.error('Forbidden! You do not have access.');
+      // console.error('Forbidden! You do not have access.');
     } else {
-      console.error('API Error:', error.response?.data);
+      // console.error('API Error:', error.response?.data);
     }
 
     return Promise.reject(error);

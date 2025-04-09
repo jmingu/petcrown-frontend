@@ -13,7 +13,7 @@ const Alert: React.FC<AlertProps> = ({ message, onClose }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black/50">
       <div className="bg-gray-100 p-6 rounded-lg shadow-lg w-80 text-center relative">
         {/* 닫기(X) 버튼 */}
-        <button className="absolute top-2 right-2" onClick={onClose}>
+        <button className="absolute top-2 right-2 cursor-pointer" onClick={onClose}>
           ✖
         </button>
 
