@@ -22,6 +22,10 @@ export default function LoginPage() {
       
       console.log('로그인 성공, 사용자 정보:', user);
 
+      // 한글과 특수문자를 처리할 수 있도록 인코딩
+      const encodedUser = btoa(encodeURIComponent(JSON.stringify(user)));
+      localStorage.setItem('pc_sess', encodedUser);
+
       useUserStore.getState().setUser(user); // 전역 상태에 저장
       // 로그인 성공 시 사용자 정보 조회 or 메인 페이지 이동
       router.push('/'); // 또는 getMyInfo()로 사용자 상태 업데이트
@@ -34,10 +38,10 @@ export default function LoginPage() {
 
   };
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-sm bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center mb-6">로그인</h2>
-        <div className="mb-4">
+    <div className="h-full flex items-center justify-center px-3 mt-20">
+      <div className="w-full max-w-sm">
+        <h2 className="text-2xl font-bold text-center mb-4">로그인</h2>
+        <div className="mb-3">
           <label className="block text-gray-700 font-bold">이메일</label>
           <Input
             name="email"
@@ -47,20 +51,21 @@ export default function LoginPage() {
           />
         </div>
 
-        <div className="mb-4">
+        <div className="mb-3">
           <label className="block text-gray-700 font-bold">비밀번호</label>
           <Input
             name="password"
+            type="password"
             placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e)}
           />
         </div>
 
-        <Button onClick={handleLogin} className="w-full">
+        <Button onClick={handleLogin} className="w-full mb-3">
           로그인
         </Button>
-        <div className="flex justify-between mt-4 text-sm">
+        <div className="flex justify-between text-sm">
           <Link href="/find-id" className="text-gray-600 hover:underline">
             아이디 찾기
           </Link>

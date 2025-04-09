@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/common/button/Button';
 import { useUserStore } from '@/libs/store/user/userStore';
-import { findUser, logout } from '@/libs/api/user/userApi'; // ✅ 유저 정보 API import
+import { findUser, logout } from '@/libs/api/user/userApi';
 
 const MENU_ITEMS = [
   { name: '랭킹보기', path: '/ranking' },
@@ -16,9 +16,8 @@ const MENU_ITEMS = [
 ];
 
 export default function Header() {
-  // 1. Zustand에서 값 받아오기
   const { user, setUser, clearUser } = useUserStore();
-  const [hasFetched, setHasFetched] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,27 +25,57 @@ export default function Header() {
   const nickname = user?.nickname || '사용자';
 
   useEffect(() => {
-    const fetchUserIfNeeded = async () => {
-      if (!user && !hasFetched) {
-        try {
-          const userData = await findUser();
-          setUser(userData);
-        } catch (error) {
-          console.error('유저 정보 로드 실패:', error);
-          clearUser();
-        } finally {
-          setHasFetched(true); // ✅ 재요청 막기
+    const syncUserState = async () => {
+      setIsLoading(true);
+      try {
+        const storedUser = localStorage.getItem('pc_sess');
+        const hasLocalStorage = !!storedUser;
+        const hasZustand = !!user;
+
+        // 1. 둘 다 있는 경우: 통과
+        if (hasLocalStorage && hasZustand) {
+          return;
         }
+
+        // 2. 로컬 스토리지에만 있는 경우: Zustand에 저장
+        if (hasLocalStorage && !hasZustand) {
+          try {
+            const decodedUser = JSON.parse(decodeURIComponent(atob(storedUser)));
+            setUser(decodedUser);
+            return;
+          } catch (e) {
+            localStorage.removeItem('pc_sess');
+          }
+        }
+
+        // 3. Zustand에만 있는 경우: 로컬 스토리지에 저장
+        if (!hasLocalStorage && hasZustand) {
+          const encodedUser = btoa(encodeURIComponent(JSON.stringify(user)));
+          localStorage.setItem('pc_sess', encodedUser);
+          return;
+        }
+
+        // 4. 둘 다 없는 경우: 로그아웃 처리
+        clearUser();
+        localStorage.removeItem('pc_sess');
+        logout();
+      } catch (error) {
+        // 에러 발생 시 로그아웃 처리
+        clearUser();
+        localStorage.removeItem('pc_sess');
+        logout();
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchUserIfNeeded();
-  }, [user, hasFetched, setUser, clearUser]);
+    syncUserState();
+  }, [user, setUser, clearUser]);
 
-  // 로그아웃 함수
   const handleLogout = () => {
-    clearUser(); // Zustand 상태 초기화
-    logout(); // 로그아웃
+    clearUser();
+    localStorage.removeItem('pc_sess');
+    logout();
   };
 
   const truncatedNickname =
@@ -86,7 +115,9 @@ export default function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          {isLoggedIn ? (
+          {isLoading ? (
+            <div className="animate-pulse">로딩중...</div>
+          ) : isLoggedIn ? (
             <>
               <Link
                 href="/profile"
@@ -124,7 +155,9 @@ export default function Header() {
           </button>
 
           <div className="mb-6 text-center">
-            {isLoggedIn ? (
+            {isLoading ? (
+              <div className="animate-pulse">로딩중...</div>
+            ) : isLoggedIn ? (
               <Link
                 href="/profile"
                 className="font-medium text-lg mt-2 block"

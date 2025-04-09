@@ -7,13 +7,20 @@ import Input from '@/components/common/input/Input';
 import RadioGroup from '@/components/common/input/RadioGroup';
 import DateInput from '@/components/common/input/DateInput';
 import Alert from '@/components/common/alert/Alert';
-import UserService from '@/model/user/service/UserService';
-import UserSignUp from '@/model/user/dto/UserSignUpDto';
+import { checkEmail, checkNickname, signup } from '@/libs/api/user/userApi';
 
 export default function SignupPage() {
-  const userService = new UserService(); // 인스턴스 생성
   const router = useRouter();
-  const [form, setForm] = useState(new UserSignUp());
+  const [form, setForm] = useState({
+    email: '',
+    name: '',
+    nickname: '',
+    password: '',
+    confirmPassword: '',
+    phoneNumber: '',
+    birthDate: '',
+    gender: '',
+  });
   const [alertMessage, setAlertMessage] = useState('');
 
   // 폰번호 합치기
@@ -28,50 +35,20 @@ export default function SignupPage() {
       newPhoneNumber = `${form.phoneNumber.split('-')[0] || ''}-${form.phoneNumber.split('-')[1] || ''}-${value}`;
     }
   
-    // { ...prev }: 기존 form의 모든 속성을 그대로 복사합니다.
-    // 기존 phoneNumber를 newPhoneNumber 값으로 업데이트합니다.
     setForm((prev) => ({ ...prev, phoneNumber: newPhoneNumber }));
-    
   };
 
   // 이메일 합치기
   const handleEmailChange = (name: string, value: string) => {
     let newEmail = form.email;
-  
+
     if (name === 'email') {
       newEmail = `${value}@${form.email.split('@')[1] || ''}`;
     } else if (name === 'emailDomain') {
       newEmail = `${form.email.split('@')[0] || ''}@${value}`;
     }
-  
+
     setForm((prev) => ({ ...prev, email: newEmail }));
-  };
-
-  // 이메일 중복 확인
-  const handleCheckEmail = async () => {
-
-    const isAvailable = await userService.checkEmailDuplicate(form.email);
-    if (isAvailable) {
-      setAlertMessage('사용 가능!');
-    } else {
-      setAlertMessage('이미 사용 중입니다.');
-    }
-  };
-
-  // 닉네임 중복검사
-  const handleCheckNickname = async () => {
-
-    const isAvailable = await userService.checkNicknameDuplicate(form.nickname);
-    if (isAvailable) {
-      setAlertMessage('사용 가능!');
-    } else {
-      setAlertMessage('이미 사용 중입니다.');
-    }
-  };
-
-  // 값 넣기기
-  const handleChange = (name: string, value: string) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   // 이메일 도메인 선택
@@ -79,14 +56,69 @@ export default function SignupPage() {
     if (value === 'custom') {
       setForm((prev) => ({ ...prev, email: `${prev.email.split('@')[0]}@` })); // 도메인 비우기
     } else {
-      setForm((prev) => ({...prev, email: `${prev.email.split('@')[0]}@${value}`, // 새로운 도메인 적용
-      }));
+      setForm((prev) => ({...prev, email: `${prev.email.split('@')[0]}@${value}`})); // 새로운 도메인 적용
     }
   };
 
+  // 이메일 중복 확인
+  const handleCheckEmail = async () => {
+    try {
+      const isAvailable = await checkEmail(form.email);
+      console.log(isAvailable);
+      if(isAvailable.resultCode === 200){
+        setAlertMessage('사용 가능!');
+      }else{
+        setAlertMessage('이미 사용 중입니다.');
+      }
+    } catch (error) {
+      setAlertMessage('이메일 중복 확인 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 닉네임 중복 확인
+  const handleCheckNickname = async () => {
+    try {
+      const isAvailable = await checkNickname(form.nickname);
+      setAlertMessage(isAvailable ? '사용 가능!' : '이미 사용 중입니다.');
+    } catch (error) {
+      setAlertMessage('닉네임 중복 확인 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 값 변경 처리
+  const handleChange = (name: string, value: string) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // 생년월일 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
+  const formatBirthDate = (date: string) => {
+    return date.replace(/-/g, '');
+  };
+
+  // 회원가입 처리
   const handleSignup = async () => {
-    console.log(form)
-    // router.push('/login');
+    try {
+      // 비밀번호 확인
+      if (form.password !== form.confirmPassword) {
+        setAlertMessage('비밀번호가 일치하지 않습니다.');
+        return;
+      }
+
+      // 생년월일 형식 변환
+      const formattedBirthDate = formatBirthDate(form.birthDate);
+
+      // 회원가입 요청
+      await signup({
+        ...form,
+        birthDate: formattedBirthDate,
+        passwordCheck: form.confirmPassword,
+      });
+
+      setAlertMessage('회원가입이 완료되었습니다.');
+      router.push('/login');
+    } catch (error) {
+      setAlertMessage('회원가입 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -133,30 +165,30 @@ export default function SignupPage() {
         </div>
 
         {/* 이름 */}
-        <label className="block text-gray-700 font-bold">이름</label>
-        <Input
-          name="name"
-          placeholder="이름"
-          value={form.name}
-          onChange={(value) => handleChange('name', value)}
-          maxLength={10}
-        />
-
-        {/* 닉네임 */}
-        <label className="block text-gray-700 font-bold">닉네임</label>
-        <div className='flex'>
+          <label className="block text-gray-700 font-bold">이름</label>
           <Input
-            name="nickname"
-            placeholder="닉네임"
-            value={form.nickname}
-            onChange={(value) => handleChange('nickname', value)}
-            className='flex-1'
+            name="name"
+            placeholder="이름"
+            value={form.name}
+            onChange={(value) => handleChange('name', value)}
             maxLength={10}
           />
+
+        {/* 닉네임 */}
+          <label className="block text-gray-700 font-bold">닉네임</label>
+        <div className='flex'>
+            <Input
+              name="nickname"
+              placeholder="닉네임"
+              value={form.nickname}
+              onChange={(value) => handleChange('nickname', value)}
+            className='flex-1'
+              maxLength={10}
+            />
           <Button onClick={handleCheckNickname} type="accent" className='!w-[45%] mb-3'>
-            중복 확인
-          </Button>
-        </div>
+              중복 확인
+            </Button>
+          </div>
 
         {/* 성별 선택 */}
         <div className="mb-4">
@@ -223,7 +255,7 @@ export default function SignupPage() {
           onChange={(value) => handleChange('password', value)}
           minLength={4}
           maxLength={20}
-        />
+          />
         <Input
           type="password"
           name="confirmPassword"
@@ -232,7 +264,7 @@ export default function SignupPage() {
           onChange={(value) => handleChange('confirmPassword', value)}
           minLength={4}
           maxLength={20}
-        />
+          />
 
         {/* 회원가입 버튼 */}
         <Button onClick={handleSignup} className="w-full">
