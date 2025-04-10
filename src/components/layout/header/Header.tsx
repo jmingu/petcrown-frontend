@@ -40,10 +40,12 @@ export default function Header() {
         // 2. 로컬 스토리지에만 있는 경우: Zustand에 저장
         if (hasLocalStorage && !hasZustand) {
           try {
-            const decodedUser = JSON.parse(decodeURIComponent(atob(storedUser)));
+            const decodedUser = JSON.parse(
+              decodeURIComponent(atob(storedUser))
+            );
             setUser(decodedUser);
             return;
-          } catch (e) {
+          } catch {
             localStorage.removeItem('pc_sess');
           }
         }
@@ -59,7 +61,7 @@ export default function Header() {
         clearUser();
         localStorage.removeItem('pc_sess');
         logout();
-      } catch (error) {
+      } catch {
         // 에러 발생 시 로그아웃 처리
         clearUser();
         localStorage.removeItem('pc_sess');
