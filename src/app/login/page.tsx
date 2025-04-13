@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/common/button/Button';
 import Input from '@/components/common/input/Input';
-import {login, findUser} from '@/libs/api/user/userApi';
+import { login, findUser } from '@/libs/api/user/userApi';
 import { useUserStore } from '@/libs/store/user/userStore';
 
 export default function LoginPage() {
@@ -14,12 +14,19 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    
+    if (email === null || email.trim() === '' || email === undefined) {
+      alert('이메일을 입력해주세요.');
+    }
+
+    if (password === null || password.trim() === '' || password === undefined) {
+      alert('비밀번호를 입력해주세요.');
+    }
+
     try {
       await login({ email, password }); // 로그인 요청
 
       const user = await findUser(); // 로그인 후 사용자 정보 받아오기
-      
+
       console.log('로그인 성공, 사용자 정보:', user);
 
       // 한글과 특수문자를 처리할 수 있도록 인코딩
@@ -33,9 +40,6 @@ export default function LoginPage() {
       console.error('로그인 실패:', err);
       alert('로그인 정보가 올바르지 않습니다.');
     }
-
-
-
   };
   return (
     <div className="h-full flex items-center justify-center px-3 mt-20">
