@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/common/button/Button';
 import Input from '@/components/common/input/Input';
@@ -11,6 +11,18 @@ import Modal from '@/components/common/modal/Modal'; // 모달 컴포넌트 임�
 import { checkEmail, checkNickname, signup } from '@/libs/api/user/userApi';
 
 export default function SignupPage() {
+  const [emailWrite, setEmailWrite] = useState(''); // 이메일
+  const [emailDomain, setEmailDomain] = useState(''); // 이메일 도메인
+  const [name, setName] = useState(''); // 이름
+  const [nickname, setNickname] = useState(''); // 닉네임
+  const [password, setPassword] = useState(''); // 비밀번호
+  const [confirmPassword, setConfirmPassword] = useState(''); // 비밀번호 확인
+  const [phoneNumber1, setPhoneNumber1] = useState(''); // 핸드폰 번호1
+  const [phoneNumber2, setPhoneNumber2] = useState(''); // 핸드폰 번호2
+  const [phoneNumber3, setPhoneNumber3] = useState(''); // 핸드폰 번호3
+  const [birthDate, setBirthDate] = useState(''); // 생년월일
+  const [gender, setGender] = useState(''); // 성별
+
   const router = useRouter();
   const [form, setForm] = useState({
     email: '',
@@ -32,16 +44,27 @@ export default function SignupPage() {
   // 폰번호 합치기
   const handlePhoneChange = (name: string, value: string) => {
     let newPhoneNumber = form.phoneNumber;
-  
+
     if (name === 'phone1') {
-      newPhoneNumber = `${value}-${form.phoneNumber.split('-')[1] || ''}-${form.phoneNumber.split('-')[2] || ''}`;
+      newPhoneNumber = `${value}-${form.phoneNumber.split('-')[1] || ''}-${
+        form.phoneNumber.split('-')[2] || ''
+      }`;
     } else if (name === 'phone2') {
-      newPhoneNumber = `${form.phoneNumber.split('-')[0] || ''}-${value}-${form.phoneNumber.split('-')[2] || ''}`;
+      newPhoneNumber = `${form.phoneNumber.split('-')[0] || ''}-${value}-${
+        form.phoneNumber.split('-')[2] || ''
+      }`;
     } else if (name === 'phone3') {
-      newPhoneNumber = `${form.phoneNumber.split('-')[0] || ''}-${form.phoneNumber.split('-')[1] || ''}-${value}`;
+      newPhoneNumber = `${form.phoneNumber.split('-')[0] || ''}-${
+        form.phoneNumber.split('-')[1] || ''
+      }-${value}`;
     }
-  
+
     setForm((prev) => ({ ...prev, phoneNumber: newPhoneNumber }));
+  };
+
+  // 이메일 합치기
+  const handleEmail = (value: string) => {
+    setEmailWrite(value);
   };
 
   // 이메일 합치기
@@ -62,7 +85,10 @@ export default function SignupPage() {
     if (value === 'custom') {
       setForm((prev) => ({ ...prev, email: `${prev.email.split('@')[0]}@` })); // 도메인 비우기
     } else {
-      setForm((prev) => ({...prev, email: `${prev.email.split('@')[0]}@${value}`})); // 새로운 도메인 적용
+      setForm((prev) => ({
+        ...prev,
+        email: `${prev.email.split('@')[0]}@${value}`,
+      })); // 새로운 도메인 적용
     }
   };
 
@@ -78,8 +104,7 @@ export default function SignupPage() {
         setAlertMessage((error as any).response.data.resultMessage);
       } else {
         setAlertMessage('이메일 중복 확인 중 오류가 발생했습니다.');
-      } 
-      
+      }
     }
   };
 
@@ -90,13 +115,12 @@ export default function SignupPage() {
       setAlertMessage('닉네임이 사용 가능합니다!');
       setIsNicknameVerified(true); // 닉네임 인증 상태 업데이트
     } catch (error) {
-      
       setIsNicknameVerified(false);
       if ((error as any)?.response?.data?.resultMessage) {
         setAlertMessage((error as any).response.data.resultMessage);
       } else {
         setAlertMessage('닉네임 중복 확인 중 오류가 발생했습니다.');
-      } 
+      }
     }
   };
 
@@ -117,12 +141,15 @@ export default function SignupPage() {
 
   // 회원가입 처리
   const handleSignup = async () => {
+    console.log(emailWrite);
     try {
       // 비밀번호 확인
       if (form.password !== form.confirmPassword) {
         setAlertMessage('비밀번호가 일치하지 않습니다.');
         return;
       }
+
+      return;
 
       // 이메일 인증 확인
       if (!isEmailVerified) {
@@ -198,8 +225,8 @@ export default function SignupPage() {
             <Input
               name="email"
               placeholder="아이디 입력"
-              value={form.email.split('@')[0] || ''}
-              onChange={(value) => handleEmailChange('email', value)}
+              value={emailWrite}
+              onChange={(value) => handleEmail(value)}
               divClass="flex-1"
             />
             <span className="text-lg font-bold">@</span>
@@ -230,30 +257,34 @@ export default function SignupPage() {
         </div>
 
         {/* 이름 */}
-          <label className="block text-gray-700 font-bold">이름</label>
-          <Input
-            name="name"
-            placeholder="이름"
-            value={form.name}
-            onChange={(value) => handleChange('name', value)}
-            maxLength={10}
-          />
+        <label className="block text-gray-700 font-bold">이름</label>
+        <Input
+          name="name"
+          placeholder="이름"
+          value={form.name}
+          onChange={(value) => handleChange('name', value)}
+          maxLength={10}
+        />
 
         {/* 닉네임 */}
-          <label className="block text-gray-700 font-bold">닉네임</label>
-        <div className='flex'>
-            <Input
-              name="nickname"
-              placeholder="닉네임"
-              value={form.nickname}
-              onChange={(value) => handleChange('nickname', value)}
-            className='flex-1'
-              maxLength={10}
-            />
-          <Button onClick={handleCheckNickname} type="accent" className='!w-[45%] mb-3'>
-              중복 확인
-            </Button>
-          </div>
+        <label className="block text-gray-700 font-bold">닉네임</label>
+        <div className="flex">
+          <Input
+            name="nickname"
+            placeholder="닉네임"
+            value={form.nickname}
+            onChange={(value) => handleChange('nickname', value)}
+            className="flex-1"
+            maxLength={10}
+          />
+          <Button
+            onClick={handleCheckNickname}
+            type="accent"
+            className="!w-[45%] mb-3"
+          >
+            중복 확인
+          </Button>
+        </div>
 
         {/* 성별 선택 */}
         <div className="mb-4">
@@ -273,12 +304,12 @@ export default function SignupPage() {
         <div className="mb-4">
           <label className="block text-gray-700 font-bold">생년월일</label>
           <DateInput
-  value={form.birthDate}
-  onChange={(value) => handleChange('birthDate', value)}
-  placeholder="YYYY-MM-DD"
-  minDate={new Date('1900-01-01')} // 최소 선택 가능 날짜
-  maxDate={new Date()} // 오늘 날짜까지 선택 가능
-/>
+            value={form.birthDate}
+            onChange={(value) => handleChange('birthDate', value)}
+            placeholder="YYYY-MM-DD"
+            minDate={new Date('1900-01-01')} // 최소 선택 가능 날짜
+            maxDate={new Date()} // 오늘 날짜까지 선택 가능
+          />
         </div>
 
         {/* 핸드폰 번호 입력 */}
@@ -324,7 +355,7 @@ export default function SignupPage() {
           onChange={(value) => handleChange('password', value)}
           minLength={4}
           maxLength={20}
-          />
+        />
         <Input
           type="password"
           name="confirmPassword"
@@ -333,7 +364,7 @@ export default function SignupPage() {
           onChange={(value) => handleChange('confirmPassword', value)}
           minLength={4}
           maxLength={20}
-          />
+        />
 
         {/* 회원가입 버튼 */}
         <Button onClick={handleSignup} className="w-full">
@@ -357,7 +388,11 @@ export default function SignupPage() {
               <Button onClick={handleVerifyCode} className="flex-1 mr-2">
                 확인
               </Button>
-              <Button onClick={handleResendCode} type="accent" className="flex-1 ml-2">
+              <Button
+                onClick={handleResendCode}
+                type="accent"
+                className="flex-1 ml-2"
+              >
                 재전송
               </Button>
             </div>
