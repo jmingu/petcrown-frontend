@@ -62,40 +62,35 @@ export default function SignupPage() {
     setForm((prev) => ({ ...prev, phoneNumber: newPhoneNumber }));
   };
 
-  // 이메일 합치기
-  const handleEmail = (value: string) => {
-    setEmailWrite(value);
-  };
-
-  // 이메일 합치기
-  const handleEmailChange = (name: string, value: string) => {
-    let newEmail = form.email;
-
-    if (name === 'email') {
-      newEmail = `${value}@${form.email.split('@')[1] || ''}`;
-    } else if (name === 'emailDomain') {
-      newEmail = `${form.email.split('@')[0] || ''}@${value}`;
+  // 이메일
+  const handleEmail = (name: string, value: string) => {
+    if(name === 'emailWrite') {
+      setEmailWrite(value);
+    } else if (name === 'emailDomain') { 
+      setEmailDomain(value);
     }
-
-    setForm((prev) => ({ ...prev, email: newEmail }));
+    
   };
 
   // 이메일 도메인 선택
   const handleEmailDomainChange = (value: string) => {
     if (value === 'custom') {
-      setForm((prev) => ({ ...prev, email: `${prev.email.split('@')[0]}@` })); // 도메인 비우기
+      setEmailDomain(''); // 도메인 초기화
     } else {
-      setForm((prev) => ({
-        ...prev,
-        email: `${prev.email.split('@')[0]}@${value}`,
-      })); // 새로운 도메인 적용
+      setEmailDomain(value); 
     }
   };
 
   // 이메일 중복 확인
   const handleCheckEmail = async () => {
+
+    if(!emailWrite || !emailDomain) {
+      setAlertMessage('이메일을 입력해주세요.');
+      return
+    }
+
     try {
-      await checkEmail(form.email);
+      await checkEmail(emailWrite + '@' + emailDomain); // 이메일 합쳐서 확인
       setAlertMessage('이메일이 사용 가능합니다!');
       setIsEmailVerified(true); // 이메일 인증 상태 업데이트
     } catch (error) {
@@ -111,7 +106,7 @@ export default function SignupPage() {
   // 닉네임 중복 확인
   const handleCheckNickname = async () => {
     try {
-      await checkNickname(form.nickname);
+      await checkNickname(nickname);
       setAlertMessage('닉네임이 사용 가능합니다!');
       setIsNicknameVerified(true); // 닉네임 인증 상태 업데이트
     } catch (error) {
@@ -126,7 +121,19 @@ export default function SignupPage() {
 
   // 값 변경 처리
   const handleChange = (name: string, value: string) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
+    if (name === 'name') {
+      setName(value);
+    } else if (name === 'nickname') {
+      setNickname(value);
+    } else if (name === 'password') {
+      setPassword(value);
+    } else if (name === 'confirmPassword') {
+      setConfirmPassword(value);
+    } else if (name === 'birthDate') {
+      setBirthDate(value);
+    } 
+
+    // setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   // 생년월일 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
@@ -226,15 +233,15 @@ export default function SignupPage() {
               name="email"
               placeholder="아이디 입력"
               value={emailWrite}
-              onChange={(value) => handleEmail(value)}
+              onChange={(value) => handleEmail("emailWrite",value)}
               divClass="flex-1"
             />
             <span className="text-lg font-bold">@</span>
             <Input
               name="emailDomain"
               placeholder="도메인 입력"
-              value={form.email.split('@')[1] || ''}
-              onChange={(value) => handleEmailChange('emailDomain', value)}
+              value={emailDomain}
+              onChange={(value) => handleEmail('emailDomain', value)}
               divClass="!w-[45%]"
             />
           </div>
@@ -261,7 +268,7 @@ export default function SignupPage() {
         <Input
           name="name"
           placeholder="이름"
-          value={form.name}
+          value={name}
           onChange={(value) => handleChange('name', value)}
           maxLength={10}
         />
@@ -272,7 +279,7 @@ export default function SignupPage() {
           <Input
             name="nickname"
             placeholder="닉네임"
-            value={form.nickname}
+            value={nickname}
             onChange={(value) => handleChange('nickname', value)}
             className="flex-1"
             maxLength={10}
