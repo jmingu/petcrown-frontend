@@ -19,7 +19,6 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // console.log(error.response.data)
     const originalRequest = error.config;
 
     // 440: 토큰 만료 -> 리프레시 요청
@@ -55,7 +54,7 @@ api.interceptors.response.use(
       // console.error('API Error:', error.response?.data);
     }
 
-    return Promise.reject(error);
+    return error.response;
   }
 );
 

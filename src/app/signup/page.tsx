@@ -8,22 +8,28 @@ import RadioGroup from '@/components/common/input/RadioGroup';
 import DateInput from '@/components/common/input/DateInput';
 import Alert from '@/components/common/alert/Alert';
 import Modal from '@/components/common/modal/Modal'; // 모달 컴포넌트 임포트
-import { checkEmail, checkNickname, signup } from '@/libs/api/user/userApi';
+import {
+  checkEmail,
+  checkNickname,
+  signup,
+  sendEmailVerificationCode,
+} from '@/libs/api/user/userApi';
 
 export default function SignupPage() {
+  const router = useRouter();
+
   const [emailWrite, setEmailWrite] = useState(''); // 이메일
   const [emailDomain, setEmailDomain] = useState(''); // 이메일 도메인
   const [name, setName] = useState(''); // 이름
   const [nickname, setNickname] = useState(''); // 닉네임
-  const [password, setPassword] = useState(''); // 비밀번호
-  const [confirmPassword, setConfirmPassword] = useState(''); // 비밀번호 확인
+  const [gender, setGender] = useState(''); // 성별
+  const [birthDate, setBirthDate] = useState(''); // 생년월일
   const [phoneNumber1, setPhoneNumber1] = useState(''); // 핸드폰 번호1
   const [phoneNumber2, setPhoneNumber2] = useState(''); // 핸드폰 번호2
   const [phoneNumber3, setPhoneNumber3] = useState(''); // 핸드폰 번호3
-  const [birthDate, setBirthDate] = useState(''); // 생년월일
-  const [gender, setGender] = useState(''); // 성별
+  const [password, setPassword] = useState(''); // 비밀번호
+  const [confirmPassword, setConfirmPassword] = useState(''); // 비밀번호 확인
 
-  const router = useRouter();
   const [form, setForm] = useState({
     email: '',
     name: '',
@@ -41,52 +47,20 @@ export default function SignupPage() {
   const [isEmailVerified, setIsEmailVerified] = useState(false); // 이메일 인증 상태
   const [isNicknameVerified, setIsNicknameVerified] = useState(false); // 닉네임 인증 상태
 
-  // 폰번호 합치기
-  const handlePhoneChange = (name: string, value: string) => {
-    let newPhoneNumber = form.phoneNumber;
-
-    if (name === 'phone1') {
-      newPhoneNumber = `${value}-${form.phoneNumber.split('-')[1] || ''}-${
-        form.phoneNumber.split('-')[2] || ''
-      }`;
-    } else if (name === 'phone2') {
-      newPhoneNumber = `${form.phoneNumber.split('-')[0] || ''}-${value}-${
-        form.phoneNumber.split('-')[2] || ''
-      }`;
-    } else if (name === 'phone3') {
-      newPhoneNumber = `${form.phoneNumber.split('-')[0] || ''}-${
-        form.phoneNumber.split('-')[1] || ''
-      }-${value}`;
-    }
-
-    setForm((prev) => ({ ...prev, phoneNumber: newPhoneNumber }));
-  };
-
-  // 이메일
-  const handleEmail = (name: string, value: string) => {
-    if(name === 'emailWrite') {
-      setEmailWrite(value);
-    } else if (name === 'emailDomain') { 
-      setEmailDomain(value);
-    }
-    
-  };
-
   // 이메일 도메인 선택
   const handleEmailDomainChange = (value: string) => {
     if (value === 'custom') {
       setEmailDomain(''); // 도메인 초기화
     } else {
-      setEmailDomain(value); 
+      setEmailDomain(value);
     }
   };
 
   // 이메일 중복 확인
   const handleCheckEmail = async () => {
-
-    if(!emailWrite || !emailDomain) {
+    if (!emailWrite || !emailDomain) {
       setAlertMessage('이메일을 입력해주세요.');
-      return
+      return;
     }
 
     try {
@@ -121,17 +95,29 @@ export default function SignupPage() {
 
   // 값 변경 처리
   const handleChange = (name: string, value: string) => {
-    if (name === 'name') {
+    if (name === 'emailWrite') {
+      setEmailWrite(value);
+    } else if (name === 'emailDomain') {
+      setEmailDomain(value);
+    } else if (name === 'name') {
       setName(value);
     } else if (name === 'nickname') {
       setNickname(value);
+    } else if (name === 'gender') {
+      setGender(value);
+    } else if (name === 'birthDate') {
+      setBirthDate(value);
+    } else if (name === 'phoneNumber1') {
+      setPhoneNumber1(value);
+    } else if (name === 'phoneNumber2') {
+      setPhoneNumber2(value);
+    } else if (name === 'phoneNumber3') {
+      setPhoneNumber3(value);
     } else if (name === 'password') {
       setPassword(value);
     } else if (name === 'confirmPassword') {
       setConfirmPassword(value);
-    } else if (name === 'birthDate') {
-      setBirthDate(value);
-    } 
+    }
 
     // setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -141,22 +127,26 @@ export default function SignupPage() {
     return date.replace(/-/g, '');
   };
 
-  // 인증번호 생성 함수
-  const generateVerificationCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 인증번호 생성
-  };
-
   // 회원가입 처리
   const handleSignup = async () => {
     console.log(emailWrite);
+    console.log(emailDomain);
+    console.log(name);
+    console.log(nickname);
+    console.log(gender);
+    console.log(birthDate);
+    console.log(phoneNumber1);
+    console.log(phoneNumber2);
+    console.log(phoneNumber3);
+    console.log(password);
+    console.log(confirmPassword);
+
     try {
       // 비밀번호 확인
-      if (form.password !== form.confirmPassword) {
+      if (password !== confirmPassword) {
         setAlertMessage('비밀번호가 일치하지 않습니다.');
         return;
       }
-
-      return;
 
       // 이메일 인증 확인
       if (!isEmailVerified) {
@@ -169,18 +159,25 @@ export default function SignupPage() {
         setAlertMessage('닉네임 인증을 완료해주세요.');
         return;
       }
+      const signupResult = signup({
+        email: emailWrite + '@' + emailDomain,
+        name,
+        nickname,
+        gender,
+        birthDate,
+        phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`,
+        password,
+        confirmPassword,
+      });
+      console.log(signupResult);
+      // 인증번호 전송
+      const result = await sendEmailVerificationCode(
+        emailWrite + '@' + emailDomain
+      );
+      console.log(result);
 
-      // 생년월일 형식 변환
-      const formattedBirthDate = formatBirthDate(form.birthDate);
-
-      // 인증번호 생성 및 모달 열기
-      const generatedCode = generateVerificationCode();
-      setVerificationCode(generatedCode);
+      // 인증번호 확인 모달 열기
       setIsModalOpen(true);
-
-      // 인증번호 전송 로직 (예: 이메일 전송)
-      console.log(`인증번호 전송: ${generatedCode}`);
-      setAlertMessage('인증번호가 전송되었습니다.');
     } catch (error) {
       setAlertMessage('회원가입 중 오류가 발생했습니다.');
     }
@@ -212,11 +209,6 @@ export default function SignupPage() {
 
   // 인증번호 재전송
   const handleResendCode = () => {
-    const newCode = generateVerificationCode();
-    setVerificationCode(newCode);
-
-    // 인증번호 재전송 로직 (예: 이메일 전송)
-    console.log(`인증번호 재전송: ${newCode}`);
     setAlertMessage('인증번호가 재전송되었습니다.');
   };
 
@@ -231,9 +223,9 @@ export default function SignupPage() {
           <div className="flex items-center gap-2">
             <Input
               name="email"
-              placeholder="아이디 입력"
+              placeholder="이메일 입력"
               value={emailWrite}
-              onChange={(value) => handleEmail("emailWrite",value)}
+              onChange={(value) => handleChange('emailWrite', value)}
               divClass="flex-1"
             />
             <span className="text-lg font-bold">@</span>
@@ -241,7 +233,7 @@ export default function SignupPage() {
               name="emailDomain"
               placeholder="도메인 입력"
               value={emailDomain}
-              onChange={(value) => handleEmail('emailDomain', value)}
+              onChange={(value) => handleChange('emailDomain', value)}
               divClass="!w-[45%]"
             />
           </div>
@@ -253,12 +245,11 @@ export default function SignupPage() {
               onChange={(e) => handleEmailDomainChange(e.target.value)}
               className="p-3 border rounded border-gray-300"
             >
-              <option value="">선택</option>
+              <option value="custom">직접 입력</option>
               <option value="naver.com">naver.com</option>
               <option value="gmail.com">gmail.com</option>
               <option value="nate.com">nate.com</option>
               <option value="daum.net">daum.net</option>
-              <option value="custom">직접 입력</option>
             </select>
           </div>
         </div>
@@ -302,7 +293,7 @@ export default function SignupPage() {
               { label: '남성', value: 'M' },
               { label: '여성', value: 'W' },
             ]}
-            selectedValue={form.gender}
+            selectedValue={gender}
             onChange={(value) => handleChange('gender', value)}
           />
         </div>
@@ -311,7 +302,7 @@ export default function SignupPage() {
         <div className="mb-4">
           <label className="block text-gray-700 font-bold">생년월일</label>
           <DateInput
-            value={form.birthDate}
+            value={birthDate}
             onChange={(value) => handleChange('birthDate', value)}
             placeholder="YYYY-MM-DD"
             minDate={new Date('1900-01-01')} // 최소 선택 가능 날짜
@@ -326,8 +317,8 @@ export default function SignupPage() {
             <Input
               name="phone1"
               placeholder="010"
-              value={form.phoneNumber.split('-')[0] || ''}
-              onChange={(value) => handlePhoneChange('phone1', value)}
+              value={phoneNumber1}
+              onChange={(value) => handleChange('phoneNumber1', value)}
               maxLength={3}
               className="w-1/3"
               onlyNumbers={true} // 숫자만 입력 가능
@@ -335,8 +326,8 @@ export default function SignupPage() {
             <Input
               name="phone2"
               placeholder="1234"
-              value={form.phoneNumber.split('-')[1] || ''}
-              onChange={(value) => handlePhoneChange('phone2', value)}
+              value={phoneNumber2}
+              onChange={(value) => handleChange('phoneNumber2', value)}
               maxLength={4}
               className="w-1/3"
               onlyNumbers={true} // 숫자만 입력 가능
@@ -344,8 +335,8 @@ export default function SignupPage() {
             <Input
               name="phone3"
               placeholder="5678"
-              value={form.phoneNumber.split('-')[2] || ''}
-              onChange={(value) => handlePhoneChange('phone3', value)}
+              value={phoneNumber3}
+              onChange={(value) => handleChange('phoneNumber3', value)}
               maxLength={4}
               className="w-1/3"
               onlyNumbers={true} // 숫자만 입력 가능
@@ -358,7 +349,7 @@ export default function SignupPage() {
           type="password"
           name="password"
           placeholder="비밀번호"
-          value={form.password}
+          value={password}
           onChange={(value) => handleChange('password', value)}
           minLength={4}
           maxLength={20}
@@ -367,7 +358,7 @@ export default function SignupPage() {
           type="password"
           name="confirmPassword"
           placeholder="비밀번호 확인"
-          value={form.confirmPassword}
+          value={confirmPassword}
           onChange={(value) => handleChange('confirmPassword', value)}
           minLength={4}
           maxLength={20}
@@ -385,6 +376,7 @@ export default function SignupPage() {
           <div className="p-4">
             <h3 className="text-xl font-bold mb-4">인증번호 확인</h3>
             <p className="mb-2">이메일로 전송된 인증번호를 입력하세요.</p>
+            <p className="mb-2">인증까지 완료해야 회원가입이 완료됩니다.</p>
             <Input
               name="verificationCode"
               placeholder="인증번호 입력"

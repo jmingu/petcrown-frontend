@@ -2,6 +2,7 @@ import api from '@/libs/axiosInstance'; // axios 인스턴스
 import {
   LoginRequest,
   UserResponse,
+  SignUpRequest,
 } from '@/libs/interface/api/user/userInterface';
 
 /**
@@ -31,7 +32,6 @@ export const findUser = async (): Promise<UserResponse> => {
  */
 export const checkEmail = async (email: string): Promise<boolean> => {
   const response = await api.get(`/user/v1/check-email?email=${email}`);
-  console.log(response)
   return response.data;
 };
 
@@ -39,22 +39,26 @@ export const checkEmail = async (email: string): Promise<boolean> => {
  * 닉네임 중복 확인
  */
 export const checkNickname = async (nickname: string): Promise<boolean> => {
-  const response = await api.get(`/user/v1/check-nickname?nickname=${nickname}`);
+  const response = await api.get(
+    `/user/v1/check-nickname?nickname=${nickname}`
+  );
   return response.data.result;
 };
 
 /**
  * 회원가입
  */
-export const signup = async (data: {
-  email: string;
-  name: string;
-  nickname: string;
-  password: string;
-  passwordCheck: string;
-  phoneNumber: string;
-  birthDate: string;
-  gender: string;
-}): Promise<void> => {
-  await api.post('/user/v1', data);
+export const signup = async (data: SignUpRequest): Promise<void> => {
+  const response = await api.post('/user/v1', data);
+  return response.data;
+};
+
+/**
+ * 이메일 인증코드 발송
+ */
+export const sendEmailVerificationCode = async (
+  email: string
+): Promise<void> => {
+  const response = await api.post('/user/v1/email/verification/send', email);
+  return response.data;
 };
