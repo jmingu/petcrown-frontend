@@ -13,6 +13,7 @@ import {
   checkNickname,
   signup,
   sendEmailVerificationCode,
+  checkEmailVerificationCode
 } from '@/libs/api/user/userApi';
 
 export default function SignupPage() {
@@ -28,26 +29,18 @@ export default function SignupPage() {
   const [phoneNumber2, setPhoneNumber2] = useState(''); // 핸드폰 번호2
   const [phoneNumber3, setPhoneNumber3] = useState(''); // 핸드폰 번호3
   const [password, setPassword] = useState(''); // 비밀번호
-  const [confirmPassword, setConfirmPassword] = useState(''); // 비밀번호 확인
+  const [passwordCheck, setPasswordCheck] = useState(''); // 비밀번호 확인
 
-  const [form, setForm] = useState({
-    email: '',
-    name: '',
-    nickname: '',
-    password: '',
-    confirmPassword: '',
-    phoneNumber: '',
-    birthDate: '',
-    gender: '',
-  });
   const [alertMessage, setAlertMessage] = useState('');
+  
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
-  const [verificationCode, setVerificationCode] = useState(''); // 인증번호
   const [inputCode, setInputCode] = useState(''); // 입력된 인증번호
   const [isEmailVerified, setIsEmailVerified] = useState(false); // 이메일 인증 상태
   const [isNicknameVerified, setIsNicknameVerified] = useState(false); // 닉네임 인증 상태
 
-  // 이메일 도메인 선택
+  /**
+   * 이메일 도메인 선택
+   */
   const handleEmailDomainChange = (value: string) => {
     if (value === 'custom') {
       setEmailDomain(''); // 도메인 초기화
@@ -56,44 +49,65 @@ export default function SignupPage() {
     }
   };
 
-  // 이메일 중복 확인
+  /**
+   * 이메일 중복 확인
+   */
   const handleCheckEmail = async () => {
     if (!emailWrite || !emailDomain) {
       setAlertMessage('이메일을 입력해주세요.');
       return;
     }
 
-    try {
-      await checkEmail(emailWrite + '@' + emailDomain); // 이메일 합쳐서 확인
-      setAlertMessage('이메일이 사용 가능합니다!');
-      setIsEmailVerified(true); // 이메일 인증 상태 업데이트
-    } catch (error) {
+    const emailCheck = await checkEmail(emailWrite + '@' + emailDomain); // 이메일 합쳐서 확인
+    
+    if(emailCheck.resultCode !== 200) {
+      if(emailCheck.resultCode >= 3000) {
+        setAlertMessage(emailCheck.resultMessageKo); // 한국어 메시지
+        setIsEmailVerified(false);
+        return
+
+      }
+      setAlertMessage('이메일 중복 확인 중 오류가 발생했습니다.');
       setIsEmailVerified(false);
-      if ((error as any)?.response?.data?.resultMessage) {
-        setAlertMessage((error as any).response.data.resultMessage);
-      } else {
-        setAlertMessage('이메일 중복 확인 중 오류가 발생했습니다.');
-      }
+      return
     }
+    setAlertMessage('이메일이 사용 가능합니다!');
+    setIsEmailVerified(true); // 이메일 인증 상태 업데이트
+
   };
 
-  // 닉네임 중복 확인
+  /**
+   * 닉네임 중복 확인
+   */
   const handleCheckNickname = async () => {
-    try {
-      await checkNickname(nickname);
-      setAlertMessage('닉네임이 사용 가능합니다!');
-      setIsNicknameVerified(true); // 닉네임 인증 상태 업데이트
-    } catch (error) {
-      setIsNicknameVerified(false);
-      if ((error as any)?.response?.data?.resultMessage) {
-        setAlertMessage((error as any).response.data.resultMessage);
-      } else {
-        setAlertMessage('닉네임 중복 확인 중 오류가 발생했습니다.');
-      }
+
+    if (!nickname) {
+      setAlertMessage('닉네임을 입력해주세요.');
+      return;
     }
+
+    const nicknameCheck = await checkNickname(nickname);
+
+    if(nicknameCheck.resultCode !== 200) {
+      if(nicknameCheck.resultCode >= 3000) {
+        setAlertMessage(nicknameCheck.resultMessageKo); // 한국어 메시지
+        setIsNicknameVerified(false);
+        return
+
+      }
+      
+      setAlertMessage('닉네임 중복 확인 중 오류가 발생했습니다.'); 
+      setIsNicknameVerified(false);
+      return
+    }
+    setAlertMessage('닉네임이 사용 가능합니다!');
+    setIsNicknameVerified(true); // 닉네임 인증 상태 업데이트
+
   };
 
-  // 값 변경 처리
+  /**
+   * 값 변경 처리
+   */
   const handleChange = (name: string, value: string) => {
     if (name === 'emailWrite') {
       setEmailWrite(value);
@@ -115,100 +129,173 @@ export default function SignupPage() {
       setPhoneNumber3(value);
     } else if (name === 'password') {
       setPassword(value);
-    } else if (name === 'confirmPassword') {
-      setConfirmPassword(value);
+    } else if (name === 'passwordCheck') {
+      setPasswordCheck(value);
     }
-
-    // setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 생년월일 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
+  /**
+   * 생년월일 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
+   */
   const formatBirthDate = (date: string) => {
     return date.replace(/-/g, '');
   };
 
-  // 회원가입 처리
+  /**
+   * 회원가입 처리
+   */
   const handleSignup = async () => {
-    console.log(emailWrite);
-    console.log(emailDomain);
-    console.log(name);
-    console.log(nickname);
-    console.log(gender);
-    console.log(birthDate);
-    console.log(phoneNumber1);
-    console.log(phoneNumber2);
-    console.log(phoneNumber3);
-    console.log(password);
-    console.log(confirmPassword);
 
-    try {
-      // 비밀번호 확인
-      if (password !== confirmPassword) {
-        setAlertMessage('비밀번호가 일치하지 않습니다.');
-        return;
+    // 이메일, 도메인 빈값 확인
+    if (!emailWrite || !emailDomain) {
+      setAlertMessage('이메일을 입력해주세요.');
+      return;
+    }
+
+    // 이름 빈값 확인
+    if (!name) {
+      setAlertMessage('이름을 입력해주세요.');
+      return;
+    }
+
+    // 닉네임 빈값 확인
+    if (!nickname) {
+      setAlertMessage('닉네임을 입력해주세요.');
+      return;
+    }
+
+    // 성별 빈값 확인
+    if (!gender) {
+      setAlertMessage('성별을 선택해주세요.');
+      return;
+    }
+
+    // 생년월일 빈값 확인
+    if (!birthDate) {
+      setAlertMessage('생년월일을 입력해주세요.');
+      return;
+    }
+
+    // 핸드폰 번호 빈값 확인
+    if (!phoneNumber1 || !phoneNumber2 || !phoneNumber3) {
+      setAlertMessage('핸드폰 번호를 입력해주세요.');
+      return;
+    }
+
+    // 비밀번호 빈값 확인
+    if (!password) {
+      setAlertMessage('비밀번호를 입력해주세요.');
+      return;
+    }
+    // 비밀번호 빈값 확인
+    if (!passwordCheck) {
+      setAlertMessage('비밀번호를 입력해주세요.');
+      return;
+    }
+
+    // 비밀번호 최소 자리수 확인 4자리
+    if (password.length < 4) {
+      setAlertMessage('비밀번호는 최소 4자리 이상이어야 합니다.');
+      return;
+    }
+
+    // 비밀번호 확인
+    if (password !== passwordCheck) {
+      setAlertMessage('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    // 핸드폰 번호 자리수 확인
+    if (phoneNumber1.length < 3 || phoneNumber2.length < 4 || phoneNumber3.length < 4) {
+      setAlertMessage('핸드폰 번호를 올바르게 입력해주세요.');
+      return;
+    }
+
+    // 이메일 인증 확인
+    if (!isEmailVerified) {
+      setAlertMessage('이메일 인증을 완료해주세요.');
+      return;
+    }
+
+    // 닉네임 인증 확인
+    if (!isNicknameVerified) {
+      setAlertMessage('닉네임 인증을 완료해주세요.');
+      return;
+    }
+    
+    // 회원가입
+    const signupResult = await signup({
+      email: emailWrite + '@' + emailDomain,
+      name,
+      nickname,
+      gender,
+      birthDate : formatBirthDate(birthDate), // YYYYMMDD 형식으로 변환
+      phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`,
+      password,
+      passwordCheck,
+    });
+
+    if(signupResult.resultCode !== 200) {
+      if(signupResult.resultCode >= 3000) { 
+        setAlertMessage(signupResult.resultMessageKo); // 한국어 메시지
+        return
+
       }
-
-      // 이메일 인증 확인
-      if (!isEmailVerified) {
-        setAlertMessage('이메일 인증을 완료해주세요.');
-        return;
-      }
-
-      // 닉네임 인증 확인
-      if (!isNicknameVerified) {
-        setAlertMessage('닉네임 인증을 완료해주세요.');
-        return;
-      }
-      const signupResult = signup({
-        email: emailWrite + '@' + emailDomain,
-        name,
-        nickname,
-        gender,
-        birthDate,
-        phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`,
-        password,
-        confirmPassword,
-      });
-      console.log(signupResult);
-      // 인증번호 전송
-      const result = await sendEmailVerificationCode(
-        emailWrite + '@' + emailDomain
-      );
-      console.log(result);
-
-      // 인증번호 확인 모달 열기
-      setIsModalOpen(true);
-    } catch (error) {
       setAlertMessage('회원가입 중 오류가 발생했습니다.');
-    }
+      return;
+    }  
+
+    setIsModalOpen(true); // 인증번호 모달 열기
+
   };
 
-  // 인증번호 확인
-  const handleVerifyCode = () => {
-    if (inputCode === verificationCode) {
-      setAlertMessage('인증이 완료되었습니다!');
-      setIsModalOpen(false);
-
-      // 회원가입 요청
-      signup({
-        ...form,
-        birthDate: formatBirthDate(form.birthDate),
-        passwordCheck: form.confirmPassword,
-      })
-        .then(() => {
-          setAlertMessage('회원가입이 완료되었습니다.');
-          router.push('/login');
-        })
-        .catch((error) => {
-          setAlertMessage('회원가입 중 오류가 발생했습니다.');
-        });
-    } else {
-      setAlertMessage('인증번호가 일치하지 않습니다.');
+  /**
+   * 인증번호 확인
+   */
+  const handleVerifyCode = async () => {
+    if(inputCode === null || inputCode.trim() === '' || inputCode === undefined) {
+      setAlertMessage('인증번호를 입력해주세요.');
+      return;
     }
+
+    const codeCheck = await checkEmailVerificationCode({
+      code: inputCode,
+      email: emailWrite + '@' + emailDomain,
+    })
+
+    if(codeCheck.resultCode !== 200) {
+      if(codeCheck.resultCode >= 3000) {
+        setAlertMessage(codeCheck.resultMessageKo); // 한국어 메시지
+        return
+
+      }
+      setAlertMessage('인증번호 확인 중 오류가 발생했습니다.');
+      return
+    }
+
+    setAlertMessage('인증이 완료되었습니다!');
+    setIsModalOpen(false);
+    router.push('/'); // 메인 페이지로 이동
   };
 
-  // 인증번호 재전송
-  const handleResendCode = () => {
+  /**
+   * 인증번호 재전송
+   */
+  const handleResendCode = async () => {
+    const sendResult = await sendEmailVerificationCode(
+      emailWrite + '@' + emailDomain
+    );
+
+    if(sendResult.resultCode !== 200) {
+      if(sendResult.resultCode >= 3000) { 
+        setAlertMessage(sendResult.resultMessageKo); // 한국어 메시지
+        return
+
+      }
+      setAlertMessage('인증번호 재전송 중 오류가 발생했습니다.');
+      return
+    }
+    setInputCode(''); // 입력된 인증번호 초기화
     setAlertMessage('인증번호가 재전송되었습니다.');
   };
 
@@ -278,7 +365,7 @@ export default function SignupPage() {
           <Button
             onClick={handleCheckNickname}
             type="accent"
-            className="!w-[45%] mb-3"
+            className="!w-[45%] mb-3 ml-2"
           >
             중복 확인
           </Button>
@@ -319,6 +406,7 @@ export default function SignupPage() {
               placeholder="010"
               value={phoneNumber1}
               onChange={(value) => handleChange('phoneNumber1', value)}
+              minLength={3}
               maxLength={3}
               className="w-1/3"
               onlyNumbers={true} // 숫자만 입력 가능
@@ -328,6 +416,7 @@ export default function SignupPage() {
               placeholder="1234"
               value={phoneNumber2}
               onChange={(value) => handleChange('phoneNumber2', value)}
+              minLength={4}
               maxLength={4}
               className="w-1/3"
               onlyNumbers={true} // 숫자만 입력 가능
@@ -337,6 +426,7 @@ export default function SignupPage() {
               placeholder="5678"
               value={phoneNumber3}
               onChange={(value) => handleChange('phoneNumber3', value)}
+              minLength={4}
               maxLength={4}
               className="w-1/3"
               onlyNumbers={true} // 숫자만 입력 가능
@@ -358,8 +448,8 @@ export default function SignupPage() {
           type="password"
           name="confirmPassword"
           placeholder="비밀번호 확인"
-          value={confirmPassword}
-          onChange={(value) => handleChange('confirmPassword', value)}
+          value={passwordCheck}
+          onChange={(value) => handleChange('passwordCheck', value)}
           minLength={4}
           maxLength={20}
         />
@@ -375,8 +465,8 @@ export default function SignupPage() {
         <Modal onClose={() => setIsModalOpen(false)}>
           <div className="p-4">
             <h3 className="text-xl font-bold mb-4">인증번호 확인</h3>
-            <p className="mb-2">이메일로 전송된 인증번호를 입력하세요.</p>
-            <p className="mb-2">인증까지 완료해야 회원가입이 완료됩니다.</p>
+            <p className="mb-2">이메일로 인증번호가 전송되었습니다.</p>
+            <p className="mb-2">인증까지 완료해야 최종 가입이 완료됩니다.</p>
             <Input
               name="verificationCode"
               placeholder="인증번호 입력"
@@ -401,6 +491,7 @@ export default function SignupPage() {
 
       {/* 알림창 */}
       <Alert message={alertMessage} onClose={() => setAlertMessage('')} />
+      
     </div>
   );
 }
