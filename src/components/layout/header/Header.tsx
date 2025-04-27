@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/common/button/Button';
 import { useUserStore } from '@/libs/store/user/userStore';
-import { findUser, logout } from '@/libs/api/user/userApi';
+import { logout } from '@/libs/api/user/userApi';
 
 const MENU_ITEMS = [
   { name: '랭킹보기', path: '/ranking' },

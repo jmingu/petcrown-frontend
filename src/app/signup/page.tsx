@@ -13,7 +13,7 @@ import {
   checkNickname,
   signup,
   sendEmailVerificationCode,
-  checkEmailVerificationCode
+  checkEmailVerificationCode,
 } from '@/libs/api/user/userApi';
 
 export default function SignupPage() {
@@ -32,11 +32,12 @@ export default function SignupPage() {
   const [passwordCheck, setPasswordCheck] = useState(''); // 비밀번호 확인
 
   const [alertMessage, setAlertMessage] = useState('');
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
   const [inputCode, setInputCode] = useState(''); // 입력된 인증번호
   const [isEmailVerified, setIsEmailVerified] = useState(false); // 이메일 인증 상태
   const [isNicknameVerified, setIsNicknameVerified] = useState(false); // 닉네임 인증 상태
+  const [emailCheckOk, setEmailCheckOk] = useState(false); // 인증 완료 후 메인으로 이동하는 상태값
 
   /**
    * 이메일 도메인 선택
@@ -59,28 +60,25 @@ export default function SignupPage() {
     }
 
     const emailCheck = await checkEmail(emailWrite + '@' + emailDomain); // 이메일 합쳐서 확인
-    
-    if(emailCheck.resultCode !== 200) {
-      if(emailCheck.resultCode >= 3000) {
+
+    if (emailCheck.resultCode !== 200) {
+      if (emailCheck.resultCode >= 3000) {
         setAlertMessage(emailCheck.resultMessageKo); // 한국어 메시지
         setIsEmailVerified(false);
-        return
-
+        return;
       }
       setAlertMessage('이메일 중복 확인 중 오류가 발생했습니다.');
       setIsEmailVerified(false);
-      return
+      return;
     }
     setAlertMessage('이메일이 사용 가능합니다!');
     setIsEmailVerified(true); // 이메일 인증 상태 업데이트
-
   };
 
   /**
    * 닉네임 중복 확인
    */
   const handleCheckNickname = async () => {
-
     if (!nickname) {
       setAlertMessage('닉네임을 입력해주세요.');
       return;
@@ -88,21 +86,19 @@ export default function SignupPage() {
 
     const nicknameCheck = await checkNickname(nickname);
 
-    if(nicknameCheck.resultCode !== 200) {
-      if(nicknameCheck.resultCode >= 3000) {
+    if (nicknameCheck.resultCode !== 200) {
+      if (nicknameCheck.resultCode >= 3000) {
         setAlertMessage(nicknameCheck.resultMessageKo); // 한국어 메시지
         setIsNicknameVerified(false);
-        return
-
+        return;
       }
-      
-      setAlertMessage('닉네임 중복 확인 중 오류가 발생했습니다.'); 
+
+      setAlertMessage('닉네임 중복 확인 중 오류가 발생했습니다.');
       setIsNicknameVerified(false);
-      return
+      return;
     }
     setAlertMessage('닉네임이 사용 가능합니다!');
     setIsNicknameVerified(true); // 닉네임 인증 상태 업데이트
-
   };
 
   /**
@@ -145,7 +141,6 @@ export default function SignupPage() {
    * 회원가입 처리
    */
   const handleSignup = async () => {
-
     // 이메일, 도메인 빈값 확인
     if (!emailWrite || !emailDomain) {
       setAlertMessage('이메일을 입력해주세요.');
@@ -206,7 +201,11 @@ export default function SignupPage() {
     }
 
     // 핸드폰 번호 자리수 확인
-    if (phoneNumber1.length < 3 || phoneNumber2.length < 4 || phoneNumber3.length < 4) {
+    if (
+      phoneNumber1.length < 3 ||
+      phoneNumber2.length < 4 ||
+      phoneNumber3.length < 4
+    ) {
       setAlertMessage('핸드폰 번호를 올바르게 입력해주세요.');
       return;
     }
@@ -222,38 +221,40 @@ export default function SignupPage() {
       setAlertMessage('닉네임 인증을 완료해주세요.');
       return;
     }
-    
+
     // 회원가입
     const signupResult = await signup({
       email: emailWrite + '@' + emailDomain,
       name,
       nickname,
       gender,
-      birthDate : formatBirthDate(birthDate), // YYYYMMDD 형식으로 변환
+      birthDate: formatBirthDate(birthDate), // YYYYMMDD 형식으로 변환
       phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`,
       password,
       passwordCheck,
     });
 
-    if(signupResult.resultCode !== 200) {
-      if(signupResult.resultCode >= 3000) { 
+    if (signupResult.resultCode !== 200) {
+      if (signupResult.resultCode >= 3000) {
         setAlertMessage(signupResult.resultMessageKo); // 한국어 메시지
-        return
-
+        return;
       }
       setAlertMessage('회원가입 중 오류가 발생했습니다.');
       return;
-    }  
+    }
 
     setIsModalOpen(true); // 인증번호 모달 열기
-
   };
 
   /**
    * 인증번호 확인
    */
   const handleVerifyCode = async () => {
-    if(inputCode === null || inputCode.trim() === '' || inputCode === undefined) {
+    if (
+      inputCode === null ||
+      inputCode.trim() === '' ||
+      inputCode === undefined
+    ) {
       setAlertMessage('인증번호를 입력해주세요.');
       return;
     }
@@ -261,21 +262,20 @@ export default function SignupPage() {
     const codeCheck = await checkEmailVerificationCode({
       code: inputCode,
       email: emailWrite + '@' + emailDomain,
-    })
+    });
 
-    if(codeCheck.resultCode !== 200) {
-      if(codeCheck.resultCode >= 3000) {
+    if (codeCheck.resultCode !== 200) {
+      if (codeCheck.resultCode >= 3000) {
         setAlertMessage(codeCheck.resultMessageKo); // 한국어 메시지
-        return
-
+        return;
       }
       setAlertMessage('인증번호 확인 중 오류가 발생했습니다.');
-      return
+      return;
     }
 
     setAlertMessage('인증이 완료되었습니다!');
+    setEmailCheckOk(true); // 이메일 인증 완료 상태로 변경
     setIsModalOpen(false);
-    router.push('/'); // 메인 페이지로 이동
   };
 
   /**
@@ -286,14 +286,13 @@ export default function SignupPage() {
       emailWrite + '@' + emailDomain
     );
 
-    if(sendResult.resultCode !== 200) {
-      if(sendResult.resultCode >= 3000) { 
+    if (sendResult.resultCode !== 200) {
+      if (sendResult.resultCode >= 3000) {
         setAlertMessage(sendResult.resultMessageKo); // 한국어 메시지
-        return
-
+        return;
       }
       setAlertMessage('인증번호 재전송 중 오류가 발생했습니다.');
-      return
+      return;
     }
     setInputCode(''); // 입력된 인증번호 초기화
     setAlertMessage('인증번호가 재전송되었습니다.');
@@ -490,8 +489,16 @@ export default function SignupPage() {
       )}
 
       {/* 알림창 */}
-      <Alert message={alertMessage} onClose={() => setAlertMessage('')} />
-      
+      <Alert
+        message={alertMessage}
+        onClose={async () => {
+          // 이메일 인증이 완료된 경우 메인 페이지로 이동
+          if (emailCheckOk === true) {
+            router.push('/');
+          }
+          setAlertMessage(''); // 메시지 초기화
+        }}
+      />
     </div>
   );
 }
