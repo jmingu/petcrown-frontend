@@ -70,10 +70,10 @@ export default function LoginPage() {
     }
 
     // 한글과 특수문자를 처리할 수 있도록 인코딩
-    const encodedUser = btoa(
-      encodeURIComponent(JSON.stringify(userResult.result))
-    );
-    localStorage.setItem('pc_sess', encodedUser);
+    // const encodedUser = btoa(
+    //   encodeURIComponent(JSON.stringify(userResult.result))
+    // );
+    sessionStorage.setItem('loginDate', new Date().toString()); // 로그인 날짜 저장
     if (autoLoginValues.length !== 0) {
       localStorage.setItem(autoLoginValues[0], 'Y');
     }

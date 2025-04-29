@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/common/button/Button';
 import { useUserStore } from '@/libs/store/user/userStore';
-import { logout } from '@/libs/api/user/userApi';
+import { logout, findUser } from '@/libs/api/user/userApi';
 
 const MENU_ITEMS = [
   { name: '랭킹보기', path: '/ranking' },
@@ -16,6 +17,7 @@ const MENU_ITEMS = [
 ];
 
 export default function Header() {
+  const router = useRouter();
   const { user, setUser, clearUser } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,39 +30,65 @@ export default function Header() {
     const syncUserState = async () => {
       setIsLoading(true);
       try {
-        const storedUser = localStorage.getItem('pc_sess');
-        const hasLocalStorage = !!storedUser;
-        const hasZustand = !!user;
+        const loginDate = sessionStorage.getItem('loginDate');
+        // user 없는데 세션스토리지에 값 있으면 새로고침 -> 로그인 시도
+        if (user === null || user === undefined) {
+          // 새로고침
+          if (loginDate !== null || loginDate === undefined) {
+            login();
 
-        // 1. 둘 다 있는 경우: 통과
-        if (hasLocalStorage && hasZustand) {
-          return;
-        }
-
-        // 2. 로컬 스토리지에만 있는 경우: Zustand에 저장
-        if (hasLocalStorage && !hasZustand) {
-          try {
-            const decodedUser = JSON.parse(
-              decodeURIComponent(atob(storedUser))
-            );
-            setUser(decodedUser);
-            return;
-          } catch {
-            localStorage.removeItem('pc_sess');
+            // 처음, 새 로그인
+          } else {
+            // 자동로그인 체크
+            if (localStorage.getItem('autoLogin') === 'Y') {
+              login();
+            } else {
+              logout();
+            }
           }
         }
 
-        // 3. Zustand에만 있는 경우: 로컬 스토리지에 저장
-        if (!hasLocalStorage && hasZustand) {
-          const encodedUser = btoa(encodeURIComponent(JSON.stringify(user)));
-          localStorage.setItem('pc_sess', encodedUser);
-          return;
-        }
+        // useUserStore의 user가 있으면 로그인
+        // 없으면 로그인 재 요청
+        // 세션스토리지에 오늘 로그인 기록 있으면 새로고침 없으면 처음 로그인
 
-        // 4. 둘 다 없는 경우: 로그아웃 처리
-        clearUser();
-        localStorage.removeItem('pc_sess');
-        logout();
+        // uesr 없는데 세션스토리지에 로그인기록도 없다면 처음로그인
+        // 처음 로그인시 로컬스토리지에 자동로그인 있으면 쿠키로 로그인 시도
+        // 처음 로그인시 로컬스토리지에 자동로그인 없으면 패스 and 로그아웃 호출
+
+        // const storedUser = localStorage.getItem('pc_sess');
+        // const hasLocalStorage = !!storedUser;
+        // const hasZustand = !!user;
+
+        // // 1. 둘 다 있는 경우: 통과
+        // if (hasLocalStorage && hasZustand) {
+        //   return;
+        // }
+
+        // // 2. 로컬 스토리지에만 있는 경우: Zustand에 저장
+        // if (hasLocalStorage && !hasZustand) {
+        //   try {
+        //     const decodedUser = JSON.parse(
+        //       decodeURIComponent(atob(storedUser))
+        //     );
+        //     setUser(decodedUser);
+        //     return;
+        //   } catch {
+        //     localStorage.removeItem('pc_sess');
+        //   }
+        // }
+
+        // // 3. Zustand에만 있는 경우: 로컬 스토리지에 저장
+        // if (!hasLocalStorage && hasZustand) {
+        //   const encodedUser = btoa(encodeURIComponent(JSON.stringify(user)));
+        //   localStorage.setItem('pc_sess', encodedUser);
+        //   return;
+        // }
+
+        // // 4. 둘 다 없는 경우: 로그아웃 처리
+        // clearUser();
+        // localStorage.removeItem('pc_sess');
+        // logout();
       } catch {
         // 에러 발생 시 로그아웃 처리
         clearUser();
@@ -78,6 +106,18 @@ export default function Header() {
     clearUser();
     localStorage.removeItem('pc_sess');
     logout();
+  };
+
+  // 로그인
+  const login = async () => {
+    const userResult = await findUser(); // 사용자 정보 받아오기
+    if (userResult.resultCode === 200) {
+      setUser(userResult.result); // 전역 상태에 저장
+    } else {
+      clearUser();
+      logout();
+      router.push('/');
+    }
   };
 
   const truncatedNickname =
