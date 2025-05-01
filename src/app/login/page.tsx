@@ -69,11 +69,14 @@ export default function LoginPage() {
       return;
     }
 
+    const loginData: { loginTime: string; nickname: string } = {
+      loginTime: new Date().toString(),
+      nickname: userResult.result.nickname,
+    };
     // 한글과 특수문자를 처리할 수 있도록 인코딩
-    // const encodedUser = btoa(
-    //   encodeURIComponent(JSON.stringify(userResult.result))
-    // );
-    sessionStorage.setItem('loginDate', new Date().toString()); // 로그인 날짜 저장
+    const encodedUser = btoa(encodeURIComponent(JSON.stringify(loginData)));
+    sessionStorage.setItem('loginData', encodedUser); // 로그인 날짜 저장
+
     if (autoLoginValues.length !== 0) {
       localStorage.setItem(autoLoginValues[0], 'Y');
     }
@@ -120,13 +123,6 @@ export default function LoginPage() {
         '사용자 정보를 가져오는 데 실패했습니다. 다시 시도해주세요.'
       );
     }
-    // 한글과 특수문자를 처리할 수 있도록 인코딩
-    const encodedUser = btoa(
-      encodeURIComponent(JSON.stringify(userResult.result))
-    );
-    localStorage.setItem('pc_sess', encodedUser);
-
-    useUserStore.getState().setUser(userResult.result); // 전역 상태에 저장
 
     // 확인 버튼 클릭 시 메인 페이지로 이동하는 알림창
     setAlertMessage('인증이 완료되었습니다!');

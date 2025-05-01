@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/common/button/Button';
-import { useUserStore } from '@/libs/store/user/userStore';
+// import { useUserStore } from '@/libs/store/user/userStore';
 import { logout, findUser } from '@/libs/api/user/userApi';
+import { getCookie } from '@/common/util/cookieUtil';
 
 const MENU_ITEMS = [
   { name: '랭킹보기', path: '/ranking' },
@@ -18,84 +19,58 @@ const MENU_ITEMS = [
 
 export default function Header() {
   const router = useRouter();
-  const { user, setUser, clearUser } = useUserStore();
+  // const { user, setUser, clearUser } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
 
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isLoggedIn = !!user;
-  const nickname = user?.nickname || '사용자';
+
+  const isLoggedIn = !!getCookie('A_ID');
+  const sessData = sessionStorage.getItem('loginData');
+
+  // const nickname = JSON.parse(decodeURIComponent(atob(loginData)));
 
   useEffect(() => {
     const syncUserState = async () => {
-      setIsLoading(true);
-      try {
-        const loginDate = sessionStorage.getItem('loginDate');
-        // user 없는데 세션스토리지에 값 있으면 새로고침 -> 로그인 시도
-        if (user === null || user === undefined) {
-          // 새로고침
-          if (loginDate !== null || loginDate === undefined) {
-            login();
+      setIsLoading(true); // 로딩 상태 시작
 
-            // 처음, 새 로그인
+      // 엑세스 토큰 없으면 로그아웃 상태
+
+      // sessData 없으면 처음 로그인
+      if (sessData === null || sessData === undefined) {
+        // sessData 없는데 엑세스 토큰 있는경우 (새로운탭 오픈, 세션스토리지 강제지움)
+        // 세션을 다시 가져와 넣어준다
+        if (isLoggedIn === true) {
+          login();
+        }
+
+        // sessData 있으면 로그인 상태
+      } else {
+      }
+
+      // 엑세스 토큰이 있다면 로그인 시도
+      // 자동 로그인이 있으면 로그인
+
+      try {
+        if (!user) {
+          if (loginData) {
+            // 새로고침으로 인한 로그인 복구
+            await login();
           } else {
-            // 자동로그인 체크
+            // 처음 방문
             if (localStorage.getItem('autoLogin') === 'Y') {
-              login();
+              await login();
             } else {
               logout();
             }
           }
         }
-
-        // useUserStore의 user가 있으면 로그인
-        // 없으면 로그인 재 요청
-        // 세션스토리지에 오늘 로그인 기록 있으면 새로고침 없으면 처음 로그인
-
-        // uesr 없는데 세션스토리지에 로그인기록도 없다면 처음로그인
-        // 처음 로그인시 로컬스토리지에 자동로그인 있으면 쿠키로 로그인 시도
-        // 처음 로그인시 로컬스토리지에 자동로그인 없으면 패스 and 로그아웃 호출
-
-        // const storedUser = localStorage.getItem('pc_sess');
-        // const hasLocalStorage = !!storedUser;
-        // const hasZustand = !!user;
-
-        // // 1. 둘 다 있는 경우: 통과
-        // if (hasLocalStorage && hasZustand) {
-        //   return;
-        // }
-
-        // // 2. 로컬 스토리지에만 있는 경우: Zustand에 저장
-        // if (hasLocalStorage && !hasZustand) {
-        //   try {
-        //     const decodedUser = JSON.parse(
-        //       decodeURIComponent(atob(storedUser))
-        //     );
-        //     setUser(decodedUser);
-        //     return;
-        //   } catch {
-        //     localStorage.removeItem('pc_sess');
-        //   }
-        // }
-
-        // // 3. Zustand에만 있는 경우: 로컬 스토리지에 저장
-        // if (!hasLocalStorage && hasZustand) {
-        //   const encodedUser = btoa(encodeURIComponent(JSON.stringify(user)));
-        //   localStorage.setItem('pc_sess', encodedUser);
-        //   return;
-        // }
-
-        // // 4. 둘 다 없는 경우: 로그아웃 처리
-        // clearUser();
-        // localStorage.removeItem('pc_sess');
-        // logout();
-      } catch {
-        // 에러 발생 시 로그아웃 처리
+      } catch (error) {
+        console.error('로그인 상태 복구 중 에러 발생:', error);
         clearUser();
-        localStorage.removeItem('pc_sess');
         logout();
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); // 로딩 상태 종료
       }
     };
 
@@ -108,13 +83,20 @@ export default function Header() {
     logout();
   };
 
-  // 로그인
+  //
   const login = async () => {
     const userResult = await findUser(); // 사용자 정보 받아오기
     if (userResult.resultCode === 200) {
-      setUser(userResult.result); // 전역 상태에 저장
+      const loginData: { loginTime: string; nickname: string } = {
+        loginTime: new Date().toString(),
+        nickname: userResult.result.nickname,
+      };
+      // 한글과 특수문자를 처리할 수 있도록 인코딩
+      const encodedUser = btoa(encodeURIComponent(JSON.stringify(loginData)));
+      sessionStorage.setItem('loginData', encodedUser); // 로그인 날짜 저장
+
+      setIsLoading(true);
     } else {
-      clearUser();
       logout();
       router.push('/');
     }
