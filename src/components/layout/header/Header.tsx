@@ -41,11 +41,22 @@ export default function Header() {
         // sessData 없는데 엑세스 토큰 있는경우 (새로운탭 오픈, 세션스토리지 강제지움)
         // 세션을 다시 가져와 넣어준다
         if (isLoggedIn === true) {
-          login();
+          findLoginUser();
+
+          // sessData 없고 엑세스 토큰도 없는데 오토로그인이 있는 경우
+        } else if (
+          isLoggedIn === false &&
+          localStorage.getItem('autoLogin') === 'Y'
+        ) {
+          // 리프레시 토큰으로 로그인
+          // 리프레시 토근 없으면 로그인 페이지 이동
         }
 
         // sessData 있으면 로그인 상태
       } else {
+        // sessData 있는데 토큰 없는경우 리프레시로 재 요청(이건 알아서 할듯 )
+        if (isLoggedIn === false) {
+        }
       }
 
       // 엑세스 토큰이 있다면 로그인 시도
@@ -84,7 +95,7 @@ export default function Header() {
   };
 
   //
-  const login = async () => {
+  const findLoginUser = async () => {
     const userResult = await findUser(); // 사용자 정보 받아오기
     if (userResult.resultCode === 200) {
       const loginData: { loginTime: string; nickname: string } = {
