@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/common/button/Button';
 // import { useUserStore } from '@/libs/store/user/userStore';
-import { logout, findUser } from '@/libs/api/user/userApi';
+import { logout, findUser, refresh } from '@/libs/api/user/userApi';
 import { getCookie } from '@/common/util/cookieUtil';
 
 const MENU_ITEMS = [
@@ -26,16 +26,19 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isLoggedIn = !!getCookie('A_ID');
-  const sessData = sessionStorage.getItem('loginData');
+  const sessData: string | null = sessionStorage.getItem('loginData');
 
-  // const nickname = JSON.parse(decodeURIComponent(atob(loginData)));
+  const nickname = sessData
+    ? JSON.parse(decodeURIComponent(atob(sessData)))
+    : '';
 
   useEffect(() => {
     const syncUserState = async () => {
       setIsLoading(true); // 로딩 상태 시작
 
       // 엑세스 토큰 없으면 로그아웃 상태
-
+      console.log('isLoggedIn', isLoggedIn);
+      console.log('sessData', sessData);
       // sessData 없으면 처음 로그인
       if (sessData === null || sessData === undefined) {
         // sessData 없는데 엑세스 토큰 있는경우 (새로운탭 오픈, 세션스토리지 강제지움)
@@ -49,52 +52,56 @@ export default function Header() {
           localStorage.getItem('autoLogin') === 'Y'
         ) {
           // 리프레시 토큰으로 로그인
-          // 리프레시 토근 없으면 로그인 페이지 이동
+          // 리프레시 토큰 없으면 로그인 페이지 이동
+          refreshLogin();
         }
 
         // sessData 있으면 로그인 상태
       } else {
         // sessData 있는데 토큰 없는경우 리프레시로 재 요청(이건 알아서 할듯 )
         if (isLoggedIn === false) {
+          refreshLogin();
         }
       }
 
       // 엑세스 토큰이 있다면 로그인 시도
       // 자동 로그인이 있으면 로그인
 
-      try {
-        if (!user) {
-          if (loginData) {
-            // 새로고침으로 인한 로그인 복구
-            await login();
-          } else {
-            // 처음 방문
-            if (localStorage.getItem('autoLogin') === 'Y') {
-              await login();
-            } else {
-              logout();
-            }
-          }
-        }
-      } catch (error) {
-        console.error('로그인 상태 복구 중 에러 발생:', error);
-        clearUser();
-        logout();
-      } finally {
-        setIsLoading(false); // 로딩 상태 종료
-      }
+      //     try {
+      //       if (!user) {
+      //         if (loginData) {
+      //           // 새로고침으로 인한 로그인 복구
+      //           await login();
+      //         } else {
+      //           // 처음 방문
+      //           if (localStorage.getItem('autoLogin') === 'Y') {
+      //             await login();
+      //           } else {
+      //             logout();
+      //           }
+      //         }
+      //       }
+      //     } catch (error) {
+      //       console.error('로그인 상태 복구 중 에러 발생:', error);
+      //       clearUser();
+      //       logout();
+      //     } finally {
+      //       setIsLoading(false); // 로딩 상태 종료
+      //     }
     };
 
     syncUserState();
-  }, [user, setUser, clearUser]);
+  }, [sessData]); // 의존성 배열에 user 추가
 
   const handleLogout = () => {
-    clearUser();
+    // clearUser();
     localStorage.removeItem('pc_sess');
     logout();
   };
 
-  //
+  /**
+   * 로그인 정보 받기
+   */
   const findLoginUser = async () => {
     const userResult = await findUser(); // 사용자 정보 받아오기
     if (userResult.resultCode === 200) {
@@ -110,6 +117,17 @@ export default function Header() {
     } else {
       logout();
       router.push('/');
+    }
+  };
+
+  /**
+   * 리프레시 토큰으로 로그인
+   */
+  const refreshLogin = async () => {
+    const userResult = await refresh(); // 사용자 정보 받아오기
+    if (userResult.resultCode !== 200) {
+      logout();
+      router.push('/login');
     }
   };
 
