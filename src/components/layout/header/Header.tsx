@@ -26,19 +26,22 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isLoggedIn = !!getCookie('A_ID');
-  const sessData: string | null = sessionStorage.getItem('loginData');
+  // const sessData: string | null = sessionStorage.getItem('loginData');
+  const [sessData, setSessData] = useState<string | null>(
+    sessionStorage.getItem('loginData')
+  );
 
+  // 닉네임
+  // const [nickname, setNickname] = useState<string>('');
   const nickname = sessData
-    ? JSON.parse(decodeURIComponent(atob(sessData)))
+    ? JSON.parse(decodeURIComponent(atob(sessData))).nickname
     : '';
 
   useEffect(() => {
     const syncUserState = async () => {
-      setIsLoading(true); // 로딩 상태 시작
+      // setIsLoading(true); // 로딩 상태 시작
 
       // 엑세스 토큰 없으면 로그아웃 상태
-      console.log('isLoggedIn', isLoggedIn);
-      console.log('sessData', sessData);
       // sessData 없으면 처음 로그인
       if (sessData === null || sessData === undefined) {
         // sessData 없는데 엑세스 토큰 있는경우 (새로운탭 오픈, 세션스토리지 강제지움)
@@ -112,8 +115,8 @@ export default function Header() {
       // 한글과 특수문자를 처리할 수 있도록 인코딩
       const encodedUser = btoa(encodeURIComponent(JSON.stringify(loginData)));
       sessionStorage.setItem('loginData', encodedUser); // 로그인 날짜 저장
-
-      setIsLoading(true);
+      setSessData(encodedUser); // 세션 스토리지에 저장
+      // setIsLoading(true);
     } else {
       logout();
       router.push('/');
