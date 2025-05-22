@@ -7,8 +7,10 @@ import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/common/button/Button';
 // import { useUserStore } from '@/libs/store/user/userStore';
-import { logout, findUser, refresh } from '@/libs/api/user/userApi';
-import { getCookie } from '@/common/util/cookieUtil';
+import { logout, findUser} from '@/libs/api/user/userApi';
+import Alert from '@/components/common/alert/Alert';
+import {authChannel } from '@/libs/broadcastchannel/channel';
+
 
 const MENU_ITEMS = [
   { name: '랭킹보기', path: '/ranking' },
@@ -21,121 +23,138 @@ export default function Header() {
   const router = useRouter();
   // const { user, setUser, clearUser } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
-
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(''); // 알림 메시지
+  const [alertAction, setAlertAction] = useState<(() => void) | null>(null); // 알림창 확인 버튼 동작
+  const [nickname, setNickname] = useState('');
+  const [sess, setSess] = useState<string | null>(sessionStorage.getItem('sess'));
 
-  const isLoggedIn = !!getCookie('A_ID');
-  // const sessData: string | null = sessionStorage.getItem('loginData');
-  const [sessData, setSessData] = useState<string | null>(
-    sessionStorage.getItem('loginData')
-  );
-
-  // 닉네임
-  // const [nickname, setNickname] = useState<string>('');
-  const nickname = sessData
-    ? JSON.parse(decodeURIComponent(atob(sessData))).nickname
-    : '';
-
+  const isLoggedIn = !!sess;
+  
   useEffect(() => {
-    const syncUserState = async () => {
-      // setIsLoading(true); // 로딩 상태 시작
+    authChannel.postMessage({ type: 'request-login-status' });
+    
+    const onMessage = async (event: MessageEvent) => {
+      const accessToken = localStorage.getItem('a_t');
+      const refreshToken = localStorage.getItem('r_t');
+      const autoLogin = localStorage.getItem('auto_login'); // 'Y' or 'N'
 
-      // 엑세스 토큰 없으면 로그아웃 상태
-      // sessData 없으면 처음 로그인
-      if (sessData === null || sessData === undefined) {
-        // sessData 없는데 엑세스 토큰 있는경우 (새로운탭 오픈, 세션스토리지 강제지움)
-        // 세션을 다시 가져와 넣어준다
-        if (isLoggedIn === true) {
-          findLoginUser();
-
-          // sessData 없고 엑세스 토큰도 없는데 오토로그인이 있는 경우
-        } else if (
-          isLoggedIn === false &&
-          localStorage.getItem('autoLogin') === 'Y'
-        ) {
-          // 리프레시 토큰으로 로그인
-          // 리프레시 토큰 없으면 로그인 페이지 이동
-          refreshLogin();
+      if (event.data.type === 'login') {
+        // 다른 탭에서 로그인 감지
+        console.log('다른 탭에서 로그인 감지');
+        if (autoLogin === 'Y') { // 오토로그인이면 아래 코드에서 진행
+          return
         }
-
-        // sessData 있으면 로그인 상태
-      } else {
-        // sessData 있는데 토큰 없는경우 리프레시로 재 요청(이건 알아서 할듯 )
-        if (isLoggedIn === false) {
-          refreshLogin();
-        }
+        setIsLoading(true);
+        await findLoginUser();
+        setIsLoading(false);
+        
       }
 
-      // 엑세스 토큰이 있다면 로그인 시도
-      // 자동 로그인이 있으면 로그인
-
-      //     try {
-      //       if (!user) {
-      //         if (loginData) {
-      //           // 새로고침으로 인한 로그인 복구
-      //           await login();
-      //         } else {
-      //           // 처음 방문
-      //           if (localStorage.getItem('autoLogin') === 'Y') {
-      //             await login();
-      //           } else {
-      //             logout();
-      //           }
-      //         }
-      //       }
-      //     } catch (error) {
-      //       console.error('로그인 상태 복구 중 에러 발생:', error);
-      //       clearUser();
-      //       logout();
-      //     } finally {
-      //       setIsLoading(false); // 로딩 상태 종료
-      //     }
+      if (event.data.type === 'request-login-status') {
+        
+        if (accessToken && refreshToken) {
+          authChannel.postMessage({ type: 'login' });
+        }
+      }
     };
 
-    syncUserState();
-  }, [sessData]); // 의존성 배열에 user 추가
+    authChannel.addEventListener('message', onMessage);
 
+    return () => {
+      authChannel.removeEventListener('message', onMessage);
+    };
+    // BroadcastChannel 예시도 여기서 가능
+  }, []);
+
+  useEffect(() => {
+    const init = async () => {
+    const accessToken = localStorage.getItem('a_t');
+    const refreshToken = localStorage.getItem('r_t');
+    const autoLogin = localStorage.getItem('auto_login'); // 'Y' or 'N'
+
+    // 둘 중 하나라도 없으면 로그아웃 처리
+    if (!accessToken || !refreshToken) {
+      handleLogout();
+      return;
+    }
+
+    // autoLogin이 'Y'일 때만 로그인 처리
+    if (autoLogin === 'Y') {
+      // 이미 세션있으면 통과
+      if (sess) {
+        return;
+      }
+      
+      setIsLoading(true);
+      await findLoginUser();
+      setIsLoading(false);
+      return
+    }
+
+
+    setSess(sessionStorage.getItem('sess'));
+
+  };
+
+  init();
+}, [pathname]);
+
+// sess가 바뀌면 로그인 상태 설정
+useEffect(() => {
+  if (sess) {
+    const user = JSON.parse(decodeURIComponent(atob(sess)));
+    setNickname(user.nickname);
+  }
+}, [sess]);
+
+
+  /**
+   * 로그아웃 처리
+   */
   const handleLogout = () => {
-    // clearUser();
-    localStorage.removeItem('pc_sess');
-    logout();
+    // 다른 탭에 로그아웃 알림 전송
+    authChannel.postMessage('logout');
+    setSess(null);
+    setNickname('');
+    localStorage.clear();
+    sessionStorage.clear();
   };
 
   /**
    * 로그인 정보 받기
    */
   const findLoginUser = async () => {
+
     const userResult = await findUser(); // 사용자 정보 받아오기
-    if (userResult.resultCode === 200) {
-      const loginData: { loginTime: string; nickname: string } = {
-        loginTime: new Date().toString(),
-        nickname: userResult.result.nickname,
-      };
-      // 한글과 특수문자를 처리할 수 있도록 인코딩
-      const encodedUser = btoa(encodeURIComponent(JSON.stringify(loginData)));
-      sessionStorage.setItem('loginData', encodedUser); // 로그인 날짜 저장
-      setSessData(encodedUser); // 세션 스토리지에 저장
-      // setIsLoading(true);
-    } else {
-      logout();
-      router.push('/');
-    }
-  };
-
-  /**
-   * 리프레시 토큰으로 로그인
-   */
-  const refreshLogin = async () => {
-    const userResult = await refresh(); // 사용자 정보 받아오기
     if (userResult.resultCode !== 200) {
-      logout();
-      router.push('/login');
-    }
-  };
 
-  const truncatedNickname =
-    nickname.length > 8 ? nickname.slice(0, 8) + '...' : nickname;
+      handleLogout(); // 로그아웃(정보지우기기)
+
+      if (userResult.resultCode >= 3000) {
+        setAlertMessage(userResult.resultMessageKo);
+        setAlertAction(() => router.push('/login')); // 함수 참조 전달
+        return
+      }
+      setAlertMessage('사용자 정보를 가져오는 데 실패했습니다. 다시 시도해주세요.');
+      setAlertAction(() => router.push('/login')); // 함수 참조 전달
+      return
+    }
+
+    // 세션에 필요한 데이터만 등록 
+    const sessData = {
+      nickname : userResult.result.nickname,
+    }
+    // 한글과 특수문자를 처리할 수 있도록 인코딩
+    const encodedUser = btoa(
+      encodeURIComponent(JSON.stringify(sessData))
+    );
+    sessionStorage.setItem('sess', encodedUser); // 스토리지에 저장
+    setSess(encodedUser); // ✅ React 상태로도 업데이트
+
+  };
+  
 
   return (
     <header className="w-full bg-white shadow-md">
@@ -180,7 +199,7 @@ export default function Header() {
                 className="text-gray-700 font-medium "
                 title={nickname}
               >
-                <span>{truncatedNickname}님</span>
+                <span>{nickname.length > 5 ? nickname.slice(0, 5) + '...' : nickname}님</span>
               </Link>
               <Button onClick={handleLogout}>로그아웃</Button>
             </>
@@ -219,7 +238,7 @@ export default function Header() {
                 className="font-medium text-lg mt-2 block"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <span>{truncatedNickname}님</span>
+                <span>{nickname.length > 5 ? nickname.slice(0, 5) + '...' : nickname}님</span>
               </Link>
             ) : (
               <Button onClick={() => (window.location.href = '/login')}>
@@ -253,6 +272,18 @@ export default function Header() {
           )}
         </motion.div>
       </div>
+      {/* 알림창 */}
+      <Alert
+        message={alertMessage}
+        onClose={async () => {
+          setAlertMessage(''); // 메시지 초기화
+          setAlertAction(null); // 동작 초기화
+
+          if (alertAction) {
+            await alertAction(); // 특정 동작 실행 (비동기 처리)
+          }
+        }}
+      />
     </header>
   );
 }

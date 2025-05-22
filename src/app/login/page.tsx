@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/common/button/Button';
 import Input from '@/components/common/input/Input';
-import CheckboxGroup from '@/components/common/input/CheckboxGroup';
 import {
   login,
   findUser,
@@ -21,10 +20,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [alertMessage, setAlertMessage] = useState(''); // 알림 메시지
+  const [alertAction, setAlertAction] = useState<(() => void) | null>(null); // 알림창 확인 버튼 동작
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
   const [inputCode, setInputCode] = useState(''); // 입력된 인증번호
-  const [emailCheckOk, setEmailCheckOk] = useState(false); // 인증 완료 후 메인으로 이동하는 상태값
-  const [autoLoginValues, setAutoLoginValues] = useState<string[]>([]); // 자동 로그인 체크박스 상태값
 
   /**
    * 로그인
@@ -51,6 +49,12 @@ export default function LoginPage() {
       return;
     }
 
+    
+    // 로그인 토큰 로컬스토리지에 저장
+    localStorage.setItem('a_t', loginResult.result.accessToken);
+    localStorage.setItem('r_t', loginResult.result.refreshToken);
+
+
     const userResult = await findUser(); // 로그인 후 사용자 정보 받아오기
     if (userResult.resultCode !== 200) {
       if (userResult.resultCode >= 3000) {
@@ -69,17 +73,15 @@ export default function LoginPage() {
       return;
     }
 
-    const loginData: { loginTime: string; nickname: string } = {
-      loginTime: new Date().toString(),
-      nickname: userResult.result.nickname,
-    };
-    // 한글과 특수문자를 처리할 수 있도록 인코딩
-    const encodedUser = btoa(encodeURIComponent(JSON.stringify(loginData)));
-    sessionStorage.setItem('loginData', encodedUser); // 로그인 날짜 저장
-
-    if (autoLoginValues.length !== 0) {
-      localStorage.setItem(autoLoginValues[0], 'Y');
+    // 세션에 필요한 데이터만 등록 
+    const sessData = {
+      nickname : userResult.result.nickname,
     }
+    // 한글과 특수문자를 처리할 수 있도록 인코딩
+    const encodedUser = btoa(
+      encodeURIComponent(JSON.stringify(sessData))
+    );
+    sessionStorage.setItem('sess', encodedUser);
 
     useUserStore.getState().setUser(userResult.result); // 전역 상태에 저장
     // 로그인 성공 시 사용자 정보 조회 or 메인 페이지 이동
@@ -124,9 +126,22 @@ export default function LoginPage() {
       );
     }
 
+    // 세션에 필요한 데이터만 등록 
+    const sessData = {
+      nickname : userResult.result.nickname,
+    }
+    // 한글과 특수문자를 처리할 수 있도록 인코딩
+    const encodedUser = btoa(
+      encodeURIComponent(JSON.stringify(sessData))
+    );
+    
+    sessionStorage.setItem('sess', encodedUser);
+
+    useUserStore.getState().setUser(userResult.result); // 전역 상태에 저장
+
     // 확인 버튼 클릭 시 메인 페이지로 이동하는 알림창
     setAlertMessage('인증이 완료되었습니다!');
-    setEmailCheckOk(true); // 이메일 인증 완료 상태로 변경
+    setAlertAction(() => router.push('/')); // 함수 참조 전달
     setIsModalOpen(false);
   };
 
@@ -174,12 +189,6 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e)}
           />
         </div>
-        <CheckboxGroup
-          name="rememberMe"
-          options={[{ label: '자동 로그인', value: 'autoLogin' }]}
-          selectedValues={autoLoginValues}
-          onChange={setAutoLoginValues}
-        />
 
         <Button onClick={handleLogin} className="w-full mb-3">
           로그인
@@ -232,11 +241,12 @@ export default function LoginPage() {
       <Alert
         message={alertMessage}
         onClose={async () => {
-          // 이메일 인증이 완료된 경우 메인 페이지로 이동
-          if (emailCheckOk === true) {
-            router.push('/');
-          }
           setAlertMessage(''); // 메시지 초기화
+          setAlertAction(null); // 동작 초기화
+
+          if (alertAction) {
+            await alertAction(); // 특정 동작 실행 (비동기 처리)
+          }
         }}
       />
     </div>

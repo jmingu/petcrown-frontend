@@ -1,25 +1,18 @@
 import api from '@/libs/axiosInstance'; // axios 인스턴스
 import {
   LoginRequest,
-  UserResponse,
   SignUpRequest,
-} from '@/libs/interface/api/user/userInterface';
+} from '@/libs/interface/api/user/userRequestInterface';
+import {
+  UserResponse,
+  TokenResponse
+} from '@/libs/interface/api/user/userResponseInterface';
 import { CommonResponse } from '@/libs/interface/api/common/common';
-
-/**
- * 리프레시 토큰으로 토큰 재발급
- */
-export const refresh = async (): Promise<CommonResponse<object>> => {
-  const response = await api.post('/user/v1/refresh-token');
-  return response.data;
-};
 
 /**
  * 로그인
  */
-export const login = async (
-  data: LoginRequest
-): Promise<CommonResponse<object>> => {
+export const login = async (data: LoginRequest): Promise<CommonResponse<TokenResponse>> => {
   const response = await api.post('/user/v1/login', data);
   return response.data;
 };
@@ -27,7 +20,7 @@ export const login = async (
 /**
  * 로그아웃
  */
-export const logout = async (): Promise<CommonResponse<object>> => {
+export const logout = async (): Promise<CommonResponse<Object>> => {
   const response = await api.post('/user/v1/logout');
   return response.data;
 };
@@ -43,9 +36,7 @@ export const findUser = async (): Promise<CommonResponse<UserResponse>> => {
 /**
  * 이메일 중복 확인
  */
-export const checkEmail = async (
-  email: string
-): Promise<CommonResponse<object>> => {
+export const checkEmail = async (email: string): Promise<CommonResponse<Object>> => {
   const response = await api.get(`/user/v1/check-email?email=${email}`);
   return response.data;
 };
@@ -53,21 +44,15 @@ export const checkEmail = async (
 /**
  * 닉네임 중복 확인
  */
-export const checkNickname = async (
-  nickname: string
-): Promise<CommonResponse<object>> => {
-  const response = await api.get(
-    `/user/v1/check-nickname?nickname=${nickname}`
-  );
+export const checkNickname = async (nickname: string): Promise<CommonResponse<Object>> => {
+  const response = await api.get(`/user/v1/check-nickname?nickname=${nickname}`);
   return response.data;
 };
 
 /**
  * 회원가입
  */
-export const signup = async (
-  data: SignUpRequest
-): Promise<CommonResponse<object>> => {
+export const signup = async (data: SignUpRequest): Promise<CommonResponse<Object>> => {
   const response = await api.post('/user/v1', data);
   return response.data;
 };
@@ -77,7 +62,7 @@ export const signup = async (
  */
 export const sendEmailVerificationCode = async (
   email: string
-): Promise<CommonResponse<object>> => {
+): Promise<CommonResponse<Object>> => {
   const response = await api.post('/user/v1/email/verification/send', email);
   return response.data;
 };
@@ -85,10 +70,9 @@ export const sendEmailVerificationCode = async (
 /**
  * 이메일 인증코드 확인
  */
-export const checkEmailVerificationCode = async (data: {
-  code: string;
-  email: string;
-}): Promise<CommonResponse<object>> => {
+export const checkEmailVerificationCode = async ( 
+  data: { code: string; email: string;}
+): Promise<CommonResponse<Object>> => {
   const response = await api.post('/user/v1/email/verification', data);
   return response.data;
-};
+}
