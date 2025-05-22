@@ -7,10 +7,9 @@ import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/common/button/Button';
 // import { useUserStore } from '@/libs/store/user/userStore';
-import { logout, findUser} from '@/libs/api/user/userApi';
+import { findUser } from '@/libs/api/user/userApi';
 import Alert from '@/components/common/alert/Alert';
-import {authChannel } from '@/libs/broadcastchannel/channel';
-
+import { authChannel } from '@/libs/broadcastchannel/channel';
 
 const MENU_ITEMS = [
   { name: '랭킹보기', path: '/ranking' },
@@ -28,32 +27,36 @@ export default function Header() {
   const [alertMessage, setAlertMessage] = useState(''); // 알림 메시지
   const [alertAction, setAlertAction] = useState<(() => void) | null>(null); // 알림창 확인 버튼 동작
   const [nickname, setNickname] = useState('');
-  const [sess, setSess] = useState<string | null>(sessionStorage.getItem('sess'));
+  const [sess, setSess] = useState<string | null>(
+    sessionStorage.getItem('sess')
+  );
 
   const isLoggedIn = !!sess;
-  
+
   useEffect(() => {
+    // 다른 탭에 로그인 상태 탭이 있나 요청
     authChannel.postMessage({ type: 'request-login-status' });
-    
+
+    // 다른 탭에서 상태 요청 받았을 때
     const onMessage = async (event: MessageEvent) => {
       const accessToken = localStorage.getItem('a_t');
       const refreshToken = localStorage.getItem('r_t');
-      const autoLogin = localStorage.getItem('auto_login'); // 'Y' or 'N'
+      const autoLogin = localStorage.getItem('auto_login');
 
+      // 다른탭에서 로그인 상태 있다고 요청 받음
       if (event.data.type === 'login') {
-        // 다른 탭에서 로그인 감지
-        console.log('다른 탭에서 로그인 감지');
-        if (autoLogin === 'Y') { // 오토로그인이면 아래 코드에서 진행
-          return
+        if (autoLogin === 'Y') {
+          // 오토로그인이면 아래 코드에서 진행
+          return;
         }
         setIsLoading(true);
         await findLoginUser();
         setIsLoading(false);
-        
       }
 
+      // request-login-status 요청 받았을 때
       if (event.data.type === 'request-login-status') {
-        
+        // 토큰있으면 로그인 상태 있다고 다른 탭에 알림
         if (accessToken && refreshToken) {
           authChannel.postMessage({ type: 'login' });
         }
@@ -70,45 +73,42 @@ export default function Header() {
 
   useEffect(() => {
     const init = async () => {
-    const accessToken = localStorage.getItem('a_t');
-    const refreshToken = localStorage.getItem('r_t');
-    const autoLogin = localStorage.getItem('auto_login'); // 'Y' or 'N'
+      const accessToken = localStorage.getItem('a_t');
+      const refreshToken = localStorage.getItem('r_t');
+      const autoLogin = localStorage.getItem('auto_login'); // 'Y' or 'N'
 
-    // 둘 중 하나라도 없으면 로그아웃 처리
-    if (!accessToken || !refreshToken) {
-      handleLogout();
-      return;
-    }
-
-    // autoLogin이 'Y'일 때만 로그인 처리
-    if (autoLogin === 'Y') {
-      // 이미 세션있으면 통과
-      if (sess) {
+      // 둘 중 하나라도 없으면 로그아웃 처리
+      if (!accessToken || !refreshToken) {
+        handleLogout();
         return;
       }
-      
-      setIsLoading(true);
-      await findLoginUser();
-      setIsLoading(false);
-      return
+
+      // autoLogin이 'Y'일 때만 로그인 처리
+      if (autoLogin === 'Y') {
+        // 이미 세션있으면 통과
+        if (sess) {
+          return;
+        }
+
+        setIsLoading(true);
+        await findLoginUser();
+        setIsLoading(false);
+        return;
+      }
+
+      setSess(sessionStorage.getItem('sess'));
+    };
+
+    init();
+  }, [pathname]);
+
+  // sess가 바뀌면 로그인 상태 설정
+  useEffect(() => {
+    if (sess) {
+      const user = JSON.parse(decodeURIComponent(atob(sess)));
+      setNickname(user.nickname);
     }
-
-
-    setSess(sessionStorage.getItem('sess'));
-
-  };
-
-  init();
-}, [pathname]);
-
-// sess가 바뀌면 로그인 상태 설정
-useEffect(() => {
-  if (sess) {
-    const user = JSON.parse(decodeURIComponent(atob(sess)));
-    setNickname(user.nickname);
-  }
-}, [sess]);
-
+  }, [sess]);
 
   /**
    * 로그아웃 처리
@@ -118,7 +118,8 @@ useEffect(() => {
     authChannel.postMessage('logout');
     setSess(null);
     setNickname('');
-    localStorage.clear();
+    localStorage.removeItem('a_t');
+    localStorage.removeItem('r_t');
     sessionStorage.clear();
   };
 
@@ -126,35 +127,31 @@ useEffect(() => {
    * 로그인 정보 받기
    */
   const findLoginUser = async () => {
-
     const userResult = await findUser(); // 사용자 정보 받아오기
     if (userResult.resultCode !== 200) {
-
-      handleLogout(); // 로그아웃(정보지우기기)
+      handleLogout(); // 로그아웃(정보지우기)
 
       if (userResult.resultCode >= 3000) {
         setAlertMessage(userResult.resultMessageKo);
         setAlertAction(() => router.push('/login')); // 함수 참조 전달
-        return
+        return;
       }
-      setAlertMessage('사용자 정보를 가져오는 데 실패했습니다. 다시 시도해주세요.');
+      setAlertMessage(
+        '사용자 정보를 가져오는 데 실패했습니다. 다시 시도해주세요.'
+      );
       setAlertAction(() => router.push('/login')); // 함수 참조 전달
-      return
+      return;
     }
 
-    // 세션에 필요한 데이터만 등록 
+    // 세션에 필요한 데이터만 등록
     const sessData = {
-      nickname : userResult.result.nickname,
-    }
+      nickname: userResult.result.nickname,
+    };
     // 한글과 특수문자를 처리할 수 있도록 인코딩
-    const encodedUser = btoa(
-      encodeURIComponent(JSON.stringify(sessData))
-    );
+    const encodedUser = btoa(encodeURIComponent(JSON.stringify(sessData)));
     sessionStorage.setItem('sess', encodedUser); // 스토리지에 저장
     setSess(encodedUser); // ✅ React 상태로도 업데이트
-
   };
-  
 
   return (
     <header className="w-full bg-white shadow-md">
@@ -199,7 +196,12 @@ useEffect(() => {
                 className="text-gray-700 font-medium "
                 title={nickname}
               >
-                <span>{nickname.length > 5 ? nickname.slice(0, 5) + '...' : nickname}님</span>
+                <span>
+                  {nickname.length > 5
+                    ? nickname.slice(0, 5) + '...'
+                    : nickname}
+                  님
+                </span>
               </Link>
               <Button onClick={handleLogout}>로그아웃</Button>
             </>
@@ -238,7 +240,12 @@ useEffect(() => {
                 className="font-medium text-lg mt-2 block"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <span>{nickname.length > 5 ? nickname.slice(0, 5) + '...' : nickname}님</span>
+                <span>
+                  {nickname.length > 5
+                    ? nickname.slice(0, 5) + '...'
+                    : nickname}
+                  님
+                </span>
               </Link>
             ) : (
               <Button onClick={() => (window.location.href = '/login')}>

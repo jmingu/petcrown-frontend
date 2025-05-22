@@ -15,6 +15,7 @@ interface InputProps {
   className?: string; // 추가된 부분
   divClass?: string; // 추가된 부분
   autoComplete?: string; // 추가된 부분
+  disabled?: boolean; // 추가된 부분
 }
 
 const Input: React.FC<InputProps> = ({
@@ -32,6 +33,7 @@ const Input: React.FC<InputProps> = ({
   className = '', // 기본값 설정
   divClass = '',
   autoComplete = 'off', // 기본값 설정
+  disabled = false, // 기본값 설정
 }) => {
   const [error, setError] = useState('');
 
@@ -75,12 +77,15 @@ const Input: React.FC<InputProps> = ({
         type={onlyNumbers ? 'text' : type}
         name={name}
         placeholder={placeholder}
-        className={`w-full p-3 mb-3 border rounded ${error ? 'border-red-500' : 'border-gray-300'} ${className}`} 
+        className={`w-full p-3 mb-3 border rounded ${
+          error ? 'border-red-500' : 'border-gray-300'
+        } ${className}`}
         value={value}
         onChange={handleChange}
         min={type === 'number' ? min : undefined}
         max={type === 'number' ? max : undefined}
         autoComplete={autoComplete} // 추가된 부분
+        disabled={disabled} // 추가된 부분
       />
       {error && <p className="text-red-500 text-sm">{error}</p>}
     </div>

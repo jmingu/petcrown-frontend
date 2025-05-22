@@ -14,6 +14,8 @@ import {
 import { useUserStore } from '@/libs/store/user/userStore';
 import Alert from '@/components/common/alert/Alert';
 import Modal from '@/components/common/modal/Modal'; // 모달 컴포넌트
+// 체크박스
+import CheckboxGroup from '@/components/common/input/CheckboxGroup';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,6 +25,9 @@ export default function LoginPage() {
   const [alertAction, setAlertAction] = useState<(() => void) | null>(null); // 알림창 확인 버튼 동작
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
   const [inputCode, setInputCode] = useState(''); // 입력된 인증번호
+  const [autoLogin, setAutoLogin] = useState(
+    typeof window !== 'undefined' && localStorage.getItem('auto_login') === 'Y'
+  );
 
   /**
    * 로그인
@@ -49,11 +54,9 @@ export default function LoginPage() {
       return;
     }
 
-    
     // 로그인 토큰 로컬스토리지에 저장
     localStorage.setItem('a_t', loginResult.result.accessToken);
     localStorage.setItem('r_t', loginResult.result.refreshToken);
-
 
     const userResult = await findUser(); // 로그인 후 사용자 정보 받아오기
     if (userResult.resultCode !== 200) {
@@ -73,14 +76,12 @@ export default function LoginPage() {
       return;
     }
 
-    // 세션에 필요한 데이터만 등록 
+    // 세션에 필요한 데이터만 등록
     const sessData = {
-      nickname : userResult.result.nickname,
-    }
+      nickname: userResult.result.nickname,
+    };
     // 한글과 특수문자를 처리할 수 있도록 인코딩
-    const encodedUser = btoa(
-      encodeURIComponent(JSON.stringify(sessData))
-    );
+    const encodedUser = btoa(encodeURIComponent(JSON.stringify(sessData)));
     sessionStorage.setItem('sess', encodedUser);
 
     useUserStore.getState().setUser(userResult.result); // 전역 상태에 저장
@@ -126,15 +127,13 @@ export default function LoginPage() {
       );
     }
 
-    // 세션에 필요한 데이터만 등록 
+    // 세션에 필요한 데이터만 등록
     const sessData = {
-      nickname : userResult.result.nickname,
-    }
+      nickname: userResult.result.nickname,
+    };
     // 한글과 특수문자를 처리할 수 있도록 인코딩
-    const encodedUser = btoa(
-      encodeURIComponent(JSON.stringify(sessData))
-    );
-    
+    const encodedUser = btoa(encodeURIComponent(JSON.stringify(sessData)));
+
     sessionStorage.setItem('sess', encodedUser);
 
     useUserStore.getState().setUser(userResult.result); // 전역 상태에 저장
@@ -165,6 +164,17 @@ export default function LoginPage() {
     setInputCode(''); // 입력된 인증번호 초기화
   };
 
+  // 자동로그인 체크박스 변경 핸들러
+  const handleAutoLoginChange = (values: string[]) => {
+    const checked = values.includes('auto_login');
+    setAutoLogin(checked);
+    if (checked) {
+      localStorage.setItem('auto_login', 'Y');
+    } else {
+      localStorage.removeItem('auto_login');
+    }
+  };
+
   return (
     <div className="h-full flex items-center justify-center px-3 mt-20">
       <div className="w-full max-w-sm">
@@ -190,6 +200,13 @@ export default function LoginPage() {
           />
         </div>
 
+        {/* 자동로그인 체크박스 */}
+        <CheckboxGroup
+          name="autoLogin"
+          options={[{ label: '자동로그인', value: 'auto_login' }]}
+          selectedValues={autoLogin ? ['auto_login'] : []}
+          onChange={handleAutoLoginChange}
+        />
         <Button onClick={handleLogin} className="w-full mb-3">
           로그인
         </Button>

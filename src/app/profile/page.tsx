@@ -1,15 +1,18 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Edit2 } from "lucide-react";
-import EditProfileModal from "@/app/profile/components/EditPfrofileModal";
-import EditPetModal from "@/app/profile/components/EditPetModal";
-import UserInfoDto from "@/model/user/dto/UserSignUpDto";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Edit2 } from 'lucide-react';
+import EditProfileModal from '@/app/profile/components/EditPfrofileModal';
+import EditPetModal from '@/app/profile/components/EditPetModal';
+import UserInfoDto from '@/model/user/dto/UserSignUpDto';
+import { UserResponse } from '@/libs/interface/api/user/userResponseInterface';
 
 import Button from '@/components/common/button/Button';
 
+import Alert from '@/components/common/alert/Alert';
+import { findUser } from '@/libs/api/user/userApi';
 
 // 반려동물 정보 타입
 type Pet = {
@@ -24,32 +27,28 @@ type Pet = {
 
 export default function Profile() {
   const router = useRouter();
-  const [user, setUser] = useState<UserInfoDto>({
-    id: 1,
-    name: '홍길동',
-    email: 'hong@example.com',
-    gender: '남',
-    birthdate: '1995-05-20',
-    profileImageUrl: '/images/default-profile.png',
-  });
+  const [alertMessage, setAlertMessage] = useState(''); // 알림 메시지
+  const [alertAction, setAlertAction] = useState<(() => void) | null>(null); // 알림창 확인 버튼 동작
+
+  const [user, setUser] = useState<UserResponse>();
 
   const [pets, setPets] = useState<Pet[]>([
     {
       id: 1,
-      name: "코코",
-      gender: "여아",
-      birthdate: "2020-05-10",
-      species: "강아지",
-      imageUrl: "/images/dog1.jpg",
+      name: '코코',
+      gender: '여아',
+      birthdate: '2020-05-10',
+      species: '강아지',
+      imageUrl: '/images/dog1.jpg',
       awards: 5,
     },
     {
       id: 2,
-      name: "나비",
-      gender: "남아",
-      birthdate: "2018-08-20",
-      species: "고양이",
-      imageUrl: "/images/cat1.jpg",
+      name: '나비',
+      gender: '남아',
+      birthdate: '2018-08-20',
+      species: '고양이',
+      imageUrl: '/images/cat1.jpg',
       awards: 3,
     },
   ]);
@@ -59,12 +58,37 @@ export default function Profile() {
 
   // 로그인 여부 확인
   useEffect(() => {
-    const storedLogin = localStorage.getItem("login");
+    const storedLogin = sessionStorage.getItem('sess');
+    console.log('로그인 여부 확인:', storedLogin);
+    findLoginUser(); // 로그인 후 사용자 정보 받아오기
+
     if (!storedLogin) {
-      router.push("/login");
+      router.push('/login');
       return;
     }
-  }, [router]);
+  }, []);
+
+  /**
+   * 로그인 정보 받기
+   */
+  const findLoginUser = async () => {
+    const userResult = await findUser(); // 사용자 정보 받아오기
+    if (userResult.resultCode !== 200) {
+      // handleLogout(); // 로그아웃(정보지우기)
+
+      if (userResult.resultCode >= 3000) {
+        setAlertMessage(userResult.resultMessageKo);
+        setAlertAction(() => router.push('/login')); // 함수 참조 전달
+        return;
+      }
+      setAlertMessage(
+        '사용자 정보를 가져오는 데 실패했습니다. 다시 시도해주세요.'
+      );
+      setAlertAction(() => router.push('/login')); // 함수 참조 전달
+      return;
+    }
+    setUser(userResult.result); // 사용자 정보 저장
+  };
 
   // 나이 계산 함수
   const calculateAge = (birthdate: string) => {
@@ -84,12 +108,18 @@ export default function Profile() {
             onClick={() => setIsEditModalOpen(true)}
             className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
           >
-            <Edit2 size={20} className="cursor-pointer"/>
+            <Edit2 size={20} className="cursor-pointer" />
           </button>
           <div className="mb-6">
-            <p className="text-lg"><strong>이름:</strong> {user.name}</p>
-            <p className="text-lg"><strong>이메일:</strong> {user.email}</p>
-            <p className="text-lg"><strong>성별:</strong> {user.gender}</p>
+            <p className="text-lg">
+              <strong>이름:</strong> {user.name}
+            </p>
+            <p className="text-lg">
+              <strong>이메일:</strong> {user.email}
+            </p>
+            <p className="text-lg">
+              <strong>성별:</strong> {user.gender}
+            </p>
           </div>
         </div>
       ) : (
@@ -101,29 +131,58 @@ export default function Profile() {
       {pets.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {pets.map((pet) => (
-            <div key={pet.id} className="bg-white shadow-md rounded-lg p-4 flex flex-col items-center relative">
+            <div
+              key={pet.id}
+              className="bg-white shadow-md rounded-lg p-4 flex flex-col items-center relative"
+            >
               <button
                 onClick={() => setSelectedPet(pet)}
                 className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
               >
-                <Edit2 size={20} className="cursor-pointer"/>
+                <Edit2 size={20} className="cursor-pointer" />
               </button>
-              <Image src={pet.imageUrl} alt={pet.name} width={150} height={150} className="rounded-full mb-4" />
-              <p className="text-lg"><strong>이름:</strong> {pet.name}</p>
-              <p className="text-lg"><strong>성별:</strong> {pet.gender}</p>
-              <p className="text-lg"><strong>나이:</strong> {calculateAge(pet.birthdate)}세</p>
-              <p className="text-lg"><strong>종:</strong> {pet.species}</p>
-              <p className="text-lg text-yellow-500 font-semibold"><strong>🏆 수상 횟수:</strong> {pet.awards}회</p>
+              <Image
+                src={pet.imageUrl}
+                alt={pet.name}
+                width={150}
+                height={150}
+                className="rounded-full mb-4"
+              />
+              <p className="text-lg">
+                <strong>이름:</strong> {pet.name}
+              </p>
+              <p className="text-lg">
+                <strong>성별:</strong> {pet.gender}
+              </p>
+              <p className="text-lg">
+                <strong>나이:</strong> {calculateAge(pet.birthdate)}세
+              </p>
+              <p className="text-lg">
+                <strong>종:</strong> {pet.species}
+              </p>
+              <p className="text-lg text-yellow-500 font-semibold">
+                <strong>🏆 수상 횟수:</strong> {pet.awards}회
+              </p>
             </div>
           ))}
         </div>
       ) : (
         <p>등록된 반려동물이 없습니다.</p>
       )}
-      
+
       {/* 반려동물 등록 버튼 */}
       <Button
-        onClick={() => setSelectedPet({ id: 0, name: "", gender: "", birthdate: "", species: "", imageUrl: "", awards: 0 })}
+        onClick={() =>
+          setSelectedPet({
+            id: 0,
+            name: '',
+            gender: '',
+            birthdate: '',
+            species: '',
+            imageUrl: '',
+            awards: 0,
+          })
+        }
         className="mt-4"
       >
         반려동물 추가하기
@@ -150,12 +209,25 @@ export default function Profile() {
         <EditProfileModal
           user={user}
           onClose={() => setIsEditModalOpen(false)}
-          onSave={(updatedUser: UserInfoDto) => {
+          onSave={(updatedUser: UserResponse) => {
             setUser(updatedUser);
             setIsEditModalOpen(false);
           }}
         />
       )}
+
+      {/* 알림창 */}
+      <Alert
+        message={alertMessage}
+        onClose={async () => {
+          setAlertMessage(''); // 메시지 초기화
+          setAlertAction(null); // 동작 초기화
+
+          if (alertAction) {
+            await alertAction(); // 특정 동작 실행 (비동기 처리)
+          }
+        }}
+      />
     </div>
   );
 }
