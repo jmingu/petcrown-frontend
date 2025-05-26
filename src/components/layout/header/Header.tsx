@@ -75,11 +75,20 @@ export default function Header() {
     const init = async () => {
       const accessToken = localStorage.getItem('a_t');
       const refreshToken = localStorage.getItem('r_t');
+      const sessData = sessionStorage.getItem('sess');
       const autoLogin = localStorage.getItem('auto_login'); // 'Y' or 'N'
 
       // 둘 중 하나라도 없으면 로그아웃 처리
       if (!accessToken || !refreshToken) {
         handleLogout();
+        return;
+      }
+
+      // 토큰있는데 세션이 없으면 다시 넣기
+      if (sessData === null) {
+        setIsLoading(true);
+        await findLoginUser();
+        setIsLoading(false);
         return;
       }
 

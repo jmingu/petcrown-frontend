@@ -6,7 +6,6 @@ export interface TokenResponse {
   refreshToken: string;
 }
 
-
 /**
  * 사용자 정보 response
  */

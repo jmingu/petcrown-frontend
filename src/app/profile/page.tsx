@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { Edit2 } from 'lucide-react';
 import EditProfileModal from '@/app/profile/components/EditPfrofileModal';
 import EditPetModal from '@/app/profile/components/EditPetModal';
-import UserInfoDto from '@/model/user/dto/UserSignUpDto';
 import { UserResponse } from '@/libs/interface/api/user/userResponseInterface';
 
 import Button from '@/components/common/button/Button';

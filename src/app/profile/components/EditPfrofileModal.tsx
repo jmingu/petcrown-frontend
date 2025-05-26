@@ -1,29 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 import Button from '@/components/common/button/Button';
 import Input from '@/components/common/input/Input';
 
-import UserService from '@/model/user/service/UserService';
+import { checkNickname, signup } from '@/libs/api/user/userApi';
 
 import RadioGroup from '@/components/common/input/RadioGroup';
 
 import DateInput from '@/components/common/input/DateInput';
 import { UserResponse } from '@/libs/interface/api/user/userResponseInterface';
 
-interface UserInfo {
-  id: number;
-  name: string;
-  email: string;
-  gender: string;
-  birthdate: string;
-  profileImageUrl: string;
-}
-
 interface EditProfileModalProps {
-  user: UserResponse | undefined; // UserResponse 타입으로 변경
+  user: UserResponse; // UserResponse 타입으로 변경
   onClose: () => void;
   onSave: (updatedUser: UserResponse) => void;
 }
@@ -33,47 +24,178 @@ export default function EditProfileModal({
   onClose,
   onSave,
 }: EditProfileModalProps) {
-  const userService = new UserService(); // 인스턴스 생성
+  const [alertMessage, setAlertMessage] = useState('');
 
-  const [form, setForm] = useState(user);
-  // const [alertMessage, setAlertMessage] = useState('');
+  const [email, setEmail] = useState(user.email); // 이메일
+  const [name, setName] = useState(user.name); // 이름
+  const [nickname, setNickname] = useState(user.nickname); // 닉네임
+  const [gender, setGender] = useState(user.gender); // 성별
+  const [birthDate, setBirthDate] = useState(user.birthDate); // 생년월일
+  const [phoneNumber1, setPhoneNumber1] = useState(
+    user.phoneNumber.split('-')[0]
+  ); // 핸드폰 번호1
+  const [phoneNumber2, setPhoneNumber2] = useState(
+    user.phoneNumber.split('-')[1]
+  ); // 핸드폰 번호2
+  const [phoneNumber3, setPhoneNumber3] = useState(
+    user.phoneNumber.split('-')[2]
+  ); // 핸드폰 번호3
+  const [password, setPassword] = useState(''); // 비밀번호
+  const [passwordCheck, setPasswordCheck] = useState(''); // 비밀번호 확인
 
-  // 폰번호 합치기
-  const handlePhoneChange = (name: string, value: string) => {
-    let newPhoneNumber = form.phoneNumber;
+  const [isNicknameVerified, setIsNicknameVerified] = useState(false); // 닉네임 인증 상태
 
-    if (name === 'phone1') {
-      newPhoneNumber = `${value}-${form.phoneNumber.split('-')[1] || ''}-${
-        form.phoneNumber.split('-')[2] || ''
-      }`;
-    } else if (name === 'phone2') {
-      newPhoneNumber = `${form.phoneNumber.split('-')[0] || ''}-${value}-${
-        form.phoneNumber.split('-')[2] || ''
-      }`;
-    } else if (name === 'phone3') {
-      newPhoneNumber = `${form.phoneNumber.split('-')[0] || ''}-${
-        form.phoneNumber.split('-')[1] || ''
-      }-${value}`;
-    }
-
-    // { ...prev }: 기존 form의 모든 속성을 그대로 복사합니다.
-    // 기존 phoneNumber를 newPhoneNumber 값으로 업데이트합니다.
-    setForm((prev) => ({ ...prev, phoneNumber: newPhoneNumber }));
-  };
-
-  // 닉네임 중복검사
+  /**
+   * 닉네임 중복 확인
+   */
   const handleCheckNickname = async () => {
-    const isAvailable = await userService.checkNicknameDuplicate(form.nickname);
-    if (isAvailable) {
-      setAlertMessage('사용 가능!');
-    } else {
-      setAlertMessage('이미 사용 중입니다.');
+    if (!nickname) {
+      setAlertMessage('닉네임을 입력해주세요.');
+      return;
+    }
+
+    const nicknameCheck = await checkNickname(nickname);
+
+    if (nicknameCheck.resultCode !== 200) {
+      if (nicknameCheck.resultCode >= 3000) {
+        setAlertMessage(nicknameCheck.resultMessageKo); // 한국어 메시지
+        setIsNicknameVerified(false);
+        return;
+      }
+
+      setAlertMessage('닉네임 중복 확인 중 오류가 발생했습니다.');
+      setIsNicknameVerified(false);
+      return;
+    }
+    setAlertMessage('닉네임이 사용 가능합니다!');
+    setIsNicknameVerified(true); // 닉네임 인증 상태 업데이트
+  };
+
+  /**
+   * 값 변경 처리
+   */
+  const handleChange = (name: string, value: string) => {
+    if (name === 'name') {
+      setName(value);
+    } else if (name === 'nickname') {
+      setNickname(value);
+    } else if (name === 'gender') {
+      setGender(value);
+    } else if (name === 'birthDate') {
+      setBirthDate(value);
+    } else if (name === 'phoneNumber1') {
+      setPhoneNumber1(value);
+    } else if (name === 'phoneNumber2') {
+      setPhoneNumber2(value);
+    } else if (name === 'phoneNumber3') {
+      setPhoneNumber3(value);
+    } else if (name === 'password') {
+      setPassword(value);
+    } else if (name === 'passwordCheck') {
+      setPasswordCheck(value);
     }
   };
 
-  // 값 넣기기
-  const handleChange = (name: string, value: string) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
+  /**
+   * 생년월일 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
+   */
+  const formatBirthDate = (date: string) => {
+    return date.replace(/-/g, '');
+  };
+
+  /**
+   * 회원가입 처리
+   */
+  const handleSignup = async () => {
+    // 이름 빈값 확인
+    if (!name) {
+      setAlertMessage('이름을 입력해주세요.');
+      return;
+    }
+
+    // 닉네임 빈값 확인
+    if (!nickname) {
+      setAlertMessage('닉네임을 입력해주세요.');
+      return;
+    }
+
+    // 성별 빈값 확인
+    if (!gender) {
+      setAlertMessage('성별을 선택해주세요.');
+      return;
+    }
+
+    // 생년월일 빈값 확인
+    if (!birthDate) {
+      setAlertMessage('생년월일을 입력해주세요.');
+      return;
+    }
+
+    // 핸드폰 번호 빈값 확인
+    if (!phoneNumber1 || !phoneNumber2 || !phoneNumber3) {
+      setAlertMessage('핸드폰 번호를 입력해주세요.');
+      return;
+    }
+
+    // 비밀번호 빈값 확인
+    if (!password) {
+      setAlertMessage('비밀번호를 입력해주세요.');
+      return;
+    }
+    // 비밀번호 빈값 확인
+    if (!passwordCheck) {
+      setAlertMessage('비밀번호를 입력해주세요.');
+      return;
+    }
+
+    // 비밀번호 최소 자리수 확인 4자리
+    if (password.length < 4) {
+      setAlertMessage('비밀번호는 최소 4자리 이상이어야 합니다.');
+      return;
+    }
+
+    // 비밀번호 확인
+    if (password !== passwordCheck) {
+      setAlertMessage('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    // 핸드폰 번호 자리수 확인
+    if (
+      phoneNumber1.length < 3 ||
+      phoneNumber2.length < 4 ||
+      phoneNumber3.length < 4
+    ) {
+      setAlertMessage('핸드폰 번호를 올바르게 입력해주세요.');
+      return;
+    }
+
+    // 닉네임 인증 확인
+    if (!isNicknameVerified) {
+      setAlertMessage('닉네임 인증을 완료해주세요.');
+      return;
+    }
+
+    // 회원가입
+    const signupResult = await signup({
+      email: emailWrite + '@' + emailDomain,
+      name,
+      nickname,
+      gender,
+      birthDate: formatBirthDate(birthDate), // YYYYMMDD 형식으로 변환
+      phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`,
+      password,
+      passwordCheck,
+    });
+
+    if (signupResult.resultCode !== 200) {
+      if (signupResult.resultCode >= 3000) {
+        setAlertMessage(signupResult.resultMessageKo); // 한국어 메시지
+        return;
+      }
+      setAlertMessage('오류가 발생했습니다.');
+      return;
+    }
   };
 
   const handleSave = () => {
@@ -95,7 +217,7 @@ export default function EditProfileModal({
           <Input
             name="name"
             placeholder="이메일"
-            value={form?.email}
+            value={email}
             onChange={(value) => handleChange('name', value)}
             className="bg-gray-200"
             maxLength={10}
@@ -107,7 +229,7 @@ export default function EditProfileModal({
           <Input
             name="name"
             placeholder="이름"
-            value={form.name}
+            value={name}
             onChange={(value) => handleChange('name', value)}
             maxLength={10}
           />
@@ -118,7 +240,7 @@ export default function EditProfileModal({
             <Input
               name="nickname"
               placeholder="닉네임"
-              value={form.nickname}
+              value={nickname}
               onChange={(value) => handleChange('nickname', value)}
               className="flex-1"
               maxLength={10}
@@ -141,7 +263,7 @@ export default function EditProfileModal({
                 { label: '남성', value: 'M' },
                 { label: '여성', value: 'F' },
               ]}
-              selectedValue={form.gender}
+              selectedValue={gender}
               onChange={(value) => handleChange('gender', value)}
             />
           </div>
@@ -150,7 +272,7 @@ export default function EditProfileModal({
           <div className="mb-4">
             <label className="block text-gray-700 font-bold">생년월일</label>
             <DateInput
-              value={form.birthDate}
+              value={birthDate}
               onChange={(value) => handleChange('birthDate', value)}
               placeholder="YYYY-MM-DD"
               maxDate={new Date()} // 미래 날짜 선택 방지
@@ -164,24 +286,24 @@ export default function EditProfileModal({
               <Input
                 name="phone1"
                 placeholder="010"
-                value={form.phoneNumber.split('-')[0] || ''}
-                onChange={(value) => handlePhoneChange('phone1', value)}
+                value={phoneNumber1}
+                onChange={(value) => handleChange('phone1', value)}
                 maxLength={3}
                 className="w-1/3"
               />
               <Input
                 name="phone2"
                 placeholder="1234"
-                value={form.phoneNumber.split('-')[1] || ''}
-                onChange={(value) => handlePhoneChange('phone2', value)}
+                value={phoneNumber2}
+                onChange={(value) => handleChange('phone2', value)}
                 maxLength={4}
                 className="w-1/3"
               />
               <Input
                 name="phone3"
                 placeholder="5678"
-                value={form.phoneNumber.split('-')[2] || ''}
-                onChange={(value) => handlePhoneChange('phone3', value)}
+                value={phoneNumber3}
+                onChange={(value) => handleChange('phone3', value)}
                 maxLength={4}
                 className="w-1/3"
               />
@@ -193,7 +315,7 @@ export default function EditProfileModal({
             type="password"
             name="password"
             placeholder="비밀번호"
-            value={form.password}
+            value={password}
             onChange={(value) => handleChange('password', value)}
             minLength={4}
             maxLength={20}
@@ -202,7 +324,7 @@ export default function EditProfileModal({
             type="password"
             name="confirmPassword"
             placeholder="비밀번호 확인"
-            value={form.confirmPassword}
+            value={passwordCheck}
             onChange={(value) => handleChange('confirmPassword', value)}
             minLength={4}
             maxLength={20}
