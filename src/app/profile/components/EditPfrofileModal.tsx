@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-
+import Alert from '@/components/common/alert/Alert';
 import Button from '@/components/common/button/Button';
 import Input from '@/components/common/input/Input';
 
-import { checkNickname, signup } from '@/libs/api/user/userApi';
+import { checkNickname, changeUserInfo } from '@/libs/api/user/userApi';
 
 import RadioGroup from '@/components/common/input/RadioGroup';
 
@@ -106,7 +106,7 @@ export default function EditProfileModal({
   /**
    * 회원가입 처리
    */
-  const handleSignup = async () => {
+  const changeUser = async () => {
     // 이름 빈값 확인
     if (!name) {
       setAlertMessage('이름을 입력해주세요.');
@@ -137,29 +137,6 @@ export default function EditProfileModal({
       return;
     }
 
-    // 비밀번호 빈값 확인
-    if (!password) {
-      setAlertMessage('비밀번호를 입력해주세요.');
-      return;
-    }
-    // 비밀번호 빈값 확인
-    if (!passwordCheck) {
-      setAlertMessage('비밀번호를 입력해주세요.');
-      return;
-    }
-
-    // 비밀번호 최소 자리수 확인 4자리
-    if (password.length < 4) {
-      setAlertMessage('비밀번호는 최소 4자리 이상이어야 합니다.');
-      return;
-    }
-
-    // 비밀번호 확인
-    if (password !== passwordCheck) {
-      setAlertMessage('비밀번호가 일치하지 않습니다.');
-      return;
-    }
-
     // 핸드폰 번호 자리수 확인
     if (
       phoneNumber1.length < 3 ||
@@ -177,20 +154,17 @@ export default function EditProfileModal({
     }
 
     // 회원가입
-    const signupResult = await signup({
-      email: emailWrite + '@' + emailDomain,
+    const changeResult = await changeUserInfo({
       name,
       nickname,
       gender,
       birthDate: formatBirthDate(birthDate), // YYYYMMDD 형식으로 변환
       phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`,
-      password,
-      passwordCheck,
     });
 
-    if (signupResult.resultCode !== 200) {
-      if (signupResult.resultCode >= 3000) {
-        setAlertMessage(signupResult.resultMessageKo); // 한국어 메시지
+    if (changeResult.resultCode !== 200) {
+      if (changeResult.resultCode >= 3000) {
+        setAlertMessage(changeResult.resultMessageKo); // 한국어 메시지
         return;
       }
       setAlertMessage('오류가 발생했습니다.');
@@ -199,7 +173,9 @@ export default function EditProfileModal({
   };
 
   const handleSave = () => {
-    onClose();
+    console.log('저장 버튼 클릭');
+    changeUser();
+    // onClose();
   };
 
   return (
@@ -309,26 +285,6 @@ export default function EditProfileModal({
               />
             </div>
           </div>
-          {/* 비밀번호 */}
-          <label className="block text-gray-700 font-bold">비밀번호</label>
-          <Input
-            type="password"
-            name="password"
-            placeholder="비밀번호"
-            value={password}
-            onChange={(value) => handleChange('password', value)}
-            minLength={4}
-            maxLength={20}
-          />
-          <Input
-            type="password"
-            name="confirmPassword"
-            placeholder="비밀번호 확인"
-            value={passwordCheck}
-            onChange={(value) => handleChange('confirmPassword', value)}
-            minLength={4}
-            maxLength={20}
-          />
         </div>
         <div className="flex justify-end mt-4 gap-2">
           <Button type="gray" onClick={onClose}>
@@ -337,6 +293,13 @@ export default function EditProfileModal({
           <Button onClick={handleSave}>저장</Button>
         </div>
       </motion.div>
+      {/* 알림창 */}
+      <Alert
+        message={alertMessage}
+        onClose={async () => {
+          setAlertMessage(''); // 메시지 초기화
+        }}
+      />
     </div>
   );
 }

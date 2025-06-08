@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { a } from 'framer-motion/client';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -33,13 +32,12 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-
-        // ✅ 리프레시 API 호출 
+        // ✅ 리프레시 API 호출
         const refreshResponse = await axios.post(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/v1/refresh-token`,
-          { 
+          {
             accessToken: localStorage.getItem('a_t'), // 현재 액세스 토큰 바디로 전송
-            refreshToken: localStorage.getItem('r_t') // 현재 리프레시 토큰 바디로 전송
+            refreshToken: localStorage.getItem('r_t'), // 현재 리프레시 토큰 바디로 전송
           }, // body로 전송
           {
             headers: {
@@ -54,7 +52,9 @@ api.interceptors.response.use(
         localStorage.setItem('r_t', refreshResponse.data.result.refreshToken);
 
         // ✅ 원래 요청에 새 accessToken 반영
-        originalRequest.headers.Authorization = `Bearer ${localStorage.getItem('a_t')}`;
+        originalRequest.headers.Authorization = `Bearer ${localStorage.getItem(
+          'a_t'
+        )}`;
         return api(originalRequest); // 재요청
       } catch (refreshError) {
         console.error('토큰 재발급 실패:', refreshError);

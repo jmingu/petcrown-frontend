@@ -19,3 +19,14 @@ export interface LoginRequest {
   email: string;
   password: string;
 }
+
+/**
+ * 회원 정보 변경
+ */
+export interface ChangeUserInfoRequest {
+  name: string;
+  nickname: string;
+  gender: string; // 예: "M", "F"
+  birthDate: string; // ISO 형식 (예: "1990-01-01")
+  phoneNumber: string; // 전화번호 형식 (예: "010-1234-5678")
+}

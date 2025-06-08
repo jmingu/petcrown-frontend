@@ -2,6 +2,7 @@ import api from '@/libs/axiosInstance'; // axios 인스턴스
 import {
   LoginRequest,
   SignUpRequest,
+  ChangeUserInfoRequest,
 } from '@/libs/interface/api/user/userRequestInterface';
 import {
   UserResponse,
@@ -85,5 +86,15 @@ export const checkEmailVerificationCode = async (data: {
   email: string;
 }): Promise<CommonResponse<object>> => {
   const response = await api.post('/user/v1/email/verification', data);
+  return response.data;
+};
+
+/**
+ * 회원 정보 수정
+ */
+export const changeUserInfo = async (
+  data: ChangeUserInfoRequest
+): Promise<CommonResponse<object>> => {
+  const response = await api.put('/user/v1', data);
   return response.data;
 };
