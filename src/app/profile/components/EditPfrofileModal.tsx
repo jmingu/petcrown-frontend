@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { motion } from 'framer-motion';
 import Alert from '@/components/common/alert/Alert';
 import Button from '@/components/common/button/Button';
@@ -28,6 +28,7 @@ export default function EditProfileModal({
 
   const [email, setEmail] = useState(user.email); // 이메일
   const [name, setName] = useState(user.name); // 이름
+  const [originalNickname, setOriginalNickname] = useState(user.nickname); // 오리지널 닉네임
   const [nickname, setNickname] = useState(user.nickname); // 닉네임
   const [gender, setGender] = useState(user.gender); // 성별
   const [birthDate, setBirthDate] = useState(user.birthDate); // 생년월일
@@ -147,13 +148,15 @@ export default function EditProfileModal({
       return;
     }
 
-    // 닉네임 인증 확인
-    if (!isNicknameVerified) {
-      setAlertMessage('닉네임 인증을 완료해주세요.');
-      return;
+    // 닉네임을 변경했을 때 닉네임 인증 확인
+    if (originalNickname !== nickname) {
+      if (!isNicknameVerified) {
+        setAlertMessage('닉네임 인증을 완료해주세요.');
+        return;
+      }
     }
 
-    // 회원가입
+    // 정보 변경
     const changeResult = await changeUserInfo({
       name,
       nickname,
@@ -170,6 +173,29 @@ export default function EditProfileModal({
       setAlertMessage('오류가 발생했습니다.');
       return;
     }
+
+    setAlertMessage('프로필이 성공적으로 수정되었습니다!');
+
+    // 닉네임을 변경했을 때 헤더 이름 변경을 위해 새로고침
+    if (originalNickname !== nickname) {
+      const sessData = {
+        nickname: nickname,
+      };
+      // 한글과 특수문자를 처리할 수 있도록 인코딩
+      const encodedUser = btoa(encodeURIComponent(JSON.stringify(sessData)));
+
+      sessionStorage.setItem('sess', encodedUser);
+      // 헤더의 닉네임을 변경하기 위해 새로고침
+      window.location.reload();
+    }
+    user.name = name; // 이름 업데이트
+    user.nickname = nickname; // 닉네임
+    user.gender = gender; // 성별
+    user.birthDate = birthDate; // 생년월일
+    user.phoneNumber = `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`; // 핸드폰 번호
+
+    onSave(user); // 👈 여기서 전달
+    onClose();
   };
 
   const handleSave = () => {
@@ -263,7 +289,7 @@ export default function EditProfileModal({
                 name="phone1"
                 placeholder="010"
                 value={phoneNumber1}
-                onChange={(value) => handleChange('phone1', value)}
+                onChange={(value) => handleChange('phoneNumber1', value)}
                 maxLength={3}
                 className="w-1/3"
               />
@@ -271,7 +297,7 @@ export default function EditProfileModal({
                 name="phone2"
                 placeholder="1234"
                 value={phoneNumber2}
-                onChange={(value) => handleChange('phone2', value)}
+                onChange={(value) => handleChange('phoneNumber2', value)}
                 maxLength={4}
                 className="w-1/3"
               />
@@ -279,7 +305,7 @@ export default function EditProfileModal({
                 name="phone3"
                 placeholder="5678"
                 value={phoneNumber3}
-                onChange={(value) => handleChange('phone3', value)}
+                onChange={(value) => handleChange('phoneNumber3', value)}
                 maxLength={4}
                 className="w-1/3"
               />

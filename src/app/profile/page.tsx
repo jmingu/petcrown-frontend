@@ -58,7 +58,6 @@ export default function Profile() {
   // 로그인 여부 확인
   useEffect(() => {
     const storedLogin = sessionStorage.getItem('sess');
-    console.log('로그인 여부 확인:', storedLogin);
     findLoginUser(); // 로그인 후 사용자 정보 받아오기
 
     if (!storedLogin) {
@@ -111,13 +110,23 @@ export default function Profile() {
           </button>
           <div className="mb-6">
             <p className="text-lg">
-              <strong>이름:</strong> {user.name}
-            </p>
-            <p className="text-lg">
               <strong>이메일:</strong> {user.email}
             </p>
             <p className="text-lg">
+              <strong>이름:</strong> {user.name}
+            </p>
+            <p className="text-lg">
+              <strong>닉네임:</strong> {user.nickname}
+            </p>
+            <p className="text-lg">
               <strong>성별:</strong> {user.gender}
+            </p>
+            <p className="text-lg">
+              <strong>생년월일:</strong> {user.birthDate}
+            </p>
+
+            <p className="text-lg">
+              <strong>전화번호:</strong> {user.phoneNumber}
             </p>
           </div>
         </div>
