@@ -119,7 +119,7 @@ export default function Profile() {
               <strong>닉네임:</strong> {user.nickname}
             </p>
             <p className="text-lg">
-              <strong>성별:</strong> {user.gender}
+              <strong>성별:</strong> {user.gender === 'M' ? '남성' : '여성'}
             </p>
             <p className="text-lg">
               <strong>생년월일:</strong> {user.birthDate}

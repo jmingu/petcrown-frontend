@@ -130,6 +130,8 @@ export default function Header() {
     localStorage.removeItem('a_t');
     localStorage.removeItem('r_t');
     sessionStorage.clear();
+    // 메인으로 이동
+    router.push('/');
   };
 
   /**

@@ -27,7 +27,10 @@ const DateInput: React.FC<DateInputProps> = ({
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
-      onChange(date.toISOString().split('T')[0]); // YYYY-MM-DD 형식으로 변환
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      onChange(`${year}-${month}-${day}`);
     }
     setIsCalendarOpen(false); // 날짜 선택 후 달력 닫기
   };
@@ -44,14 +47,22 @@ const DateInput: React.FC<DateInputProps> = ({
         className={`w-full p-3 border rounded bg-white border-gray-300 focus:ring focus:ring-theme-sky ${inputClassName}`}
       />
       {isCalendarOpen && (
-        <div className="absolute z-10 bg-white shadow-lg rounded mt-2" style={{ maxWidth: '100%', width: '300px' }}>
-          <Calendar
-            onChange={(date) => handleDateChange(date as Date | null)} // 타입 캐스팅 추가
-            value={value ? new Date(value) : null} // value를 Date 또는 null로 설정
-            minDate={minDate}
-            maxDate={maxDate}
+        <>
+          {/* 오버레이 */}
+          <div
+            className="fixed inset-0 z-40 bg-opacity-10"
+            onClick={() => setIsCalendarOpen(false)}
           />
-        </div>
+          {/* 달력 팝업 */}
+          <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 bg-white shadow-lg rounded w-[90vw] max-w-xs max-h-[80vh] overflow-auto p-2">
+            <Calendar
+              onChange={(date) => handleDateChange(date as Date | null)}
+              value={value ? new Date(value) : null}
+              minDate={minDate}
+              maxDate={maxDate}
+            />
+          </div>
+        </>
       )}
     </div>
   );
