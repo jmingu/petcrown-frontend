@@ -31,6 +31,9 @@ export default function Profile() {
 
   const [user, setUser] = useState<UserResponse>();
 
+  // 반려동물 모달 오픈 여부
+  const [isPetModalOpen, setIsPetModalOpen] = useState(false);
+
   const [pets, setPets] = useState<Pet[]>([
     {
       id: 1,
@@ -179,28 +182,15 @@ export default function Profile() {
       )}
 
       {/* 반려동물 등록 버튼 */}
-      <Button
-        onClick={() =>
-          setSelectedPet({
-            id: 0,
-            name: '',
-            gender: '',
-            birthdate: '',
-            species: '',
-            imageUrl: '',
-            awards: 0,
-          })
-        }
-        className="mt-4"
-      >
+      <Button onClick={() => setIsPetModalOpen(true)} className="mt-4">
         반려동물 추가하기
       </Button>
 
       {/* 반려동물 수정 모달 */}
-      {selectedPet && (
+      {isPetModalOpen && (
         <EditPetModal
-          pet={selectedPet}
-          onClose={() => setSelectedPet(null)}
+          pet={null}
+          onClose={() => setIsPetModalOpen(false)}
           onSave={(updatedPet: Pet) => {
             setPets((prevPets) =>
               prevPets.some((p) => p.id === updatedPet.id)
