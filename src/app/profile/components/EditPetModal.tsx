@@ -11,8 +11,7 @@ import RadioGroup from '@/components/common/input/RadioGroup';
 
 import DateInput from '@/components/common/input/DateInput';
 
-// 반려동물 데이터 인터페이스
-import { PetRegisterRequest } from '@/libs/interface/api/pet/petRepuestInterface'; // 실제 경로에 맞게 수정
+import { petRegister } from '@/libs/api/pet/petApi';
 
 interface Pet {
   id: number;
@@ -66,21 +65,20 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
     }
   };
 
-  const handleSave = () => {
-    if (!name || !gender || !birthdate || !species) {
+  const handleSave = async () => {
+    if (!name || !gender || !birthdate || !species || !imageUrl) {
       alert('모든 필드를 입력해주세요.');
       return;
     }
 
-    const updatedPet: Pet = {
-      id: pet ? pet.id : Date.now(), // 수정 시 기존 ID 유지, 추가 시 새로운 ID 생성
+    // 회원가입
+    const registerResult = await petRegister({
       name,
       gender,
       birthdate,
-      species,
+      species: Number(species),
       imageUrl: imageUrl || '/images/default-pet.png',
-      awards: pet ? pet.awards : 0, // 수정 시 기존 awards 유지, 추가 시 0으로 설정
-    };
+    });
 
     onSave(updatedPet);
     onClose();
