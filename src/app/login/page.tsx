@@ -78,10 +78,10 @@ export default function LoginPage() {
 
     // 세션에 필요한 데이터만 등록
     const sessData = {
-      nickname: userResult.result.nickname,
+      loginTime: new Date().toISOString(), // 로그인 시간
     };
     // 한글과 특수문자를 처리할 수 있도록 인코딩
-    const encodedUser = btoa(encodeURIComponent(JSON.stringify(sessData)));
+    const encodedUser = JSON.stringify(sessData);
     sessionStorage.setItem('sess', encodedUser);
 
     useUserStore.getState().setUser(userResult.result); // 전역 상태에 저장
@@ -129,10 +129,10 @@ export default function LoginPage() {
 
     // 세션에 필요한 데이터만 등록
     const sessData = {
-      nickname: userResult.result.nickname,
+      loginTime: new Date().toISOString(), // 로그인 시간
     };
     // 한글과 특수문자를 처리할 수 있도록 인코딩
-    const encodedUser = btoa(encodeURIComponent(JSON.stringify(sessData)));
+    const encodedUser = JSON.stringify(sessData);
 
     sessionStorage.setItem('sess', encodedUser);
 

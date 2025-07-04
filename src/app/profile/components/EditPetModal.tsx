@@ -3,49 +3,43 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-
 import Button from '@/components/common/button/Button';
 import Input from '@/components/common/input/Input';
-
 import RadioGroup from '@/components/common/input/RadioGroup';
-
 import DateInput from '@/components/common/input/DateInput';
-
 import { petRegister } from '@/libs/api/pet/petApi';
+import { changePet } from '@/libs/api/pet/petApi'; // 펫 수정 API
+import { deletePet } from '@/libs/api/pet/petApi'; // 펫 삭제 API
+import {MyPetResponse} from '@/libs/interface/api/pet/petResponseInterface'; 
 
-interface Pet {
-  id: number;
-  name: string;
-  gender: string;
-  birthdate: string;
-  species: string;
-  imageUrl: string;
-  awards: number;
-}
+
 
 interface PetModalProps {
-  pet?: Pet; // 선택적 속성 (수정 시 기존 반려동물 데이터 전달)
+  pet: MyPetResponse | null; // 선택적 속성 (수정 시 기존 반려동물 데이터 전달)
   onClose: () => void;
-  onSave: (pet: Pet) => void;
+  onSave: () => void;
 }
 
 export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
-  const isEditMode = !!pet; // pet이 있으면 수정 모드, 없으면 추가 모드
+  // const isEditMode = !!pet; // pet이 있으면 수정 모드, 없으면 추가 모드
+  const [isEditMode, setIsEditMode] = useState(false);
   const [name, setName] = useState('');
   const [gender, setGender] = useState('');
-  const [birthdate, setBirthdate] = useState('');
-  const [species, setSpecies] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [breedId, setBreedId] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [imagePreview, setImagePreview] = useState<string>('');
 
   // pet이 있으면 기존 데이터를 기본값으로 설정
   useEffect(() => {
+    setIsEditMode(!!pet);
+
     if (pet) {
       setName(pet.name);
       setGender(pet.gender);
-      setBirthdate(pet.birthdate);
-      setSpecies(pet.species);
+      setBirthDate(pet.birthDate);
+      setBreedId(String(pet.breedId));
       setImageUrl(pet.imageUrl);
     }
   }, [pet]);
@@ -66,22 +60,70 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
   };
 
   const handleSave = async () => {
-    if (!name || !gender || !birthdate || !species || !imageUrl) {
-      alert('모든 필드를 입력해주세요.');
+    // 등록모드
+    if(!isEditMode) {
+
+      /* 이미지 로직 추가 필요 */
+      setImageUrl("sss")
+      if (!name || !gender || !birthDate || !breedId || !imageUrl) {
+        alert('모든 필드를 입력해주세요.');
+        return;
+      }
+
+      // 펫등록
+      const registerResult = await petRegister({
+        name,
+        gender,
+        birthDate : formatBirthDate(birthDate), // YYYY-MM-DD -> YYYYMMDD 형식으로 변환
+        breedId: Number(breedId),
+        profileImageUrl: imageUrl || '/images/default-pet.png',
+      });
+      
+
+    // 수정모드
+    } else {
+      console.log(pet);
+      /* 이미지 로직 추가 필요 */
+      setImageUrl("sss")
+      if (!name || !gender || !birthDate || !breedId || !imageUrl) {
+        alert('모든 필드를 입력해주세요.');
+        return;
+      }
+      
+      if (!pet || pet.petId === undefined) {
+        alert('수정할 반려동물 정보가 없습니다.');
+        return;
+      }
+
+      // 펫등록
+      const changeResult = await changePet(pet?.petId,{
+        name,
+        gender,
+        birthDate : formatBirthDate(birthDate), // YYYY-MM-DD -> YYYYMMDD 형식으로 변환
+        breedId: Number(breedId),
+        profileImageUrl: imageUrl || '/images/default-pet.png',
+      });
+    }
+    
+    onSave();
+    onClose();
+  };
+
+  const handleRemove = async () => {
+    if (!pet || pet.petId === undefined) {
+      alert('삭제할 반려동물 정보가 없습니다.');
       return;
     }
+    const deleteResult = await deletePet(pet.petId);
+      onSave();
+      onClose();
+  }
 
-    // 회원가입
-    const registerResult = await petRegister({
-      name,
-      gender,
-      birthdate,
-      species: Number(species),
-      imageUrl: imageUrl || '/images/default-pet.png',
-    });
-
-    onSave(updatedPet);
-    onClose();
+    /**
+   * 생년월일 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
+   */
+  const formatBirthDate = (date: string) => {
+    return date.replace(/-/g, '');
   };
 
   return (
@@ -121,8 +163,8 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
           <div className="mb-4">
             <label className="block text-gray-700 font-bold">생년월일</label>
             <DateInput
-              value={birthdate}
-              onChange={(e) => setBirthdate(e)}
+              value={birthDate}
+              onChange={(e) => setBirthDate(e)}
               placeholder="YYYY-MM-DD"
               maxDate={new Date()} // 미래 날짜 선택 방지
             />
@@ -133,12 +175,12 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
             <RadioGroup
               name="type"
               options={[
-                { label: '고양이', value: '1' },
-                { label: '강아지', value: '2' },
+                { label: '강아지', value: '1' },
+                { label: '고양이', value: '2' },
                 { label: '기타', value: '0' },
               ]}
-              selectedValue={species}
-              onChange={(e) => setSpecies(e)}
+              selectedValue={breedId}
+              onChange={(e) => setBreedId(e)}
             />
           </div>
           {/* 이미지 업로드 버튼 및 미리보기 */}
@@ -176,10 +218,14 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
           </div>
         </div>
         <div className="flex justify-end mt-4 gap-2">
-          <Button type="gray" onClick={onClose}>
-            취소
-          </Button>
+          
           <Button onClick={handleSave}>{isEditMode ? '수정' : '등록'}</Button>
+          {isEditMode && (
+          <Button className='bg-red-500!' onClick={handleRemove}>삭제</Button>
+          )}
+          <Button type="gray" onClick={onClose}>취소</Button>
+          
+
         </div>
       </motion.div>
     </div>

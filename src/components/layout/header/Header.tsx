@@ -6,10 +6,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/common/button/Button';
-// import { useUserStore } from '@/libs/store/user/userStore';
+import { useUserStore } from '@/libs/store/user/userStore';
 import { findUser } from '@/libs/api/user/userApi';
 import Alert from '@/components/common/alert/Alert';
 import { authChannel } from '@/libs/broadcastchannel/channel';
+import { tr } from 'framer-motion/client';
 
 const MENU_ITEMS = [
   { name: '랭킹보기', path: '/ranking' },
@@ -20,116 +21,135 @@ const MENU_ITEMS = [
 
 export default function Header() {
   const router = useRouter();
-  // const { user, setUser, clearUser } = useUserStore();
+  const { user, setUser, clearUser } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState(''); // 알림 메시지
   const [alertAction, setAlertAction] = useState<(() => void) | null>(null); // 알림창 확인 버튼 동작
   const [nickname, setNickname] = useState('');
-  const [sess, setSess] = useState<string | null>(
-    sessionStorage.getItem('sess')
-  );
+ 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const isLoggedIn = !!sess;
-
+  // 맨처음 렌더링 시에만 실행되는 useEffect
   useEffect(() => {
-    // 다른 탭에 로그인 상태 탭이 있나 요청
-    authChannel.postMessage({ type: 'request-login-status' });
 
-    // 다른 탭에서 상태 요청 받았을 때
     const onMessage = async (event: MessageEvent) => {
-      const accessToken = localStorage.getItem('a_t');
-      const refreshToken = localStorage.getItem('r_t');
-      const autoLogin = localStorage.getItem('auto_login');
 
-      // 다른탭에서 로그인 상태 있다고 요청 받음
+      // 다른탭에서 로그인 상태 type: 'login'요청 받음
       if (event.data.type === 'login') {
-        if (autoLogin === 'Y') {
-          // 오토로그인이면 아래 코드에서 진행
-          return;
-        }
-        setIsLoading(true);
-        await findLoginUser();
-        setIsLoading(false);
-      }
 
-      // request-login-status 요청 받았을 때
-      if (event.data.type === 'request-login-status') {
-        // 토큰있으면 로그인 상태 있다고 다른 탭에 알림
-        if (accessToken && refreshToken) {
+        if(await getToken() === false) {
+          
+          return ;
+        }
+
+      }else if (event.data.type === 'request-login-status') {
+
+        // 토큰있으면 로그인 상태 있다고 다른 탭에 type: 'login' 으로 알림
+        if (localStorage.getItem('a_t') && localStorage.getItem('r_t') && sessionStorage.getItem('sess')) {
+
           authChannel.postMessage({ type: 'login' });
         }
       }
-    };
 
+    };
     authChannel.addEventListener('message', onMessage);
 
     return () => {
       authChannel.removeEventListener('message', onMessage);
     };
-    // BroadcastChannel 예시도 여기서 가능
+    
   }, []);
 
   useEffect(() => {
+    
     const init = async () => {
-      const accessToken = localStorage.getItem('a_t');
-      const refreshToken = localStorage.getItem('r_t');
-      const sessData = sessionStorage.getItem('sess');
-      const autoLogin = localStorage.getItem('auto_login'); // 'Y' or 'N'
-
-      // 둘 중 하나라도 없으면 로그아웃 처리
-      if (!accessToken || !refreshToken) {
-        handleLogout();
-        return;
+      // 애초에 토큰이 없으면 로그아웃 처리
+      if (!localStorage.getItem('a_t') || !localStorage.getItem('r_t')) {
+        handleLogout()
+        return
       }
 
-      // 토큰있는데 세션이 없으면 다시 넣기
-      if (sessData === null) {
-        setIsLoading(true);
-        await findLoginUser();
-        setIsLoading(false);
-        return;
+      // 세선조회
+      if(sessionStorage.getItem('sess') === null || sessionStorage.getItem('sess') === undefined) {
+
+        // 자동로그인 조회 
+        await checkAutoLogin();
+        return
+
       }
 
-      // autoLogin이 'Y'일 때만 로그인 처리
-      if (autoLogin === 'Y') {
-        // 이미 세션있으면 통과
-        if (sess) {
-          return;
-        }
-
-        setIsLoading(true);
-        await findLoginUser();
-        setIsLoading(false);
-        return;
+      // 토큰조회
+      if(await getToken() === false) {
+        return
       }
 
-      setSess(sessionStorage.getItem('sess'));
     };
 
     init();
   }, [pathname]);
 
-  // sess가 바뀌면 로그인 상태 설정
-  useEffect(() => {
-    if (sess) {
-      const user = JSON.parse(decodeURIComponent(atob(sess)));
-      setNickname(user.nickname);
+
+  /**
+   * 토큰조회(11)
+   */
+  const getToken = async () => {
+    // 토큰이 없으면 false 반환
+    if (!localStorage.getItem('a_t') || !localStorage.getItem('r_t')) {
+      return false;
     }
-  }, [sess]);
+
+    
+    // 토큰이 있으면 사용자 정보 조회
+    if(user === null) {
+      setIsLoading(true);
+      await findLoginUser();
+      
+      setIsLoading(false);
+    }else {
+      setNickname(user?.nickname || '');
+    }
+    setIsLoggedIn(true);
+  }
+
+  /**
+   * 자동로그인 여부 조회(11)
+   */
+  const checkAutoLogin = async () => {
+    
+    // 자동로그인 여부 확인
+    if (localStorage.getItem('auto_login') !== null && localStorage.getItem('auto_login') !== undefined && localStorage.getItem('auto_login') === 'Y') {
+      // 자동로그인 처리 로직
+      if(await getToken() === false) {
+        return
+      }
+    } else {
+      // 자동로그인 설정이 없으면 다른탭 로그인 여부 확인
+      authChannel.postMessage({ type: 'request-login-status' });
+      
+      // 2초뒤 다른탭이 없어서 로그인 여부 확인안되서 로그인이 진행되지 않아 토큰 없으면 로그아웃 처리
+      setTimeout(() => {
+        
+        if (!localStorage.getItem('a_t') || !localStorage.getItem('r_t') || !sessionStorage.getItem('sess')) {
+          handleLogout();
+          
+        }
+      }, 2000);
+    }
+  }
+
 
   /**
    * 로그아웃 처리
    */
   const handleLogout = () => {
-    // 다른 탭에 로그아웃 알림 전송
-    authChannel.postMessage('logout');
-    setSess(null);
     setNickname('');
     localStorage.removeItem('a_t');
     localStorage.removeItem('r_t');
     sessionStorage.clear();
+    clearUser(); // 사용자 정보 초기화
+    setIsLoggedIn(false);
     // 메인으로 이동
     // router.push('/');
   };
@@ -153,15 +173,17 @@ export default function Header() {
       setAlertAction(() => router.push('/login')); // 함수 참조 전달
       return;
     }
-
     // 세션에 필요한 데이터만 등록
     const sessData = {
-      nickname: userResult.result.nickname,
+      loginTime: new Date().toISOString(), // 로그인 시간
     };
     // 한글과 특수문자를 처리할 수 있도록 인코딩
-    const encodedUser = btoa(encodeURIComponent(JSON.stringify(sessData)));
-    sessionStorage.setItem('sess', encodedUser); // 스토리지에 저장
-    setSess(encodedUser); // ✅ React 상태로도 업데이트
+    const encodedUser = JSON.stringify(sessData);
+    sessionStorage.setItem('sess', encodedUser);
+
+    useUserStore.getState().setUser(userResult.result); // 전역 상태에 저장
+ 
+    setNickname(userResult.result.nickname); // 닉네임 상태 업데이트
   };
 
   return (
@@ -217,7 +239,7 @@ export default function Header() {
               <Button onClick={handleLogout}>로그아웃</Button>
             </>
           ) : (
-            <Button onClick={() => (window.location.href = '/login')}>
+            <Button onClick={() => router.push('/login')}>
               로그인
             </Button>
           )}
@@ -259,7 +281,7 @@ export default function Header() {
                 </span>
               </Link>
             ) : (
-              <Button onClick={() => (window.location.href = '/login')}>
+              <Button onClick={() => router.push('/login')}>
                 로그인
               </Button>
             )}
