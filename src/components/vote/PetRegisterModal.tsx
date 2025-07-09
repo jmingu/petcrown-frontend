@@ -1,22 +1,26 @@
 'use client';
 
 import { motion } from 'framer-motion';
-
 import Button from "@/components/common/button/Button";
+import {MyPetResponse} from '@/libs/interface/api/pet/petResponseInterface'; 
+import {VoteRegistrationRequest} from '@/libs/interface/api/vote/voteRequestInterface'; // 투표 등록 요청 인터페이스
+import {voteRegistration} from '@/libs/api/vote/voteApi'; // 투표 등록 API
 
 interface PetModalProps {
   isOpen: boolean;
   onClose: () => void;
-  pet: {
-    name: string;
-    image: string;
-    gender: string;
-    type: 'dog' | 'cat';
-  };
+  pet: MyPetResponse
 }
 
 export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
+
+    
   if (!isOpen) return null;
+
+  const handleSave = async () => {
+  const voteResult = await voteRegistration({petId: pet.petId, profileImageUrl: ""}); // 사용자 정보 받아오기
+      
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
@@ -36,17 +40,17 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
 
         <h2 className="text-xl font-bold text-center">{pet.name}</h2>
         <img
-          src={pet.image}
+          src={pet.imageUrl}
           alt={pet.name}
           className="w-full h-48 object-cover rounded-md mt-4"
         />
-        <p className="text-gray-700 text-sm mt-2">성별: {pet.gender}</p>
-        <p className="text-gray-700 text-sm">종류: {pet.type === 'dog' ? '강아지' : '고양이'}</p>
+        <p className="text-gray-700 text-sm mt-2">성별: {pet.gender === 'F' ? '여자' : '남자'}</p>
+        <p className="text-gray-700 text-sm">종류: {pet.speciesName }</p>
 
         <div className="flex justify-between mt-4">
           <Button
 						type='accent'
-            onClick={() => alert(`${pet.name}의 현재 사진으로 등록 완료!`)}
+            onClick={() => handleSave()}
           >
             현재 사진으로 등록
           </Button>
@@ -58,9 +62,9 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
         </div>
 
         {/* 하단 닫기 버튼 */}
-        <button className="mt-4 w-full text-center text-gray-500 cursor-pointer" onClick={onClose}>
-          닫기
-        </button>
+        <div className="mt-4 w-full text-center">
+          <Button type="gray" onClick={onClose}>취소</Button>
+        </div>
       </motion.div>
     </div>
   );

@@ -65,6 +65,15 @@ export default function Header() {
   useEffect(() => {
     
     const init = async () => {
+
+      // 토큰이 있는데 로그인페이지, 회원가입이면 메인으로 이동
+      if (pathname === '/login' || pathname === '/signup') {
+        if (localStorage.getItem('a_t') && localStorage.getItem('r_t')) {
+          router.push('/'); // 메인으로 이동
+          return;
+        }
+      }
+      
       // 애초에 토큰이 없으면 로그아웃 처리
       if (!localStorage.getItem('a_t') || !localStorage.getItem('r_t')) {
         handleLogout()
@@ -92,7 +101,7 @@ export default function Header() {
 
 
   /**
-   * 토큰조회(11)
+   * 토큰조회
    */
   const getToken = async () => {
     // 토큰이 없으면 false 반환
@@ -114,7 +123,7 @@ export default function Header() {
   }
 
   /**
-   * 자동로그인 여부 조회(11)
+   * 자동로그인 여부 조회
    */
   const checkAutoLogin = async () => {
     
@@ -150,6 +159,9 @@ export default function Header() {
     sessionStorage.clear();
     clearUser(); // 사용자 정보 초기화
     setIsLoggedIn(false);
+    if(pathname === '/profile') {
+      router.push('/'); // 메인으로 이동
+    }
     // 메인으로 이동
     // router.push('/');
   };

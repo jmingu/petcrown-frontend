@@ -199,7 +199,6 @@ export default function EditProfileModal({
   };
 
   const handleSave = () => {
-    console.log('저장 버튼 클릭');
     changeUser();
     // onClose();
   };
@@ -313,10 +312,9 @@ export default function EditProfileModal({
           </div>
         </div>
         <div className="flex justify-end mt-4 gap-2">
-          <Button type="gray" onClick={onClose}>
-            취소
-          </Button>
+          
           <Button onClick={handleSave}>저장</Button>
+          <Button type="gray" onClick={onClose}>취소</Button>
         </div>
       </motion.div>
       {/* 알림창 */}

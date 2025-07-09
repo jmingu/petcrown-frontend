@@ -64,8 +64,7 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
     if(!isEditMode) {
 
       /* 이미지 로직 추가 필요 */
-      setImageUrl("sss")
-      if (!name || !gender || !birthDate || !breedId || !imageUrl) {
+      if (!name || !gender || !birthDate || !breedId) {
         alert('모든 필드를 입력해주세요.');
         return;
       }
@@ -82,10 +81,8 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
 
     // 수정모드
     } else {
-      console.log(pet);
       /* 이미지 로직 추가 필요 */
-      setImageUrl("sss")
-      if (!name || !gender || !birthDate || !breedId || !imageUrl) {
+      if (!name || !gender || !birthDate || !breedId) {
         alert('모든 필드를 입력해주세요.');
         return;
       }
@@ -95,7 +92,7 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
         return;
       }
 
-      // 펫등록
+      // 펫 수정
       const changeResult = await changePet(pet?.petId,{
         name,
         gender,
@@ -119,7 +116,7 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
       onClose();
   }
 
-    /**
+  /**
    * 생년월일 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
    */
   const formatBirthDate = (date: string) => {
