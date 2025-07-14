@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Pagination from 'react-js-pagination';
 import Button from '@/components/common/button/Button';
+import { getVoteList } from '@/libs/api/vote/voteApi'; // API 호출 함수
 
 const VOTE_ITEMS = [
   { id: 1, name: '코코', gender: 'F', type: '개', image: '/images/coco.jpg', period: 'daily' },
@@ -55,6 +56,24 @@ export default function VotePage() {
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
   const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
   const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+
+  useEffect(() => {
+      getVote(); // 컴포넌트 마운트 시 나의 펫 조회
+      
+  }, []);
+
+  /**
+   * 투표 리스트 조회
+   */
+
+    const getVote = async () => {
+      try {
+        const response = await getVoteList({page:1, size: 100});
+  
+      } catch (error) {
+      }
+    }
+
 
   return (
     <div className="p-6 global-wrapper">
