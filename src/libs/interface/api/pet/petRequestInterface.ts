@@ -6,7 +6,7 @@ export interface PetRegisterRequest {
   gender: string; // 예: "M", "F
   birthDate: string; // ISO 형식 (예: "1990-01-01")
   breedId: number; // 반려동물
-  profileImageUrl: string; // 이미지 파일
+  profileImage: File; // 이미지 파일
 }
 
 /**

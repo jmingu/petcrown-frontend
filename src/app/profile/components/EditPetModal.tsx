@@ -48,12 +48,14 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && /image\/(jpeg|jpg|png)/.test(file.type)) {
+      setImageFile(file); // 파일 객체 상태에 저장
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     } else {
+      setImageFile(null); // 파일 상태 초기화
       setImagePreview('');
       alert('jpg, jpeg, png 파일만 업로드 가능합니다.');
     }
@@ -64,18 +66,26 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
     if(!isEditMode) {
 
       /* 이미지 로직 추가 필요 */
-      if (!name || !gender || !birthDate || !breedId) {
+      if (!name || !gender || !birthDate || !breedId || !imageFile) {
         alert('모든 필드를 입력해주세요.');
         return;
       }
-
+      
+      const formData = new FormData();
+      formData.append('image', imageFile); // 파일
+      formData.append('data', new Blob([JSON.stringify({
+        name,
+        gender,
+        birthDate : formatBirthDate(birthDate), // YYYY-MM-DD -> YYYYMMDD 형식으로 변환
+        breedId: Number(breedId),
+      })], { type: 'application/json' })); // JSON 데이터
       // 펫등록
       const registerResult = await petRegister({
         name,
         gender,
         birthDate : formatBirthDate(birthDate), // YYYY-MM-DD -> YYYYMMDD 형식으로 변환
         breedId: Number(breedId),
-        profileImageUrl: imageUrl || '/images/default-pet.png',
+        profileImage: imageFile
       });
       
 

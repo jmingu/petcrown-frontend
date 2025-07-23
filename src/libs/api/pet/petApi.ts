@@ -7,10 +7,19 @@ import { MyPetResponse } from '@/libs/interface/api/pet/petResponseInterface'; /
 /**
  * 나의 펫 등록
  */
-export const petRegister = async (
-  data: PetRegisterRequest
-): Promise<CommonResponse<object>> => {
-  const response = await api.post('/pet/v1', data);
+export const petRegister = async (data: PetRegisterRequest): Promise<CommonResponse<object>> => {
+  const formData = new FormData();
+  formData.append('image', data.profileImage); // 파일
+  formData.append('data', new Blob([JSON.stringify({
+    name: data.name,
+    gender: data.gender,
+    birthDate: data.birthDate,
+    breedId: data.breedId,
+  })], { type: 'application/json' })); // JSON 데이터
+
+  const response = await api.post('/pet/v1', formData, {
+     headers: { 'Content-Type': 'multipart/form-data' }
+  });
   return response.data;
 };
 
