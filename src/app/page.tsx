@@ -1,15 +1,218 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import HomeBanner from '@/components/home/banner/HomeBanner';
 import HomeNotice from '@/components/home/notice/HomeNotice';
 import HomeRanking from '@/components/home/ranking/HomeRanking';
 import HomeCommunity from '@/components/home/community/HomeCommunity';
+import HomeVote from '@/components/home/vote/HomeVote';
+import FloatingActionButton from '@/components/common/floating/FloatingActionButton';
+import AdSense from '@/components/common/adsense/AdSense';
+import { getEventList } from '@/libs/api/event/eventApi';
+import { Event } from '@/libs/interface/api/event/eventResponseInterface';
+import Link from 'next/link';
 
 export default function Home() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
+
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getEventList({ page: 1, size: 10, search: '' });
+      if (response.resultCode === 200 && response.result) {
+        setEvents(response.result);
+      }
+    } catch (error) {
+      console.error('이벤트 로딩 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getEventStatus = (event: Event) => {
+    const now = new Date();
+    const startDate = new Date(event.startDate);
+    const endDate = new Date(event.endDate);
+
+    if (now < startDate) return '준비중';
+    if (now >= startDate && now <= endDate) return '진행중';
+    return '종료';
+  };
+
+  const getGradientColor = (index: number) => {
+    const gradients = [
+      'from-purple-400 via-pink-400 to-red-400',
+      'from-blue-400 via-cyan-400 to-teal-400',
+      'from-orange-400 via-yellow-400 to-amber-400',
+      'from-green-400 via-emerald-400 to-lime-400',
+      'from-rose-400 via-fuchsia-400 to-purple-400',
+    ];
+    return gradients[index % gradients.length];
+  };
   return (
-    <div className="global-wrapper px-3">
-      <HomeBanner />
-      <HomeNotice />
-      <HomeRanking />
-      <HomeCommunity />
+    <div className="min-h-screen bg-gray-50">
+      {/* 메인 콘텐츠 */}
+      <div className="relative">
+        <HomeBanner />
+
+        {/* AdSense after Banner */}
+        {adsenseId && (
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <AdSense
+              adClient={adsenseId}
+              adFormat="auto"
+              fullWidthResponsive={true}
+              style={{ display: 'block', minHeight: '100px' }}
+            />
+          </div>
+        )}
+
+        {/* 이벤트/광고 스크롤 섹션 */}
+        {!isLoading && events.length > 0 && (
+          <div className="bg-white border-y border-gray-100 py-6">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-900">🎉 특별 이벤트</h2>
+                <span className="text-sm text-gray-500">좌우로 스크롤해보세요</span>
+              </div>
+
+              <div className="overflow-x-auto scrollbar-hide">
+                <div className="flex space-x-4 pb-2" style={{ minWidth: 'max-content' }}>
+                  {/* 이벤트 카드들 */}
+                  {events.map((event, index) => (
+                    <Link
+                      key={event.eventId}
+                      href={`/event/${event.eventId}`}
+                      className="flex-shrink-0 w-80 h-40 bg-gradient-to-r rounded-2xl p-6 text-white relative overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
+                      style={{
+                        backgroundImage: `linear-gradient(to right, var(--tw-gradient-stops))`,
+                      }}
+                    >
+                      <div className={`absolute inset-0 bg-gradient-to-r ${getGradientColor(index)}`}></div>
+
+                      {/* 배경 장식 */}
+                      <div className="absolute inset-0 bg-black/10"></div>
+                      <div className="absolute -top-4 -right-4 w-20 h-20 bg-white/20 rounded-full"></div>
+                      <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-white/10 rounded-full"></div>
+
+                      {/* 내용 */}
+                      <div className="relative z-10 h-full flex flex-col justify-between">
+                        <div>
+                          <div className="text-sm opacity-90 mb-1">EVENT {index + 1}</div>
+                          <h3 className="text-xl font-bold mb-2 line-clamp-1">
+                            {event.title}
+                          </h3>
+                          {event.content && (
+                            <p className="text-sm opacity-90 line-clamp-2">
+                              {event.content.replace(/<[^>]*>/g, '')}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-xs opacity-75">
+                          {getEventStatus(event)}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+
+                  {/* 준비중 표시 카드 */}
+                  <div className="flex-shrink-0 w-80 h-40 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center text-gray-400">
+                    <div className="text-center">
+                      <div className="text-3xl mb-2">🎯</div>
+                      <div className="font-semibold">더 많은 이벤트</div>
+                      <div className="text-sm">준비중입니다</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* AdSense after Event Section */}
+        {adsenseId && (
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <AdSense
+              adClient={adsenseId}
+              adFormat="auto"
+              fullWidthResponsive={true}
+              style={{ display: 'block', minHeight: '100px' }}
+            />
+          </div>
+        )}
+
+        {/* 섹션들을 감싸는 컨테이너 */}
+        <div className="max-w-7xl mx-auto px-4 py-8 space-y-12">
+          {/* 인기 투표 섹션 */}
+          <HomeVote />
+
+          {/* AdSense after Vote */}
+          {adsenseId && (
+            <div className="my-8">
+              <AdSense
+                adClient={adsenseId}
+                adFormat="auto"
+                fullWidthResponsive={true}
+                style={{ display: 'block', margin: '2rem 0', minHeight: '100px' }}
+              />
+            </div>
+          )}
+
+          {/* 랭킹 섹션 */}
+          <HomeRanking />
+
+          {/* AdSense after Ranking */}
+          {adsenseId && (
+            <div className="my-8">
+              <AdSense
+                adClient={adsenseId}
+                adFormat="auto"
+                fullWidthResponsive={true}
+                style={{ display: 'block', margin: '2rem 0', minHeight: '100px' }}
+              />
+            </div>
+          )}
+
+          {/* 커뮤니티 섹션 */}
+          <HomeCommunity />
+
+          {/* AdSense after Community */}
+          {adsenseId && (
+            <div className="my-8">
+              <AdSense
+                adClient={adsenseId}
+                adFormat="auto"
+                fullWidthResponsive={true}
+                style={{ display: 'block', margin: '2rem 0', minHeight: '100px' }}
+              />
+            </div>
+          )}
+
+          {/* 공지사항 섹션 */}
+          <HomeNotice />
+
+          {/* AdSense after Notice */}
+          {adsenseId && (
+            <div className="my-8">
+              <AdSense
+                adClient={adsenseId}
+                adFormat="auto"
+                fullWidthResponsive={true}
+                style={{ display: 'block', margin: '2rem 0', minHeight: '100px' }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 플로팅 액션 버튼 */}
+      <FloatingActionButton />
     </div>
   );
 }

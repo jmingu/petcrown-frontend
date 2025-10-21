@@ -5,18 +5,23 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
-import Button from '@/components/common/button/Button';
+import {
+  Menu, X, Crown, Trophy, MessageCircle,
+  Megaphone, User, LogOut, Heart, PartyPopper
+} from 'lucide-react';
+import CuteButton from '@/components/common/button/CuteButton';
+import CuteAvatar from '@/components/common/avatar/CuteAvatar';
+import Alert from '@/components/common/alert/Alert';
 import { useUserStore } from '@/libs/store/user/userStore';
 import { findUser } from '@/libs/api/user/userApi';
-import Alert from '@/components/common/alert/Alert';
 import { authChannel } from '@/libs/broadcastchannel/channel';
-import { tr } from 'framer-motion/client';
 
 const MENU_ITEMS = [
-  { name: '랭킹보기', path: '/ranking' },
-  { name: '투표하기', path: '/vote' },
-  { name: '커뮤니티', path: '/community' },
-  { name: '공지사항', path: '/notice' },
+  { name: '랭킹보기', path: '/ranking', icon: Trophy },
+  { name: '투표하기', path: '/vote', icon: Crown },
+  { name: '커뮤니티', path: '/community', icon: MessageCircle },
+  { name: '공지사항', path: '/notice', icon: Megaphone },
+  { name: '이벤트', path: '/event', icon: PartyPopper },
 ];
 
 export default function Header() {
@@ -27,7 +32,6 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState(''); // 알림 메시지
   const [alertAction, setAlertAction] = useState<(() => void) | null>(null); // 알림창 확인 버튼 동작
-  const [nickname, setNickname] = useState('');
  
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -63,7 +67,7 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    
+
     const init = async () => {
 
       // 토큰이 있는데 로그인페이지, 회원가입이면 메인으로 이동
@@ -73,17 +77,27 @@ export default function Header() {
           return;
         }
       }
-      
-      // 애초에 토큰이 없으면 로그아웃 처리
+
+      // 로그인이 필요한 페이지 목록 (Alert 없이 바로 리다이렉트하는 페이지만)
+      const loginRequiredPages = ['/profile'];
+      const isLoginRequired = loginRequiredPages.some(page => pathname?.startsWith(page));
+
+      // 로그인이 필요한 페이지인데 토큰이 없으면 로그인 페이지로 이동
+      if (isLoginRequired && (!localStorage.getItem('a_t') || !localStorage.getItem('r_t'))) {
+        router.push('/login');
+        return;
+      }
+
+      // 토큰이 없으면 로그아웃 상태로 처리 (페이지 이동은 하지 않음)
       if (!localStorage.getItem('a_t') || !localStorage.getItem('r_t')) {
-        handleLogout()
+        clearLoginState()
         return
       }
 
       // 세선조회
       if(sessionStorage.getItem('sess') === null || sessionStorage.getItem('sess') === undefined) {
 
-        // 자동로그인 조회 
+        // 자동로그인 조회
         await checkAutoLogin();
         return
 
@@ -116,8 +130,6 @@ export default function Header() {
       await findLoginUser();
       
       setIsLoading(false);
-    }else {
-      setNickname(user?.nickname || '');
     }
     setIsLoggedIn(true);
   }
@@ -139,10 +151,10 @@ export default function Header() {
       
       // 2초뒤 다른탭이 없어서 로그인 여부 확인안되서 로그인이 진행되지 않아 토큰 없으면 로그아웃 처리
       setTimeout(() => {
-        
+
         if (!localStorage.getItem('a_t') || !localStorage.getItem('r_t') || !sessionStorage.getItem('sess')) {
-          handleLogout();
-          
+          clearLoginState();
+
         }
       }, 2000);
     }
@@ -150,20 +162,23 @@ export default function Header() {
 
 
   /**
-   * 로그아웃 처리
+   * 로그아웃 처리 (상태만 초기화, 페이지 이동 없음)
    */
-  const handleLogout = () => {
-    setNickname('');
+  const clearLoginState = () => {
     localStorage.removeItem('a_t');
     localStorage.removeItem('r_t');
     sessionStorage.clear();
     clearUser(); // 사용자 정보 초기화
     setIsLoggedIn(false);
-    if(pathname === '/profile') {
-      router.push('/'); // 메인으로 이동
-    }
-    // 메인으로 이동
-    // router.push('/');
+  };
+
+  /**
+   * 로그아웃 처리 (대시보드로 이동)
+   */
+  const handleLogout = () => {
+    clearLoginState();
+    // 대시보드(메인)으로 이동
+    router.push('/');
   };
 
   /**
@@ -172,7 +187,7 @@ export default function Header() {
   const findLoginUser = async () => {
     const userResult = await findUser(); // 사용자 정보 받아오기
     if (userResult.resultCode !== 200) {
-      handleLogout(); // 로그아웃(정보지우기)
+      clearLoginState(); // 로그아웃(정보지우기)
 
       if (userResult.resultCode >= 3000) {
         setAlertMessage(userResult.resultMessageKo);
@@ -194,148 +209,238 @@ export default function Header() {
     sessionStorage.setItem('sess', encodedUser);
 
     useUserStore.getState().setUser(userResult.result); // 전역 상태에 저장
- 
-    setNickname(userResult.result.nickname); // 닉네임 상태 업데이트
   };
 
   return (
-    <header className="w-full bg-white shadow-md">
-      <div className="relative flex items-center justify-between px-2 py-3 global-wrapper">
-        <button
-          className="md:hidden text-2xl"
-          onClick={() => setIsMenuOpen(true)}
-        >
-          ☰
-        </button>
-
-        <div className="md:hidden absolute left-1/2 transform -translate-x-1/2 text-xl font-bold">
-          <Link href="/">PetCrown</Link>
-        </div>
-        <div className="hidden md:block text-xl font-bold">
-          <Link href="/">PetCrown</Link>
-        </div>
-
-        <nav className="hidden md:flex gap-12">
-          {MENU_ITEMS.map(({ name, path }) => (
-            <Link
-              key={path}
-              href={path}
-              className={`text-gray-700 font-medium hover:text-[var(--color-theme-green)] ${
-                pathname === path
-                  ? '!text-[var(--color-theme-green)] font-bold'
-                  : ''
-              }`}
-            >
-              {name}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="hidden md:flex items-center gap-4">
-          {isLoading ? (
-            <div className="animate-pulse">로딩중...</div>
-          ) : isLoggedIn ? (
-            <>
-              <Link
-                href="/profile"
-                className="text-gray-700 font-medium "
-                title={nickname}
-              >
-                <span>
-                  {nickname.length > 5
-                    ? nickname.slice(0, 5) + '...'
-                    : nickname}
-                  님
-                </span>
-              </Link>
-              <Button onClick={handleLogout}>로그아웃</Button>
-            </>
-          ) : (
-            <Button onClick={() => router.push('/login')}>
-              로그인
-            </Button>
-          )}
-        </div>
-
-        {isMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-10"
-            onClick={() => setIsMenuOpen(false)}
-          />
-        )}
-        <motion.div
-          className="fixed top-0 left-0 w-64 h-full bg-white shadow-lg flex flex-col p-6 z-20"
-          initial={{ x: '-100%' }}
-          animate={{ x: isMenuOpen ? 0 : '-100%' }}
-          transition={{ type: 'tween', duration: 0.3 }}
-        >
+    <>
+      <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div className="relative flex items-center justify-between px-4 py-4 max-w-7xl mx-auto">
+          {/* 모바일 메뉴 버튼 */}
           <button
-            className="self-end text-2xl"
-            onClick={() => setIsMenuOpen(false)}
+            className="md:hidden p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white transition-colors duration-200"
+            onClick={() => setIsMenuOpen(true)}
           >
-            ×
+            <Menu className="w-5 h-5 text-purple-600" />
           </button>
 
-          <div className="mb-6 text-center">
-            {isLoading ? (
-              <div className="animate-pulse">로딩중...</div>
-            ) : isLoggedIn ? (
-              <Link
-                href="/profile"
-                className="font-medium text-lg mt-2 block"
-                onClick={() => setIsMenuOpen(false)}
+          {/* 로고 */}
+          <div className="md:hidden absolute left-1/2 transform -translate-x-1/2">
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg relative">
+                <Trophy className="w-3.5 h-3.5 text-yellow-100 relative z-10 mt-1.5" />
+                <Crown className="w-2.5 h-2.5 text-white absolute top-1 left-1/2 transform -translate-x-1/2 drop-shadow-sm" />
+              </div>
+              <span className="text-xl font-bold text-gray-900">
+                PetCrown
+              </span>
+            </Link>
+          </div>
+          
+          <div className="hidden md:block">
+            <Link href="/" className="flex items-center space-x-3">
+              <motion.div
+                className="w-10 h-10 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg relative"
+                whileHover={{ scale: 1.1, rotate: 10 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                <span>
-                  {nickname.length > 5
-                    ? nickname.slice(0, 5) + '...'
-                    : nickname}
-                  님
-                </span>
-              </Link>
-            ) : (
-              <Button onClick={() => router.push('/login')}>
-                로그인
-              </Button>
-            )}
+                <Trophy className="w-4 h-4 text-yellow-100 relative z-10 mt-1.5" />
+                <Crown className="w-3 h-3 text-white absolute top-1 left-1/2 transform -translate-x-1/2 drop-shadow-sm" />
+              </motion.div>
+              <span className="text-2xl font-bold text-gray-900">
+                PetCrown
+              </span>
+            </Link>
           </div>
 
-          {MENU_ITEMS.map(({ name, path }) => (
-            <Link
-              key={path}
-              href={path}
-              className={`text-gray-700 text-lg my-4 ${
-                pathname === path
-                  ? '!text-[var(--color-theme-green)] font-bold'
-                  : ''
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {name}
-            </Link>
-          ))}
+          {/* 데스크톱 네비게이션 */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {MENU_ITEMS.map(({ name, path, icon: Icon }) => (
+              <Link
+                key={path}
+                href={path}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium transition-all duration-200 ${
+                  pathname === path
+                    ? 'bg-white/80 backdrop-blur-sm shadow-md text-purple-700'
+                    : 'text-gray-700 hover:bg-white/60 hover:text-purple-600'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{name}</span>
+              </Link>
+            ))}
+          </nav>
 
-          {isLoggedIn && (
-            <Button
-              onClick={handleLogout}
-              className="mt-auto py-2 rounded-md font-bold w-full"
+          {/* 사용자 메뉴 */}
+          <div className="hidden md:flex items-center space-x-4">
+            {isLoading ? (
+              <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 rounded-full">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-600 border-t-transparent"></div>
+                <span className="text-sm text-gray-600">로딩중...</span>
+              </div>
+            ) : isLoggedIn ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all duration-200"
+                  title={user?.nickname || ''}
+                >
+                  <CuteAvatar size="sm" />
+                  <span className="font-medium text-gray-700">
+                    {(user?.nickname || '').length > 8 ? (user?.nickname || '').slice(0, 8) + '...' : user?.nickname || ''}님
+                  </span>
+                </Link>
+                <CuteButton
+                  onClick={handleLogout}
+                  variant="secondary"
+                  size="sm"
+                  icon={<LogOut className="w-4 h-4" />}
+                >
+                  로그아웃
+                </CuteButton>
+              </>
+            ) : (
+              <CuteButton
+                onClick={() => router.push('/login')}
+                variant="primary"
+                size="md"
+                icon={<User className="w-4 h-4" />}
+              >
+                로그인
+              </CuteButton>
+            )}
+          </div>
+        </div>
+
+        {/* 모바일 메뉴 */}
+        {isMenuOpen && (
+          <div className="md:hidden fixed inset-0 z-50">
+            {/* 오버레이 */}
+            <div 
+              className="absolute inset-0 bg-black opacity-50"
+              onClick={() => setIsMenuOpen(false)}
+            />
+            
+            {/* 메뉴 패널 */}
+            <motion.div
+              className="absolute top-0 left-0 h-screen w-80 bg-white shadow-xl flex flex-col"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
-              로그아웃
-            </Button>
-          )}
-        </motion.div>
-      </div>
+              {/* 헤더 */}
+              <div className="flex items-center justify-between p-6 bg-purple-50 border-b">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg relative">
+                    <Trophy className="w-3.5 h-3.5 text-yellow-100 relative z-10 mt-1.5" />
+                    <Crown className="w-2.5 h-2.5 text-white absolute top-1 left-1/2 transform -translate-x-1/2 drop-shadow-sm" />
+                  </div>
+                  <span className="text-xl font-bold text-gray-900">
+                    PetCrown
+                  </span>
+                </div>
+                <button
+                  className="p-2 rounded-full bg-white shadow-md hover:bg-gray-50 transition-colors duration-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+
+              {/* 사용자 정보 */}
+              <div className="p-6 bg-gray-50 border-b">
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2 py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-600 border-t-transparent"></div>
+                    <span className="text-gray-600">로딩중...</span>
+                  </div>
+                ) : isLoggedIn ? (
+                  <Link
+                    href="/profile"
+                    className="flex items-center space-x-3 p-4 bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <CuteAvatar size="md" />
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        {(user?.nickname || '').length > 10 ? (user?.nickname || '').slice(0, 10) + '...' : user?.nickname || ''}님
+                      </p>
+                      <p className="text-sm text-gray-500">프로필 보기</p>
+                    </div>
+                  </Link>
+                ) : (
+                  <CuteButton
+                    onClick={() => {
+                      router.push('/login');
+                      setIsMenuOpen(false);
+                    }}
+                    variant="primary"
+                    className="w-full"
+                    icon={<User className="w-4 h-4" />}
+                  >
+                    로그인
+                  </CuteButton>
+                )}
+              </div>
+
+              {/* 메뉴 아이템들 */}
+              <div className="flex-1 p-6 space-y-2 bg-white overflow-y-auto">
+                {MENU_ITEMS.map(({ name, path, icon: Icon }, index) => (
+                  <motion.div
+                    key={path}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Link
+                      href={path}
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium transition-all duration-200 ${
+                        pathname === path
+                          ? 'bg-purple-100 text-purple-700 shadow-sm'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span>{name}</span>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* 로그아웃 버튼 */}
+              {isLoggedIn && (
+                <div className="p-6 bg-gray-50 border-t">
+                  <CuteButton
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    variant="secondary"
+                    className="w-full"
+                    icon={<LogOut className="w-4 h-4" />}
+                  >
+                    로그아웃
+                  </CuteButton>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </header>
+
       {/* 알림창 */}
       <Alert
         message={alertMessage}
         onClose={async () => {
-          setAlertMessage(''); // 메시지 초기화
-          setAlertAction(null); // 동작 초기화
+          setAlertMessage('');
+          setAlertAction(null);
 
           if (alertAction) {
-            await alertAction(); // 특정 동작 실행 (비동기 처리)
+            await alertAction();
           }
         }}
       />
-    </header>
+    </>
   );
 }

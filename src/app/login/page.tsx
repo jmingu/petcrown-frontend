@@ -3,156 +3,133 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Button from '@/components/common/button/Button';
-import Input from '@/components/common/input/Input';
+import { motion } from 'framer-motion';
+import { Mail, Lock, Eye, EyeOff, Heart, Sparkles } from 'lucide-react';
+import CuteButton from '@/components/common/button/CuteButton';
+import CuteCard from '@/components/common/card/CuteCard';
+
+import CheckboxGroup from '@/components/common/input/CheckboxGroup';
+import Modal from '@/components/common/modal/Modal';
+import Alert from '@/components/common/alert/Alert';
 import {
   login,
   findUser,
   checkEmailVerificationCode,
   sendEmailVerificationCode,
 } from '@/libs/api/user/userApi';
+import { LoginRequest } from '@/libs/interface/api/user/userRequestInterface';
 import { useUserStore } from '@/libs/store/user/userStore';
-import Alert from '@/components/common/alert/Alert';
-import Modal from '@/components/common/modal/Modal'; // 모달 컴포넌트
-// 체크박스
-import CheckboxGroup from '@/components/common/input/CheckboxGroup';
+import { SendEmailVerificationCodeRequest, CheckEmailVerificationCodeRequest} from '@/libs/interface/api/user/userRequestInterface';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [alertMessage, setAlertMessage] = useState(''); // 알림 메시지
-  const [alertAction, setAlertAction] = useState<(() => void) | null>(null); // 알림창 확인 버튼 동작
-  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
-  const [inputCode, setInputCode] = useState(''); // 입력된 인증번호
+  const [showPassword, setShowPassword] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertAction, setAlertAction] = useState<(() => void) | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [inputCode, setInputCode] = useState('');
   const [autoLogin, setAutoLogin] = useState(
     typeof window !== 'undefined' && localStorage.getItem('auto_login') === 'Y'
   );
+  const [isLoading, setIsLoading] = useState(false);
 
-  /**
-   * 로그인
-   */
+
   const handleLogin = async () => {
-    if (email === null || email.trim() === '' || email === undefined) {
-      alert('이메일을 입력해주세요.');
+    if (!email.trim()) {
+      setAlertMessage('이메일을 입력해주세요.');
       return;
     }
 
-    if (password === null || password.trim() === '' || password === undefined) {
-      alert('비밀번호를 입력해주세요.');
+    if (!password.trim()) {
+      setAlertMessage('비밀번호를 입력해주세요.');
       return;
     }
 
-    // 로그인
-    const loginResult = await login({ email, password }); // 로그인 요청
-    if (loginResult.resultCode !== 200) {
-      if (loginResult.resultCode >= 3000) {
-        setAlertMessage(loginResult.resultMessageKo);
+    setIsLoading(true);
+    try {
+      const loginData: LoginRequest = { email, password };
+      const loginResult = await login(loginData);
+      if (loginResult.resultCode !== 200) {
+        if (loginResult.resultCode >= 3000) {
+          setAlertMessage(loginResult.resultMessageKo);
+          if(loginResult.resultCode === 3114){
+            // handleResendCode(''); 인증번호 재전송
+            setIsModalOpen(true);
+            return;
+          }
+          return;
+        }
+        setAlertMessage('로그인에 실패했습니다. 다시 시도해주세요.');
         return;
       }
-      setAlertMessage('로그인에 실패했습니다. 다시 시도해주세요.');
-      return;
-    }
 
-    // 로그인 토큰 로컬스토리지에 저장
-    localStorage.setItem('a_t', loginResult.result.accessToken);
-    localStorage.setItem('r_t', loginResult.result.refreshToken);
+      localStorage.setItem('a_t', loginResult.result.accessToken);
+      localStorage.setItem('r_t', loginResult.result.refreshToken);
 
-    const userResult = await findUser(); // 로그인 후 사용자 정보 받아오기
-    if (userResult.resultCode !== 200) {
-      if (userResult.resultCode >= 3000) {
-        setAlertMessage(userResult.resultMessageKo);
+      const userResult = await findUser();
+      if (userResult.resultCode !== 200) {
+        if (userResult.resultCode >= 3000) {
+          setAlertMessage(userResult.resultMessageKo);
+          return;
+        }
+        setAlertMessage('사용자 정보를 가져오는 데 실패했습니다. 다시 시도해주세요.');
         return;
       }
-      setAlertMessage(
-        '사용자 정보를 가져오는 데 실패했습니다. 다시 시도해주세요.'
-      );
+
+      const sessData = {
+        loginTime: new Date().toISOString(),
+      };
+      sessionStorage.setItem('sess', JSON.stringify(sessData));
+      useUserStore.getState().setUser(userResult.result);
+      router.push('/');
+    } catch (error) {
+      setAlertMessage('로그인 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
     }
-
-    // isEmailVerified 아직 N일때 인증 필요
-    if (userResult.result.isEmailVerified === 'N') {
-      handleResendCode(''); // 인증번호 재전송
-      setIsModalOpen(true); // 모달 열기
-      return;
-    }
-
-    // 세션에 필요한 데이터만 등록
-    const sessData = {
-      loginTime: new Date().toISOString(), // 로그인 시간
-    };
-    // 한글과 특수문자를 처리할 수 있도록 인코딩
-    const encodedUser = JSON.stringify(sessData);
-    sessionStorage.setItem('sess', encodedUser);
-
-    useUserStore.getState().setUser(userResult.result); // 전역 상태에 저장
-    // 로그인 성공 시 사용자 정보 조회 or 메인 페이지 이동
-    router.push('/'); // 또는 getMyInfo()로 사용자 상태 업데이트
   };
 
   /**
-   * 인증번호 확인
+   * 코드 확인
    */
   const handleVerifyCode = async () => {
-    if (
-      inputCode === null ||
-      inputCode.trim() === '' ||
-      inputCode === undefined
-    ) {
+    if (!inputCode.trim()) {
       setAlertMessage('인증번호를 입력해주세요.');
       return;
     }
 
-    const codeCheck = await checkEmailVerificationCode({
+     const emailCode: CheckEmailVerificationCodeRequest = {
       code: inputCode,
-      email: email,
-    });
+      email: email
+    };
+    const codeCheck = await checkEmailVerificationCode(emailCode);
 
     if (codeCheck.resultCode !== 200) {
       if (codeCheck.resultCode >= 3000) {
-        setAlertMessage(codeCheck.resultMessageKo); // 한국어 메시지
+        setAlertMessage(codeCheck.resultMessageKo);
         return;
       }
       setAlertMessage('인증번호 확인 중 오류가 발생했습니다.');
       return;
     }
 
-    const userResult = await findUser(); // 사용자 정보 받아오기
-    if (userResult.resultCode !== 200) {
-      if (userResult.resultCode >= 3000) {
-        setAlertMessage(userResult.resultMessageKo);
-        return;
-      }
-      setAlertMessage(
-        '사용자 정보를 가져오는 데 실패했습니다. 다시 시도해주세요.'
-      );
-    }
-
-    // 세션에 필요한 데이터만 등록
-    const sessData = {
-      loginTime: new Date().toISOString(), // 로그인 시간
-    };
-    // 한글과 특수문자를 처리할 수 있도록 인코딩
-    const encodedUser = JSON.stringify(sessData);
-
-    sessionStorage.setItem('sess', encodedUser);
-
-    useUserStore.getState().setUser(userResult.result); // 전역 상태에 저장
-
-    // 확인 버튼 클릭 시 메인 페이지로 이동하는 알림창
     setAlertMessage('인증이 완료되었습니다!');
-    setAlertAction(() => router.push('/')); // 함수 참조 전달
     setIsModalOpen(false);
   };
 
-  /**
-   * 인증번호 전송
-   */
   const handleResendCode = async (value: string) => {
-    const sendResult = await sendEmailVerificationCode(email);
+    const emailCodeSend: SendEmailVerificationCodeRequest = {
+          email: email
+        };
+        const sendResult = await sendEmailVerificationCode(
+          emailCodeSend
+        );
 
     if (sendResult.resultCode !== 200) {
       if (sendResult.resultCode >= 3000) {
-        setAlertMessage(sendResult.resultMessageKo); // 한국어 메시지
+        setAlertMessage(sendResult.resultMessageKo);
         return;
       }
       setAlertMessage('인증번호 재전송 중 오류가 발생했습니다.');
@@ -161,10 +138,9 @@ export default function LoginPage() {
     if (value === 'resend') {
       setAlertMessage('인증번호가 재전송되었습니다.');
     }
-    setInputCode(''); // 입력된 인증번호 초기화
+    setInputCode('');
   };
 
-  // 자동로그인 체크박스 변경 핸들러
   const handleAutoLoginChange = (values: string[]) => {
     const checked = values.includes('auto_login');
     setAutoLogin(checked);
@@ -176,93 +152,207 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="h-full flex items-center justify-center px-3 mt-20">
-      <div className="w-full max-w-sm">
-        <h2 className="text-2xl font-bold text-center mb-4">로그인</h2>
-        <div className="mb-3">
-          <label className="block text-gray-700 font-bold">이메일</label>
-          <Input
-            name="email"
-            placeholder="이메일"
-            value={email}
-            onChange={(e) => setEmail(e)}
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="block text-gray-700 font-bold">비밀번호</label>
-          <Input
-            name="password"
-            type="password"
-            placeholder="비밀번호"
-            value={password}
-            onChange={(e) => setPassword(e)}
-          />
-        </div>
-
-        {/* 자동로그인 체크박스 */}
-        <CheckboxGroup
-          name="autoLogin"
-          options={[{ label: '자동로그인', value: 'auto_login' }]}
-          selectedValues={autoLogin ? ['auto_login'] : []}
-          onChange={handleAutoLoginChange}
-        />
-        <Button onClick={handleLogin} className="w-full mb-3">
-          로그인
-        </Button>
-        <div className="flex justify-between text-sm">
-          <Link href="/find-id" className="text-gray-600 hover:underline">
-            아이디 찾기
-          </Link>
-          <Link href="/find-password" className="text-gray-600 hover:underline">
-            비밀번호 찾기
-          </Link>
-          <Link
-            href="/signup"
-            className="text-[var(--color-theme-sky)] hover:underline"
-          >
-            회원가입
-          </Link>
-        </div>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      {/* 배경 장식 요소들 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-20 left-10"
+          animate={{
+            y: [-20, 20, -20],
+            rotate: [0, 10, -10, 0],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <Heart className="w-8 h-8 text-pink-300 opacity-40" fill="currentColor" />
+        </motion.div>
+        
+        <motion.div
+          className="absolute top-32 right-20"
+          animate={{
+            y: [20, -20, 20],
+            rotate: [0, -10, 10, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <Sparkles className="w-6 h-6 text-purple-300 opacity-50" />
+        </motion.div>
       </div>
+
+      {/* 메인 로그인 카드 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md relative z-10"
+      >
+        <CuteCard className="space-y-6" padding="lg">
+          {/* 헤더 */}
+          <div className="text-center space-y-2">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex justify-center"
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
+                <Heart className="w-8 h-8 text-white" fill="currentColor" />
+              </div>
+            </motion.div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              PetCrown
+            </h1>
+            <p className="text-gray-600">
+              우리 반려동물과 함께하는 특별한 공간 💕
+            </p>
+          </div>
+
+          {/* 로그인 폼 */}
+          <div className="space-y-4">
+            {/* 이메일 입력 */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                이메일
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="email"
+                  placeholder="이메일을 입력해주세요"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            {/* 비밀번호 입력 */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                비밀번호
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="비밀번호를 입력해주세요"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* 자동로그인 체크박스 */}
+            <CheckboxGroup
+              name="autoLogin"
+              options={[{ label: '자동로그인', value: 'auto_login' }]}
+              selectedValues={autoLogin ? ['auto_login'] : []}
+              onChange={handleAutoLoginChange}
+            />
+
+            {/* 로그인 버튼 */}
+            <CuteButton
+              onClick={handleLogin}
+              loading={isLoading}
+              className="w-full"
+              variant="primary"
+              size="lg"
+            >
+              로그인
+            </CuteButton>
+          </div>
+
+          {/* 링크들 */}
+          <div className="space-y-4">
+            <div className="flex justify-center space-x-6 text-sm">
+              <Link href="/find-id" className="text-gray-500 hover:text-purple-600 transition-colors">
+                아이디 찾기
+              </Link>
+              <span className="text-gray-300">|</span>
+              <Link href="/find-password" className="text-gray-500 hover:text-purple-600 transition-colors">
+                비밀번호 찾기
+              </Link>
+            </div>
+            
+            <div className="text-center">
+              <span className="text-gray-500 text-sm">아직 회원이 아니신가요? </span>
+              <Link href="/signup" className="text-purple-600 hover:text-purple-800 font-medium transition-colors">
+                회원가입
+              </Link>
+            </div>
+          </div>
+        </CuteCard>
+      </motion.div>
 
       {/* 인증번호 모달 */}
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
-          <div className="p-4">
-            <h3 className="text-xl font-bold mb-4">인증번호 확인</h3>
-            <p className="mb-2">이메일로 인증번호가 전송되었습니다.</p>
-            <p className="mb-2">인증까지 완료해야 최종 가입이 완료됩니다.</p>
-            <Input
-              name="verificationCode"
-              placeholder="인증번호 입력"
-              value={inputCode}
-              onChange={(value) => setInputCode(value)}
-            />
-            <div className="flex justify-between mt-4">
-              <Button onClick={handleVerifyCode} className="flex-1 mr-2">
-                확인
-              </Button>
-              <Button
-                onClick={() => handleResendCode('resend')}
-                type="accent"
-                className="flex-1 ml-2"
-              >
-                재전송
-              </Button>
+          <CuteCard className="max-w-sm mx-auto" padding="lg">
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Mail className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">인증번호 확인</h3>
+                <p className="text-gray-600 text-sm">
+                  이메일로 인증번호가 전송되었습니다.<br />
+                  인증까지 완료해야 최종 가입이 완료됩니다.
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  인증번호
+                </label>
+                <input
+                  type="text"
+                  placeholder="인증번호를 입력해주세요"
+                  value={inputCode}
+                  onChange={(e) => setInputCode(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+              
+              <div className="flex space-x-3">
+                <CuteButton onClick={handleVerifyCode} variant="primary" className="flex-1">
+                  확인
+                </CuteButton>
+                <CuteButton
+                  onClick={() => handleResendCode('resend')}
+                  variant="secondary"
+                  className="flex-1"
+                >
+                  재전송
+                </CuteButton>
+              </div>
             </div>
-          </div>
+          </CuteCard>
         </Modal>
       )}
+
       {/* 알림창 */}
       <Alert
         message={alertMessage}
-        onClose={async () => {
-          setAlertMessage(''); // 메시지 초기화
-          setAlertAction(null); // 동작 초기화
-
+        onClose={() => {
+          setAlertMessage('');
           if (alertAction) {
-            await alertAction(); // 특정 동작 실행 (비동기 처리)
+            alertAction();
+            setAlertAction(null);
           }
         }}
       />

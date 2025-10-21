@@ -2,163 +2,337 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Pagination from 'react-js-pagination';
-import Button from '@/components/common/button/Button';
-import { getVoteList } from '@/libs/api/vote/voteApi'; // API 호출 함수
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import {
+  Heart, Plus,
+  Calendar, Trophy, User, ArrowRight
+} from 'lucide-react';
+import CuteButton from '@/components/common/button/CuteButton';
+import CuteCard from '@/components/common/card/CuteCard';
+import CuteBadge from '@/components/common/badge/CuteBadge';
+import CuteAvatar from '@/components/common/avatar/CuteAvatar';
+import AdSense from '@/components/common/adsense/AdSense';
+import { getVoteList } from '@/libs/api/vote/voteApi';
+import { VotePetResponse } from '@/libs/interface/api/vote/voteResponseInterface';
+import { calculateAge } from '@/common/util/calculateUtil';
 
-const VOTE_ITEMS = [
-  { id: 1, name: '코코', gender: 'F', type: '개', image: '/images/coco.jpg', period: 'daily' },
-  { id: 2, name: '바둑이', gender: 'M', type: '개', image: '/images/baduk.jpg', period: 'weekly' },
-  { id: 3, name: '초코', gender: 'F', type: '개', image: '/images/choco.jpg', period: 'monthly' },
-  { id: 4, name: '흰둥이', gender: 'M', type: '개', image: '/images/whindung.jpg', period: 'daily' },
-  { id: 5, name: '몽이', gender: 'F', type: '고양이', image: '/images/mong.jpg', period: 'weekly' },
-  { id: 6, name: '밤비', gender: 'M', type: '고양이', image: '/images/bambi.jpg', period: 'monthly' },
-  { id: 7, name: '루이', gender: 'F', type: '고양이', image: '/images/lui.jpg', period: 'daily' },
-  { id: 8, name: '탄이', gender: 'M', type: '고양이', image: '/images/tani.jpg', period: 'weekly' },
-  { id: 9, name: '다롱이', gender: 'F', type: '개', image: '/images/darong.jpg', period: 'monthly' },
-  { id: 10, name: '똘이', gender: 'M', type: '개', image: '/images/ddoli.jpg', period: 'daily' },
-  { id: 11, name: '미미', gender: 'F', type: '고양이', image: '/images/mimi.jpg', period: 'weekly' },
-  { id: 12, name: '까미', gender: 'M', type: '고양이', image: '/images/kami.jpg', period: 'monthly' },
-  { id: 13, name: '보리', gender: 'F', type: '개', image: '/images/bori.jpg', period: 'daily' },
-  { id: 14, name: '초롱이', gender: 'M', type: '개', image: '/images/chorong.jpg', period: 'weekly' },
-  { id: 15, name: '나비', gender: 'F', type: '고양이', image: '/images/nabi.jpg', period: 'monthly' },
-  { id: 16, name: '토리', gender: 'M', type: '고양이', image: '/images/tori.jpg', period: 'daily' },
-  { id: 17, name: '두부', gender: 'F', type: '개', image: '/images/dubu.jpg', period: 'weekly' },
-  { id: 18, name: '모찌', gender: 'M', type: '개', image: '/images/mochi.jpg', period: 'monthly' },
-  { id: 19, name: '밀키', gender: 'F', type: '고양이', image: '/images/milky.jpg', period: 'daily' },
-  { id: 20, name: '설이', gender: 'M', type: '고양이', image: '/images/seol.jpg', period: 'weekly' },
-  { id: 21, name: '까망이', gender: 'F', type: '개', image: '/images/kamangi.jpg', period: 'monthly' },
-  { id: 22, name: '단비', gender: 'M', type: '개', image: '/images/danbi.jpg', period: 'daily' },
-  { id: 23, name: '초이', gender: 'F', type: '고양이', image: '/images/choi.jpg', period: 'weekly' },
-  { id: 24, name: '레오', gender: 'M', type: '고양이', image: '/images/leo.jpg', period: 'monthly' },
-  { id: 25, name: '바니', gender: 'F', type: '개', image: '/images/bani.jpg', period: 'daily' },
-  { id: 26, name: '호야', gender: 'M', type: '개', image: '/images/hoya.jpg', period: 'weekly' },
-  { id: 27, name: '체리', gender: 'F', type: '고양이', image: '/images/cherry.jpg', period: 'monthly' },
-  { id: 28, name: '쿠키', gender: 'M', type: '고양이', image: '/images/cookie.jpg', period: 'daily' },
-  { id: 29, name: '카이', gender: 'F', type: '개', image: '/images/kai.jpg', period: 'weekly' },
-  { id: 30, name: '루루', gender: 'M', type: '개', image: '/images/lulu.jpg', period: 'monthly' },
-];
-
-
-const ITEMS_PER_PAGE = 6;
+type PeriodType = 'weekly' | 'monthly';
 
 export default function VotePage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedType, setSelectedType] = useState<'all' | '개' | '고양이'>('all'); // 🐶🐱 필터 상태 추가
-  const [rankingPeriod, setRankingPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily'); // 📅 일간/주간/월간 선택 상태
+  const [votes, setVotes] = useState<VotePetResponse[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('weekly');
+  const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
 
-  // 🔹 선택된 기간과 필터에 맞는 항목 필터링
-  const filteredItems = VOTE_ITEMS.filter(
-    (item) => item.period === rankingPeriod && (selectedType === 'all' || item.type === selectedType)
-  );
+  const ITEMS_PER_PAGE = 12;
 
-  // 페이지네이션 처리
-  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
-  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
-  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+  // 페이지네이션
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   useEffect(() => {
-      getVote(); // 컴포넌트 마운트 시 나의 펫 조회
-      
-  }, []);
+    loadVotes();
+  }, [currentPage]);
 
-  /**
-   * 투표 리스트 조회
-   */
-
-    const getVote = async () => {
-      try {
-        const response = await getVoteList({page:1, size: 100});
-  
-      } catch (error) {
+  const loadVotes = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getVoteList({ page: currentPage - 1, size: ITEMS_PER_PAGE });
+      if (response.resultCode === 200) {
+        setVotes(response.result.votes);
+        setTotalCount(response.result.totalCount);
       }
+    } catch (error) {
+      console.error('투표 목록 로드 실패:', error);
+      
+      // 개발/테스트 용도 - 임시 샘플 데이터
+      const sampleVotes = Array.from({ length: 6 }, (_, i) => ({
+        voteId: i + 1,
+        petId: i + 1,
+        name: `테스트펫${i + 1}`,
+        gender: i % 2 === 0 ? 'M' : 'F',
+        birthDate: '2020-01-01',
+        breedId: 1,
+        breedName: '골든 리트리버',
+        speciesId: 1,
+        speciesName: '개',
+        dailyVoteCount: Math.floor(Math.random() * 50) + 10,
+        weeklyVoteCount: Math.floor(Math.random() * 200) + 50,
+        monthlyVoteCount: Math.floor(Math.random() * 1000) + 100,
+        voteMonth: '2024-09',
+        profileImageUrl: `https://images.unsplash.com/photo-155205383${i + 1}-71594a27632d?w=400`
+      }));
+      
+      setVotes(sampleVotes);
+      setTotalCount(sampleVotes.length);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
-    <div className="p-6 global-wrapper">
-      <h1 className="text-2xl font-bold text-center mb-6">투표하기</h1>
-      <div className="flex justify-end mb-4">
-        <Link href="/vote/register">
-          <Button>
-            등록
-          </Button>
-        </Link>
-      </div>
-
-      {/* 🔹 일간/주간/월간 탭 */}
-      <div className="flex justify-evenly mb-4">
-        {['daily', 'weekly', 'monthly'].map((tab) => (
-          <div
-            key={tab}
-            className={`text-lg py-2 px-5 cursor-pointer transition-all duration-300 text-center ${
-              rankingPeriod === tab
-                ? 'font-bold text-[var(--color-theme-sky)] border-b-2 border-[var(--color-theme-sky)]'
-                : 'hover:text-[var(--color-theme-sky)]'
-            }`}
-            onClick={() => {
-              setRankingPeriod(tab as 'daily' | 'weekly' | 'monthly');
-              setCurrentPage(1); // 탭 변경 시 페이지 초기화
-            }}
-          >
-            {tab === 'daily' ? '일간' : tab === 'weekly' ? '주간' : '월간'}
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* 헤더 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
+        >
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <Trophy className="w-8 h-8 text-yellow-500" />
+            <h1 className="text-4xl font-bold text-gray-900">
+              투표하기
+            </h1>
+            <Trophy className="w-8 h-8 text-yellow-500" />
           </div>
-        ))}
-      </div>
+          <p className="text-gray-600 text-lg">
+            가장 귀여운 반려동물을 선택해주세요! 💕
+          </p>
+        </motion.div>
 
-      {/* 🔹 강아지/고양이 필터 버튼 */}
-      <div className="flex justify-center gap-4 mb-6">
-        {['all', '개', '고양이'].map((type) => (
-          <Button
-            type='accent'
-            key={type}
-            onClick={() => {
-              setSelectedType(type as 'all' | '개' | '고양이');
-              setCurrentPage(1); // 필터 변경 시 페이지 리셋
-            }}
-            className={`px-4 py-2 rounded-lg transition-all ${
-              selectedType === type ? '' : '!bg-gray-200 !text-black'
-            }`}
-          >
-            {type === 'all' ? '전체' : type}
-          </Button>
-        ))}
-      </div>
+        {/* 투표 등록 버튼 (모바일 우선) */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex justify-center md:justify-end mb-6"
+        >
+          <Link href="/vote/register">
+            <CuteButton variant="cute" size="lg" icon={<Plus className="w-5 h-5" />}>
+              투표 등록하기
+            </CuteButton>
+          </Link>
+        </motion.div>
 
-      {/* 🔹 투표 리스트 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-        {currentItems.length > 0 ? (
-          currentItems.map(({ id, name, gender, image }) => (
-            <Link key={id} href={`/vote/${id}`} className="block text-center border p-4 rounded-lg shadow-md hover:shadow-lg transition">
-              <div className="w-full aspect-square overflow-hidden rounded-lg">
-                <img src={image} alt={name} className="w-full h-full object-cover" />
+        {/* 기간별 탭 */}
+        {/* <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="flex justify-center mb-8"
+        >
+          <div className="inline-flex bg-white rounded-2xl p-1.5 shadow-sm border border-gray-200">
+            <button
+              onClick={() => {
+                setSelectedPeriod('weekly');
+                setCurrentPage(1);
+              }}
+              className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                selectedPeriod === 'weekly'
+                  ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md'
+                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4" />
+                <span>주간 투표</span>
               </div>
-              <p className="mt-2 text-lg font-bold">{name}</p>
-              <p className="text-gray-500">{gender}</p>
-            </Link>
-          ))
+            </button>
+            <button
+              onClick={() => {
+                setSelectedPeriod('monthly');
+                setCurrentPage(1);
+              }}
+              className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                selectedPeriod === 'monthly'
+                  ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md'
+                  : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <Trophy className="w-4 h-4" />
+                <span>월간 투표</span>
+              </div>
+            </button>
+          </div>
+        </motion.div> */}
+
+        {/* 투표 목록 */}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+          </div>
         ) : (
-          <p className="text-center col-span-2 md:col-span-3 text-gray-500">해당 항목이 없습니다.</p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            {adsenseId && (
+              <div className="mb-6">
+                <AdSense
+                  adClient={adsenseId}
+                  adFormat="auto"
+                  fullWidthResponsive={true}
+                  style={{ display: 'block', minHeight: '100px' }}
+                />
+              </div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+              {votes.length > 0 ? (
+                votes.map((vote, index) => (
+                  <>
+                    <motion.div
+                      key={vote.voteId}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                    >
+                      <Link href={`/vote/${vote.voteId}`}>
+                        <CuteCard hover className="h-full" padding="lg">
+                          {/* 펫 이미지 */}
+                          <div className="relative mb-4">
+                            <div className="w-full aspect-square relative">
+                              <Image
+                                src={vote.profileImageUrl}
+                                alt={vote.name}
+                                fill
+                                className="rounded-2xl object-cover shadow-lg hover:scale-105 transition-transform duration-300"
+                              />
+                              {/* 투표수 배지 */}
+                              <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-1.5">
+                                <div className="flex items-center space-x-1">
+                                  <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
+                                  <span className="font-bold text-gray-900">{selectedPeriod === 'weekly' ? vote.weeklyVoteCount.toLocaleString() : vote.monthlyVoteCount.toLocaleString()}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 펫 정보 */}
+                          <div className="text-center space-y-2">
+                            <h3 className="text-xl font-bold text-gray-800 flex items-center justify-center space-x-2">
+                              <span>{vote.name}</span>
+                              <Heart className="w-5 h-5 text-pink-500" fill="currentColor" />
+                            </h3>
+
+                            <div className="space-y-1 text-sm text-gray-600">
+                              <div className="flex justify-center items-center space-x-2">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  vote.gender === 'M'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-pink-100 text-pink-700'
+                                }`}>
+                                  {vote.gender === 'M' ? '♂ 남아' : '♀ 여아'}
+                                </span>
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                  {calculateAge(vote.birthDate)}살
+                                </span>
+                              </div>
+
+                              <p className="font-medium text-gray-700">
+                                {vote.speciesName} {vote.speciesName === '강아지' ? '🐶' : vote.speciesName === '고양이' ? '🐱' : '🐹'}
+                              </p>
+
+                              {/* 품종 또는 커스텀 품종 표시 */}
+                              {vote.breedId && vote.breedName ? (
+                                <p className="text-gray-500 text-sm">{vote.breedName}</p>
+                              ) : vote.customBreed ? (
+                                <p className="text-gray-500 text-sm">{vote.customBreed}</p>
+                              ) : null}
+
+                              {/* 감정 표시 */}
+                              {vote.petModeName && (
+                                <div className="flex justify-center mt-2">
+                                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-700">
+                                    {vote.petModeName}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CuteCard>
+                      </Link>
+                    </motion.div>
+                    {adsenseId && (index + 1) % 4 === 0 && index !== votes.length - 1 && (
+                      <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-4 my-4 py-4">
+                        <AdSense
+                          adClient={adsenseId}
+                          adFormat="auto"
+                          fullWidthResponsive={true}
+                          style={{ display: 'block', minHeight: '100px' }}
+                        />
+                      </div>
+                    )}
+                  </>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-20">
+                  <div className="text-gray-400 mb-4">
+                    <Heart className="w-16 h-16 mx-auto mb-4" />
+                    <p className="text-xl font-medium">해당하는 투표가 없습니다</p>
+                    <p className="text-gray-500 mt-2">다른 필터 조건을 시도해보세요</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* 페이지네이션 */}
+        {totalPages > 1 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex justify-center items-center space-x-2"
+          >
+            <button
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-xl bg-white border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-50 transition-colors duration-200"
+            >
+              <ArrowRight className="w-5 h-5 transform rotate-180" />
+            </button>
+            
+            <div className="flex space-x-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`w-10 h-10 rounded-xl font-medium transition-all duration-200 ${
+                      currentPage === pageNum
+                        ? 'bg-purple-500 text-white shadow-md'
+                        : 'bg-white border border-gray-200 text-gray-600 hover:bg-purple-50'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+            
+            <button
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-xl bg-white border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-50 transition-colors duration-200"
+            >
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </motion.div>
         )}
       </div>
-
-      {/* 🔹 페이지네이션 */}
-      {filteredItems.length > ITEMS_PER_PAGE && (
-        <div className="mt-6 flex justify-center">
-          <Pagination
-            activePage={currentPage}
-            itemsCountPerPage={ITEMS_PER_PAGE}
-            totalItemsCount={filteredItems.length}
-            pageRangeDisplayed={3}
-            onChange={setCurrentPage}
-            innerClass="flex gap-2"
-            itemClass="px-3 py-1 rounded-md cursor-pointer"
-            activeClass="text-black font-bold"
-            linkClass="hover:text-blue-500"
-            disabledClass="opacity-50 cursor-not-allowed"
-          />
-        </div>
-      )}
     </div>
   );
 }

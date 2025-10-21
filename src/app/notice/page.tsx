@@ -1,126 +1,312 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Pagination from "react-js-pagination";
+'use client';
 
-const postsPerPage = 5; //한 페이지당 5개의 게시물을 표시
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import {
+  Megaphone, Pin, Eye, Calendar, Clock,
+  ArrowRight, Sparkles, Star
+} from 'lucide-react';
+import CuteButton from '@/components/common/button/CuteButton';
+import CuteCard from '@/components/common/card/CuteCard';
+import CuteBadge from '@/components/common/badge/CuteBadge';
+import AdSense from '@/components/common/adsense/AdSense';
+import { getNoticeList } from '@/libs/api/notice/noticeApi';
+import { Notice } from '@/libs/interface/api/notice/noticeResponseInterface';
 
-export default function CommunityBoard() {
-  const [currentTab, setCurrentTab] = useState("전체");
-  const [currentPage, setCurrentPage] = useState(1);
+const ITEMS_PER_PAGE = 10;
+
+export default function NoticePage() {
   const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
 
-  const allPosts = [
-    { id: 1, title: "강아지 산책 꿀팁", author: "멍멍이", date: "2025-03-10", views: 120, likes: 30 },
-    { id: 2, title: "고양이 캣타워 추천", author: "냐옹이", date: "2025-03-09", views: 85, likes: 22 },
-    { id: 3, title: "반려동물 건강 관리법", author: "펫러버", date: "2025-03-08", views: 150, likes: 45 },
-    { id: 4, title: "토끼 키우기 가이드", author: "토순이", date: "2025-03-07", views: 95, likes: 15 },
-    { id: 5, title: "햄스터 집 추천", author: "햄찌", date: "2025-03-06", views: 60, likes: 10 },
-    { id: 6, title: "파충류 키우는 법", author: "파충이", date: "2025-03-05", views: 40, likes: 5 },
-    { id: 7, title: "강아지 훈련법", author: "도그마스터", date: "2025-03-04", views: 130, likes: 25 },
-    { id: 8, title: "고양이 사료 추천", author: "냥이덕후", date: "2025-03-03", views: 75, likes: 20 },
-    { id: 9, title: "반려동물과 여행하는 법", author: "펫트래블러", date: "2025-03-02", views: 110, likes: 35 },
-    { id: 10, title: "강아지 목욕 시 주의할 점", author: "멍순이", date: "2025-03-01", views: 90, likes: 18 },
-    { id: 11, title: "고양이 화장실 청소법", author: "집사1호", date: "2025-02-29", views: 65, likes: 12 },
-    { id: 12, title: "햄스터 운동용품 추천", author: "햄찌러버", date: "2025-02-28", views: 55, likes: 8 },
-    { id: 13, title: "토끼 먹이 추천", author: "토끼맘", date: "2025-02-27", views: 70, likes: 14 },
-    { id: 14, title: "파충류 온도 관리법", author: "도마뱀러버", date: "2025-02-26", views: 35, likes: 6 },
-    { id: 15, title: "반려동물 보험 추천", author: "펫케어", date: "2025-02-25", views: 115, likes: 28 },
-    { id: 16, title: "강아지 간식 추천", author: "댕댕이", date: "2025-02-24", views: 125, likes: 38 },
-    { id: 17, title: "고양이 장난감 추천", author: "캣러버", date: "2025-02-23", views: 80, likes: 16 },
-    { id: 18, title: "강아지 산책 코스 추천", author: "도그워커", date: "2025-02-22", views: 100, likes: 22 },
-    { id: 19, title: "반려동물 호텔 이용 후기", author: "펫여행자", date: "2025-02-21", views: 95, likes: 20 },
-    { id: 20, title: "햄스터 스트레스 줄이는 법", author: "햄찌맘", date: "2025-02-20", views: 45, likes: 7 },
-    { id: 21, title: "강아지 건강 체크 리스트", author: "견주", date: "2025-02-19", views: 140, likes: 40 },
-    { id: 22, title: "고양이 이갈이 시기 대처법", author: "냥집사", date: "2025-02-18", views: 77, likes: 15 },
-    { id: 23, title: "토끼 배변 훈련하기", author: "토끼보호자", date: "2025-02-17", views: 85, likes: 17 },
-    { id: 24, title: "파충류 사육장 만들기", author: "사육왕", date: "2025-02-16", views: 50, likes: 9 },
-    { id: 25, title: "강아지 털 관리법", author: "펫그루머", date: "2025-02-15", views: 105, likes: 24 },
-    { id: 26, title: "고양이 물 안 먹을 때 대처법", author: "수의사", date: "2025-02-14", views: 90, likes: 19 },
-    { id: 27, title: "반려동물 장수 비결", author: "장수펫", date: "2025-02-13", views: 135, likes: 33 },
-    { id: 28, title: "토끼 외출할 때 주의사항", author: "토끼마스터", date: "2025-02-12", views: 65, likes: 12 },
-    { id: 29, title: "강아지와 놀아주는 방법", author: "댕댕놀이터", date: "2025-02-11", views: 120, likes: 27 },
-    { id: 30, title: "햄스터 먹이 종류 정리", author: "햄찌사랑", date: "2025-02-10", views: 55, likes: 8 },
-    { id: 31, title: "고양이 낮잠 루틴", author: "낮잠냥이", date: "2025-02-09", views: 75, likes: 14 },
-    { id: 32, title: "강아지 유치 빠지는 시기", author: "치아건강", date: "2025-02-08", views: 95, likes: 20 },
-    { id: 33, title: "파충류 먹이 추천", author: "파충류매니아", date: "2025-02-07", views: 42, likes: 6 }
-  ];
-  
+  // isPinned가 'Y'인 공지사항을 pinOrder 순으로 정렬한 고정 공지사항
+  const pinnedNotices = notices
+    .filter(notice => notice.isPinned === 'Y')
+    .sort((a, b) => (a.pinOrder || 0) - (b.pinOrder || 0));
 
-  // 🔥 조회수 기준으로 상위 3개 핫글 추출
-  const hotPosts = [...allPosts]
-    .sort((a, b) => b.views - a.views) // 조회수 내림차순 정렬
-    .slice(0, 3);
+  // isPinned가 'Y'가 아닌 일반 공지사항
+  const regularNotices = notices.filter(notice => notice.isPinned !== 'Y');
 
-  // 🔹 현재 선택된 탭의 일반 게시글 필터링 (핫글 제외)
-  const filteredPosts = currentTab === "전체"
-    ? allPosts.filter(post => !hotPosts.includes(post))
-    : allPosts.filter(post => post.title.includes(currentTab) && !hotPosts.includes(post));
+  useEffect(() => {
+    loadNotices();
+  }, [currentPage]);
 
-  // 🔹 현재 페이지 게시글 추출
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+  const loadNotices = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getNoticeList({ page: currentPage, size: ITEMS_PER_PAGE });
+      if (response.resultCode === 200 && response.result) {
+        setNotices(Array.isArray(response.result) ? response.result : []);
+        // MyBatis는 페이지네이션 정보를 별도로 제공하지 않으므로 클라이언트에서 계산
+        setTotalPages(1);
+      }
+    } catch (error) {
+      console.error('공지사항 로드 실패:', error);
+      setNotices([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNoticeClick = (noticeId: number) => {
+    router.push(`/notice/${noticeId}`);
+  };
 
   return (
-    <div className="global-wrapper mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">공지사항</h1>
-      {/* 🔥 인기 핫글 (상위 3개) */}
-      <div className="mt-6 pt-4">
-        <ul>
-          {hotPosts.map(post => (
-            <li
-              key={post.id}
-              className="flex justify-between items-center border-b border-gray-300 py-3 cursor-pointer hover:bg-gray-100"
-              onClick={() => router.push(`/notice/${post.id}`)}
-            >
-              <div className="text-left">
-                <h3 className="text-lg font-medium">🔥 {post.title}</h3>
-                <p className="text-sm text-gray-500">👤 {post.author} ・ 📅 {post.date}</p>
-              </div>
-              <div className="flex items-center gap-3 text-gray-500 text-sm">
-                <span>👁️ {post.views}</span>
-                <span>❤️ {post.likes}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
+    <div className="min-h-screen bg-gray-50">
+      {/* 배경 장식 요소들 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-20 left-10"
+          animate={{
+            y: [-20, 20, -20],
+            rotate: [0, 10, -10, 0],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <Star className="w-8 h-8 text-orange-300 opacity-40" fill="currentColor" />
+        </motion.div>
+        
+        <motion.div
+          className="absolute top-32 right-20"
+          animate={{
+            y: [20, -20, 20],
+            rotate: [0, -10, 10, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <Sparkles className="w-6 h-6 text-yellow-300 opacity-50" />
+        </motion.div>
       </div>
 
-      {/* 🔹 일반 게시글 목록 */}
-      <ul>
-        {currentPosts.map(post => (
-          <li
-            key={post.id}
-            className="flex justify-between items-center border-b border-gray-300 py-3 cursor-pointer hover:bg-gray-100"
-            onClick={() => router.push(`/notice/${post.id}`)}
-          >
-            <div className="text-left">
-              <h3 className="text-lg font-medium">{post.title}</h3>
-              <p className="text-sm text-gray-500">👤 {post.author} ・ 📅 {post.date}</p>
-            </div>
-            <div className="flex items-center gap-3 text-gray-500 text-sm">
-              <span>👁️ {post.views}</span>
-              <span>❤️ {post.likes}</span>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <div className="max-w-4xl mx-auto px-4 py-8 relative z-10">
+        {/* 헤더 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
+        >
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <Megaphone className="w-8 h-8 text-orange-500" />
+            <h1 className="text-4xl font-bold text-gray-900">
+              공지사항
+            </h1>
+            <Megaphone className="w-8 h-8 text-orange-500" />
+          </div>
+          <p className="text-gray-600 text-lg">
+            PetCrown의 새로운 소식을 확인해보세요! 📢
+          </p>
+        </motion.div>
 
-      {/* 🔹 페이지네이션 */}
-      <div className="flex justify-center mt-6">
-        <Pagination
-          activePage={currentPage}
-          itemsCountPerPage={postsPerPage} // 한 페이지당 표시할 게시물 수
-          totalItemsCount={filteredPosts.length} // 전체 게시물 개수 기준으로 페이지네이션 계산
-          pageRangeDisplayed={3} // 한 번에 표시되는 페이지 번호 개수는 3개
-          onChange={(page: any) => setCurrentPage(page)} // 페이지 변경 시 상태 업데이트
-          innerClass="flex gap-2"
-          itemClass="px-3 py-1 rounded-md cursor-pointer"
-          activeClass="text-black font-bold"
-          linkClass="hover:text-blue-500"
-          disabledClass="opacity-50 cursor-not-allowed"
-        />
+        {/* 고정 공지사항 */}
+        {pinnedNotices.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mb-8"
+          >
+            <div className="flex items-center space-x-2 mb-4">
+              <Pin className="w-6 h-6 text-red-500" />
+              <h2 className="text-xl font-bold text-gray-900">고정 공지</h2>
+            </div>
+
+            <CuteCard padding="sm">
+              <div className="space-y-1">
+                {pinnedNotices.map((notice: Notice, index: number) => (
+                  <motion.div
+                    key={notice.noticeId}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    onClick={() => handleNoticeClick(notice.noticeId)}
+                    className="flex items-center justify-between p-4 hover:bg-orange-50 rounded-2xl cursor-pointer transition-colors duration-200"
+                  >
+                    <div className="flex items-center space-x-4 flex-1 min-w-0">
+                      <Pin className="w-5 h-5 text-red-500 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <CuteBadge variant="danger" size="sm">고정</CuteBadge>
+                        </div>
+                        <h3 className="font-bold text-gray-900 line-clamp-1 text-lg">
+                          {notice.title}
+                        </h3>
+                        <div className="flex items-center space-x-4 text-xs text-gray-500 mt-2">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="w-3 h-3" />
+                            <span>{new Date(notice.createDate).toLocaleDateString('ko-KR')}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Eye className="w-3 h-3" />
+                            <span>{notice.viewCount}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                  </motion.div>
+                ))}
+              </div>
+            </CuteCard>
+          </motion.div>
+        )}
+
+        {/* 일반 공지사항 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">전체 공지사항</h2>
+          </div>
+
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
+            </div>
+          ) : (
+            <CuteCard padding="sm">
+              <div className="space-y-1">
+                {adsenseId && (
+                  <div className="my-4 py-4">
+                    <AdSense
+                      adClient={adsenseId}
+                      adFormat="auto"
+                      fullWidthResponsive={true}
+                      style={{ display: 'block', minHeight: '100px' }}
+                    />
+                  </div>
+                )}
+                {regularNotices.length > 0 ? (
+                  regularNotices.map((notice: Notice, index: number) => (
+                    <>
+                      <motion.div
+                        key={notice.noticeId}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.05 }}
+                        onClick={() => handleNoticeClick(notice.noticeId)}
+                        className="flex items-center justify-between p-4 hover:bg-yellow-50 rounded-2xl cursor-pointer transition-colors duration-200"
+                      >
+                        <div className="flex items-center space-x-4 flex-1 min-w-0">
+                          <div className="w-2 h-2 bg-orange-400 rounded-full flex-shrink-0"></div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 line-clamp-1 mb-2">
+                              {notice.title}
+                            </h3>
+                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              <div className="flex items-center space-x-1">
+                                <Clock className="w-3 h-3" />
+                                <span>{new Date(notice.createDate).toLocaleDateString('ko-KR')}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Eye className="w-3 h-3" />
+                                <span>{notice.viewCount}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      </motion.div>
+                      {adsenseId && (index + 1) % 4 === 0 && index !== regularNotices.length - 1 && (
+                        <div className="my-4 py-4">
+                          <AdSense
+                            adClient={adsenseId}
+                            adFormat="auto"
+                            fullWidthResponsive={true}
+                            style={{ display: 'block', minHeight: '100px' }}
+                          />
+                        </div>
+                      )}
+                    </>
+                  ))
+                ) : (
+                  <div className="text-center py-20">
+                    <Megaphone className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-xl font-medium text-gray-400">공지사항이 없습니다</p>
+                    <p className="text-gray-500 mt-2">새로운 소식을 기다려주세요!</p>
+                  </div>
+                )}
+              </div>
+            </CuteCard>
+          )}
+        </motion.div>
+
+        {/* 페이지네이션 */}
+        {totalPages > 1 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex justify-center items-center space-x-2 mt-8"
+          >
+            <button
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-xl bg-white border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-50 transition-colors duration-200"
+            >
+              <ArrowRight className="w-5 h-5 transform rotate-180" />
+            </button>
+            
+            <div className="flex space-x-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`w-10 h-10 rounded-xl font-medium transition-all duration-200 ${
+                      currentPage === pageNum
+                        ? 'bg-orange-500 text-white shadow-md'
+                        : 'bg-white border border-gray-200 text-gray-600 hover:bg-orange-50'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+            
+            <button
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-xl bg-white border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-50 transition-colors duration-200"
+            >
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </motion.div>
+        )}
       </div>
     </div>
   );

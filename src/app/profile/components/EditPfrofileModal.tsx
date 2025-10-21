@@ -1,20 +1,19 @@
 'use client';
 
-import { use, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { User } from 'lucide-react';
 import Alert from '@/components/common/alert/Alert';
-import Button from '@/components/common/button/Button';
-import Input from '@/components/common/input/Input';
-
-import { checkNickname, changeUserInfo } from '@/libs/api/user/userApi';
-
+import CuteButton from '@/components/common/button/CuteButton';
 import RadioGroup from '@/components/common/input/RadioGroup';
-
+import Modal from '@/components/common/modal/Modal';
+import CuteCard from '@/components/common/card/CuteCard';
 import DateInput from '@/components/common/input/DateInput';
+import { checkNickname, changeUserInfo } from '@/libs/api/user/userApi';
 import { UserResponse } from '@/libs/interface/api/user/userResponseInterface';
+import { useUserStore } from '@/libs/store/user/userStore';
 
 interface EditProfileModalProps {
-  user: UserResponse; // UserResponse 타입으로 변경
+  user: UserResponse;
   onClose: () => void;
   onSave: (updatedUser: UserResponse) => void;
 }
@@ -24,31 +23,21 @@ export default function EditProfileModal({
   onClose,
   onSave,
 }: EditProfileModalProps) {
+  const { setUser } = useUserStore();
   const [alertMessage, setAlertMessage] = useState('');
 
-  const [email, setEmail] = useState(user.email); // 이메일
-  const [name, setName] = useState(user.name); // 이름
-  const [originalNickname, setOriginalNickname] = useState(user.nickname); // 오리지널 닉네임
-  const [nickname, setNickname] = useState(user.nickname); // 닉네임
-  const [gender, setGender] = useState(user.gender); // 성별
-  const [birthDate, setBirthDate] = useState(user.birthDate); // 생년월일
-  const [phoneNumber1, setPhoneNumber1] = useState(
-    user.phoneNumber.split('-')[0]
-  ); // 핸드폰 번호1
-  const [phoneNumber2, setPhoneNumber2] = useState(
-    user.phoneNumber.split('-')[1]
-  ); // 핸드폰 번호2
-  const [phoneNumber3, setPhoneNumber3] = useState(
-    user.phoneNumber.split('-')[2]
-  ); // 핸드폰 번호3
-  const [password, setPassword] = useState(''); // 비밀번호
-  const [passwordCheck, setPasswordCheck] = useState(''); // 비밀번호 확인
+  const [email, setEmail] = useState(user.email);
+  const [name, setName] = useState(user.name);
+  const [originalNickname, setOriginalNickname] = useState(user.nickname);
+  const [nickname, setNickname] = useState(user.nickname);
+  const [gender, setGender] = useState(user.gender);
+  const [birthDate, setBirthDate] = useState(user.birthDate);
+  const [phoneNumber1, setPhoneNumber1] = useState(user.phoneNumber.split('-')[0]);
+  const [phoneNumber2, setPhoneNumber2] = useState(user.phoneNumber.split('-')[1]);
+  const [phoneNumber3, setPhoneNumber3] = useState(user.phoneNumber.split('-')[2]);
 
-  const [isNicknameVerified, setIsNicknameVerified] = useState(false); // 닉네임 인증 상태
+  const [isNicknameVerified, setIsNicknameVerified] = useState(false);
 
-  /**
-   * 닉네임 중복 확인
-   */
   const handleCheckNickname = async () => {
     if (!nickname) {
       setAlertMessage('닉네임을 입력해주세요.');
@@ -59,7 +48,7 @@ export default function EditProfileModal({
 
     if (nicknameCheck.resultCode !== 200) {
       if (nicknameCheck.resultCode >= 3000) {
-        setAlertMessage(nicknameCheck.resultMessageKo); // 한국어 메시지
+        setAlertMessage(nicknameCheck.resultMessageKo);
         setIsNicknameVerified(false);
         return;
       }
@@ -69,76 +58,35 @@ export default function EditProfileModal({
       return;
     }
     setAlertMessage('닉네임이 사용 가능합니다!');
-    setIsNicknameVerified(true); // 닉네임 인증 상태 업데이트
+    setIsNicknameVerified(true);
   };
 
-  /**
-   * 값 변경 처리
-   */
-  const handleChange = (name: string, value: string) => {
-    if (name === 'name') {
-      setName(value);
-    } else if (name === 'nickname') {
-      setNickname(value);
-    } else if (name === 'gender') {
-      setGender(value);
-    } else if (name === 'birthDate') {
-      setBirthDate(value);
-    } else if (name === 'phoneNumber1') {
-      setPhoneNumber1(value);
-    } else if (name === 'phoneNumber2') {
-      setPhoneNumber2(value);
-    } else if (name === 'phoneNumber3') {
-      setPhoneNumber3(value);
-    } else if (name === 'password') {
-      setPassword(value);
-    } else if (name === 'passwordCheck') {
-      setPasswordCheck(value);
-    }
-  };
-
-  /**
-   * 생년월일 형식 변환 (YYYY-MM-DD -> YYYYMMDD)
-   */
-  const formatBirthDate = (date: string) => {
-    return date.replace(/-/g, '');
-  };
-
-  /**
-   * 회원가입 처리
-   */
   const changeUser = async () => {
-    // 이름 빈값 확인
     if (!name) {
       setAlertMessage('이름을 입력해주세요.');
       return;
     }
 
-    // 닉네임 빈값 확인
     if (!nickname) {
       setAlertMessage('닉네임을 입력해주세요.');
       return;
     }
 
-    // 성별 빈값 확인
     if (!gender) {
       setAlertMessage('성별을 선택해주세요.');
       return;
     }
 
-    // 생년월일 빈값 확인
     if (!birthDate) {
       setAlertMessage('생년월일을 입력해주세요.');
       return;
     }
 
-    // 핸드폰 번호 빈값 확인
     if (!phoneNumber1 || !phoneNumber2 || !phoneNumber3) {
       setAlertMessage('핸드폰 번호를 입력해주세요.');
       return;
     }
 
-    // 핸드폰 번호 자리수 확인
     if (
       phoneNumber1.length < 3 ||
       phoneNumber2.length < 4 ||
@@ -148,7 +96,6 @@ export default function EditProfileModal({
       return;
     }
 
-    // 닉네임을 변경했을 때 닉네임 인증 확인
     if (originalNickname !== nickname) {
       if (!isNicknameVerified) {
         setAlertMessage('닉네임 인증을 완료해주세요.');
@@ -156,18 +103,17 @@ export default function EditProfileModal({
       }
     }
 
-    // 정보 변경
     const changeResult = await changeUserInfo({
       name,
       nickname,
       gender,
-      birthDate: formatBirthDate(birthDate), // YYYYMMDD 형식으로 변환
+      birthDate,
       phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`,
     });
 
     if (changeResult.resultCode !== 200) {
       if (changeResult.resultCode >= 3000) {
-        setAlertMessage(changeResult.resultMessageKo); // 한국어 메시지
+        setAlertMessage(changeResult.resultMessageKo);
         return;
       }
       setAlertMessage('오류가 발생했습니다.');
@@ -176,154 +122,179 @@ export default function EditProfileModal({
 
     setAlertMessage('프로필이 성공적으로 수정되었습니다!');
 
-    // 닉네임을 변경했을 때 헤더 이름 변경을 위해 새로고침
-    if (originalNickname !== nickname) {
-      const sessData = {
-        nickname: nickname,
-      };
-      // 한글과 특수문자를 처리할 수 있도록 인코딩
-      const encodedUser = btoa(encodeURIComponent(JSON.stringify(sessData)));
+    const updatedUser: UserResponse = {
+      ...user,
+      name,
+      nickname,
+      gender,
+      birthDate,
+      phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`
+    };
 
-      sessionStorage.setItem('sess', encodedUser);
-      // 헤더의 닉네임을 변경하기 위해 새로고침
-      window.location.reload();
-    }
-    user.name = name; // 이름 업데이트
-    user.nickname = nickname; // 닉네임
-    user.gender = gender; // 성별
-    user.birthDate = birthDate; // 생년월일
-    user.phoneNumber = `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`; // 핸드폰 번호
+    setUser({
+      email: updatedUser.email,
+      name: updatedUser.name,
+      nickname: updatedUser.nickname,
+      phoneNumber: updatedUser.phoneNumber,
+      profileImageUrl: updatedUser.profileImageUrl,
+      birthDate: updatedUser.birthDate,
+      gender: updatedUser.gender,
+    });
 
-    onSave(user); // 👈 여기서 전달
-    onClose();
+    setTimeout(() => {
+      onSave(updatedUser);
+      onClose();
+    }, 1500);
   };
 
   const handleSave = () => {
     changeUser();
-    // onClose();
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50">
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -50 }}
-        className="bg-white p-6 rounded-lg shadow-lg w-96"
-      >
-        <h2 className="text-xl font-bold mb-4">프로필 수정</h2>
-        <div className="flex flex-col">
-          {/* 이메일 입력 */}
-          <label className="block text-gray-700 font-bold">이메일</label>
-          <Input
-            name="name"
-            placeholder="이메일"
-            value={email}
-            onChange={(value) => handleChange('name', value)}
-            className="bg-gray-200"
-            maxLength={10}
-            disabled={true} // 이메일은 수정 불가
-          />
+    <>
+      <Modal onClose={onClose}>
+        <CuteCard className="max-w-lg mx-auto" padding="lg">
+          <div className="space-y-6">
+            {/* 제목 섹션 */}
+            <div className="text-center">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">프로필 수정</h3>
+              <p className="text-gray-600 text-sm">
+                개인정보를 수정해주세요 ✨
+              </p>
+            </div>
 
-          {/* 이름 */}
-          <label className="block text-gray-700 font-bold">이름</label>
-          <Input
-            name="name"
-            placeholder="이름"
-            value={name}
-            onChange={(value) => handleChange('name', value)}
-            maxLength={10}
-          />
+            {/* 폼 섹션 */}
+            <div className="space-y-4">
+              {/* 이메일 입력 */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">이메일</label>
+                <input
+                  type="email"
+                  value={email}
+                  disabled
+                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl bg-gray-100 text-gray-500 cursor-not-allowed transition-all duration-200"
+                />
+              </div>
 
-          {/* 닉네임 */}
-          <label className="block text-gray-700 font-bold">닉네임</label>
-          <div className="flex">
-            <Input
-              name="nickname"
-              placeholder="닉네임"
-              value={nickname}
-              onChange={(value) => handleChange('nickname', value)}
-              className="flex-1"
-              maxLength={10}
-            />
-            <Button
-              onClick={handleCheckNickname}
-              type="accent"
-              className="!w-[45%] mb-3"
-            >
-              중복 확인
-            </Button>
-          </div>
+              {/* 이름 */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">이름</label>
+                <input
+                  type="text"
+                  placeholder="이름을 입력해주세요"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  maxLength={10}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                />
+              </div>
 
-          {/* 성별 선택 */}
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold">성별</label>
-            <RadioGroup
-              name="gender"
-              options={[
-                { label: '남성', value: 'M' },
-                { label: '여성', value: 'F' },
-              ]}
-              selectedValue={gender}
-              onChange={(value) => handleChange('gender', value)}
-            />
-          </div>
+              {/* 닉네임 */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">닉네임</label>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    placeholder="닉네임을 입력해주세요"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    maxLength={10}
+                    className="flex-1 min-w-0 px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  />
+                  <CuteButton
+                    onClick={handleCheckNickname}
+                    variant={isNicknameVerified ? "secondary" : "primary"}
+                    size="sm"
+                    className="shrink-0 whitespace-nowrap"
+                  >
+                    {isNicknameVerified ? "확인완료" : "중복확인"}
+                  </CuteButton>
+                </div>
+              </div>
 
-          {/* 생년월일 (캘린더) */}
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold">생년월일</label>
-            <DateInput
-              value={birthDate}
-              onChange={(value) => handleChange('birthDate', value)}
-              placeholder="YYYY-MM-DD"
-              maxDate={new Date()} // 미래 날짜 선택 방지
-            />
-          </div>
+              {/* 성별 선택 */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">성별</label>
+                <RadioGroup
+                  name="gender"
+                  options={[
+                    { label: '남성', value: 'M' },
+                    { label: '여성', value: 'W' },
+                  ]}
+                  selectedValue={gender}
+                  onChange={setGender}
+                />
+              </div>
 
-          {/* 핸드폰 번호 입력 */}
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold">핸드폰 번호</label>
-            <div className="flex gap-2">
-              <Input
-                name="phone1"
-                placeholder="010"
-                value={phoneNumber1}
-                onChange={(value) => handleChange('phoneNumber1', value)}
-                maxLength={3}
-                className="w-1/3"
-              />
-              <Input
-                name="phone2"
-                placeholder="1234"
-                value={phoneNumber2}
-                onChange={(value) => handleChange('phoneNumber2', value)}
-                maxLength={4}
-                className="w-1/3"
-              />
-              <Input
-                name="phone3"
-                placeholder="5678"
-                value={phoneNumber3}
-                onChange={(value) => handleChange('phoneNumber3', value)}
-                maxLength={4}
-                className="w-1/3"
-              />
+              {/* 생년월일 */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">생년월일</label>
+                <DateInput
+                  value={birthDate}
+                  onChange={(value) => setBirthDate(value)}
+                  placeholder="YYYY-MM-DD"
+                  minDate={new Date('1900-01-01')}
+                  maxDate={new Date()}
+                />
+              </div>
+
+              {/* 핸드폰 번호 입력 */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">핸드폰 번호</label>
+                <div className="flex space-x-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="010"
+                    value={phoneNumber1}
+                    onChange={(e) => setPhoneNumber1(e.target.value.replace(/[^0-9]/g, ''))}
+                    maxLength={3}
+                    className="w-16 sm:w-20 px-2 sm:px-3 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-center text-sm"
+                  />
+                  <span className="text-gray-500 shrink-0">-</span>
+                  <input
+                    type="text"
+                    placeholder="1234"
+                    value={phoneNumber2}
+                    onChange={(e) => setPhoneNumber2(e.target.value.replace(/[^0-9]/g, ''))}
+                    maxLength={4}
+                    className="w-18 sm:w-24 px-2 sm:px-3 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-center text-sm"
+                  />
+                  <span className="text-gray-500 shrink-0">-</span>
+                  <input
+                    type="text"
+                    placeholder="5678"
+                    value={phoneNumber3}
+                    onChange={(e) => setPhoneNumber3(e.target.value.replace(/[^0-9]/g, ''))}
+                    maxLength={4}
+                    className="w-18 sm:w-24 px-2 sm:px-3 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-center text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 액션 버튼들 */}
+            <div className="flex space-x-3">
+              <CuteButton
+                onClick={handleSave}
+                variant="primary"
+                className="flex-1"
+              >
+                저장
+              </CuteButton>
             </div>
           </div>
-        </div>
-        <div className="flex justify-end mt-4 gap-2">
-          
-          <Button onClick={handleSave}>저장</Button>
-          <Button type="gray" onClick={onClose}>취소</Button>
-        </div>
-      </motion.div>
-      {/* 알림창 */}
+        </CuteCard>
+      </Modal>
+
+      {/* Alert 컴포넌트 */}
       <Alert
         message={alertMessage}
-        onClose={async () => {
-          setAlertMessage(''); // 메시지 초기화
-        }}
+        onClose={() => setAlertMessage('')}
       />
-    </div>
+    </>
   );
 }

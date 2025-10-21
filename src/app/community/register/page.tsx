@@ -1,71 +1,357 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+'use client';
 
-
-import Button from '@/components/common/button/Button';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { PenTool, FileText, Heart, Sparkles, ArrowLeft, Save, X, Upload, Image as ImageIcon, User } from 'lucide-react';
+import CuteButton from '@/components/common/button/CuteButton';
+import CuteCard from '@/components/common/card/CuteCard';
+import Alert from '@/components/common/alert/Alert';
+import { createCommunityPost } from '@/libs/api/community/communityApi';
 
 export default function CommunityWrite() {
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [content, setContent] = useState("");
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('');
+  const [content, setContent] = useState('');
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [needsLogin, setNeedsLogin] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    // 로그인 체크
+    const accessToken = localStorage.getItem('a_t');
+    if (!accessToken) {
+      setAlertMessage('로그인이 필요한 페이지입니다.');
+      setNeedsLogin(true);
+    }
+  }, []);
 
-    if (!title.trim() || !author.trim() || !content.trim()) {
-      alert("모든 필드를 입력해주세요.");
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles = Array.from(files);
+    const totalImages = images.length + newFiles.length;
+
+    if (totalImages > 5) {
+      setAlertMessage('이미지는 최대 5개까지 업로드할 수 있습니다.');
       return;
     }
 
-    // 🔹 임시로 콘솔에 게시글 데이터 출력 (실제 API 연동 필요)
-    console.log({ title, author, content, date: new Date().toISOString().split("T")[0] });
+    setImages(prev => [...prev, ...newFiles]);
 
-    alert("게시글이 등록되었습니다.");
-    router.push("/community"); // 등록 후 커뮤니티 목록으로 이동
+    // 이미지 미리보기 생성
+    newFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviews(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!title.trim()) {
+      setAlertMessage('제목을 입력해주세요.');
+      return;
+    }
+    if (!category.trim()) {
+      setAlertMessage('카테고리를 선택해주세요.');
+      return;
+    }
+    if (!content.trim()) {
+      setAlertMessage('내용을 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await createCommunityPost({
+        title,
+        category,
+        content,
+        contentType: 'TEXT',
+        images: images.length > 0 ? images : undefined,
+      });
+
+      if (response.resultCode === 200) {
+        setAlertMessage('게시글이 성공적으로 등록되었습니다! 🎉');
+        setTimeout(() => {
+          router.push('/community');
+        }, 1500);
+      } else {
+        setAlertMessage(response.resultMessageKo || '게시글 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('게시글 등록 실패:', error);
+      setAlertMessage('게시글 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 로그인이 필요한 경우
+  if (needsLogin) {
+    return (
+      <>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <CuteCard className="text-center" padding="lg">
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center mx-auto">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-600">로그인이 필요합니다</h2>
+              <p className="text-gray-500">커뮤니티 글 작성은 로그인 후 이용할 수 있습니다.</p>
+            </div>
+          </CuteCard>
+        </div>
+        <Alert
+          message={alertMessage}
+          onClose={() => {
+            setAlertMessage('');
+            router.push('/login');
+          }}
+        />
+      </>
+    );
+  }
+
   return (
-    <div className="max-w-3xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">글 작성</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block font-medium mb-1">제목</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border rounded p-2"
-            placeholder="제목을 입력하세요"
-          />
-        </div>
-        <div>
-          <label className="block font-medium mb-1">작성자</label>
-          <input
-            type="text"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            className="w-full border rounded p-2"
-            placeholder="이름을 입력하세요"
-          />
-        </div>
-        <div>
-          <label className="block font-medium mb-1">내용</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full border rounded p-2 h-40"
-            placeholder="내용을 입력하세요"
-          />
-        </div>
-        <div className="flex gap-4">
-          <Button>등록</Button>
-          <Button type="gray" onClick={() => router.back()}>
-            취소
-          </Button>
-        </div>
-      </form>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      {/* 배경 장식 요소들 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-20 left-10"
+          animate={{
+            y: [-20, 20, -20],
+            rotate: [0, 10, -10, 0],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <Heart className="w-8 h-8 text-pink-300 opacity-40" fill="currentColor" />
+        </motion.div>
+        
+        <motion.div
+          className="absolute top-32 right-20"
+          animate={{
+            y: [20, -20, 20],
+            rotate: [0, -10, 10, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <Sparkles className="w-6 h-6 text-purple-300 opacity-50" />
+        </motion.div>
+      </div>
+
+      <div className="max-w-4xl mx-auto relative z-10">
+        {/* 헤더 */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
+        >
+          <div className="flex items-center justify-center mb-4">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mr-4"
+            >
+              <PenTool className="w-8 h-8 text-white" />
+            </motion.div>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                게시글 작성
+              </h1>
+              <p className="text-gray-600 mt-2">
+                반려동물과의 소중한 이야기를 공유해보세요! 🐾
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* 작성 폼 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          <CuteCard className="space-y-6" padding="lg">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* 제목 입력 */}
+              <div className="space-y-3">
+                <label className="block text-lg font-semibold text-gray-800 flex items-center space-x-2">
+                  <FileText className="w-5 h-5 text-purple-600" />
+                  <span>제목</span>
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  placeholder="제목을 입력해주세요"
+                  maxLength={100}
+                />
+                <div className="text-right text-sm text-gray-500">
+                  {title.length}/100
+                </div>
+              </div>
+
+              {/* 카테고리 선택 */}
+              <div className="space-y-3">
+                <label className="block text-lg font-semibold text-gray-800 flex items-center space-x-2">
+                  <FileText className="w-5 h-5 text-purple-600" />
+                  <span>카테고리</span>
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="">카테고리를 선택해주세요</option>
+                  <option value="DAILY">일상</option>
+                  <option value="QUESTION">질문</option>
+                  <option value="TIP">팁/정보공유</option>
+                </select>
+              </div>
+
+              {/* 내용 입력 */}
+              <div className="space-y-3">
+                <label className="block text-lg font-semibold text-gray-800 flex items-center space-x-2">
+                  <PenTool className="w-5 h-5 text-purple-600" />
+                  <span>내용</span>
+                </label>
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
+                  placeholder="반려동물과의 소중한 이야기를 들려주세요!"
+                  rows={8}
+                  maxLength={1000}
+                />
+                <div className="text-right text-sm text-gray-500">
+                  {content.length}/1000
+                </div>
+              </div>
+
+              {/* 이미지 업로드 */}
+              <div className="space-y-3">
+                <label className="block text-lg font-semibold text-gray-800 flex items-center space-x-2">
+                  <ImageIcon className="w-5 h-5 text-purple-600" />
+                  <span>이미지 (최대 5개)</span>
+                </label>
+
+                {/* 이미지 미리보기 */}
+                {imagePreviews.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-xl border-2 border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 이미지 업로드 버튼 */}
+                {images.length < 5 && (
+                  <label className="flex items-center justify-center w-full h-32 px-4 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-all duration-200">
+                    <div className="text-center">
+                      <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                      <p className="text-sm text-gray-600">클릭하여 이미지 업로드</p>
+                      <p className="text-xs text-gray-400 mt-1">{images.length}/5 업로드됨</p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* 버튼들 */}
+              <div className="flex justify-center space-x-4 pt-6">
+                <CuteButton
+                  variant="primary"
+                  size="lg"
+                  loading={isLoading}
+                  icon={<Save className="w-5 h-5" />}
+                  className="min-w-32"
+                >
+                  게시글 등록
+                </CuteButton>
+
+                <CuteButton
+                  onClick={() => router.back()}
+                  variant="secondary"
+                  size="lg"
+                  icon={<X className="w-5 h-5" />}
+                  className="min-w-32"
+                  disabled={isLoading}
+                >
+                  취소
+                </CuteButton>
+              </div>
+            </form>
+          </CuteCard>
+        </motion.div>
+
+        {/* 뒤로가기 버튼 */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="mt-8"
+        >
+          <CuteButton
+            onClick={() => router.back()}
+            variant="secondary"
+            size="md"
+            icon={<ArrowLeft className="w-4 h-4" />}
+          >
+            목록으로 돌아가기
+          </CuteButton>
+        </motion.div>
+      </div>
+
+      {/* 알림창 */}
+      <Alert
+        message={alertMessage}
+        onClose={() => setAlertMessage('')}
+      />
     </div>
   );
 }

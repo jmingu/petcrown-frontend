@@ -12,9 +12,12 @@ const api = axios.create({
 // ✅ 요청 인터셉터: accessToken 자동 추가
 api.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem('a_t');
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    // SSR 환경에서 localStorage가 없을 수 있으므로 체크
+    if (typeof window !== 'undefined') {
+      const accessToken = localStorage.getItem('a_t');
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
     }
     return config;
   },
@@ -32,9 +35,14 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
+        // SSR 환경에서는 토큰 갱신 불가
+        if (typeof window === 'undefined') {
+          return Promise.reject(error);
+        }
+
         // ✅ 리프레시 API 호출
         const refreshResponse = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/v1/refresh-token`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/v1/refresh-token`,
           {
             accessToken: localStorage.getItem('a_t'), // 현재 액세스 토큰 바디로 전송
             refreshToken: localStorage.getItem('r_t'), // 현재 리프레시 토큰 바디로 전송
@@ -58,19 +66,27 @@ api.interceptors.response.use(
         return api(originalRequest); // 재요청
       } catch (refreshError) {
         console.error('토큰 재발급 실패:', refreshError);
-        localStorage.removeItem('a_t');
-        localStorage.removeItem('r_t');
-        window.location.href = '/login';
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('a_t');
+          localStorage.removeItem('r_t');
+          window.location.href = '/login';
+        }
         return Promise.reject(refreshError);
       }
     }
 
     const status = error.response?.status;
-    if (status === 401) {
+    if (status === 401 && typeof window !== 'undefined') {
       window.location.href = '/login';
     }
 
-    return error.response;
+    // 에러 응답이 있는 경우 해당 응답을 Promise.reject로 전달
+    if (error.response) {
+      return Promise.reject(error.response);
+    }
+    
+    // 네트워크 에러 등 response가 없는 경우
+    return Promise.reject(error);
   }
 );
 

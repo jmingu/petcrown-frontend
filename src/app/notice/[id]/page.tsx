@@ -1,47 +1,234 @@
-"use client";
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import Button from '@/components/common/button/Button';
+'use client';
 
-const allPosts = [
-  { id: 1, title: "강아지 산책 꿀팁", author: "멍멍이", date: "2025-03-10", views: 120, likes: 30, content: "강아지를 산책할 때 중요한 팁입니다..." },
-  { id: 2, title: "고양이 캣타워 추천", author: "냐옹이", date: "2025-03-09", views: 85, likes: 22, content: "고양이에게 적합한 캣타워를 추천합니다..." },
-  { id: 3, title: "반려동물 건강 관리법", author: "펫러버", date: "2025-03-08", views: 150, likes: 45, content: "반려동물 건강을 위해 신경 써야 할 것들..." },
-];
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import {
+  ArrowLeft, Eye, Calendar, Megaphone,
+  Star, Sparkles, Pin, Bell
+} from 'lucide-react';
+import CuteButton from '@/components/common/button/CuteButton';
+import CuteCard from '@/components/common/card/CuteCard';
+import CuteBadge from '@/components/common/badge/CuteBadge';
+import AdSense from '@/components/common/adsense/AdSense';
+import { getNoticeDetail } from '@/libs/api/notice/noticeApi';
+import { NoticeDetailResponse } from '@/libs/interface/api/notice/noticeResponseInterface';
 
-export default function PostDetail() {
+export default function NoticeDetail() {
   const router = useRouter();
   const params = useParams();
-  const post = allPosts.find(p => p.id === Number(params.id));
-  const [likes, setLikes] = useState(post?.likes || 0);
-  const [liked, setLiked] = useState(false);
+  const [notice, setNotice] = useState<NoticeDetailResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
 
-  if (!post) {
-    return <div className="text-center mt-10">해당 게시글을 찾을 수 없습니다.</div>;
-  }
+  useEffect(() => {
+    loadNoticeDetail();
+  }, [params.id]);
 
-  const handleLike = () => {
-    if (!liked) {
-      setLikes(likes + 1);
-      setLiked(true);
+  const loadNoticeDetail = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getNoticeDetail(Number(params.id));
+      if (response.resultCode === 200 && response.result) {
+        setNotice(response.result);
+      }
+    } catch (error) {
+      console.error('공지사항 상세 조회 실패:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return (
-    <div className="global-wrapper p-4">
-      <h1 className="text-2xl font-bold mt-4">{post.title}</h1>
-      <p className="text-gray-500 text-sm mt-4">👤 {post.author} ・ 📅 {post.date} ・ 👁️ {post.views} ・ ❤️ {likes}</p>
-      <div className="mt-4 p-4 rounded-md bg-gray-50">{post.content}</div>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
+      </div>
+    );
+  }
 
-      {/* 좋아요 버튼 */}
-      <div className="flex justify-center mt-6">
-        <Button 
-          className={`px-6 py-2 rounded-lg text-white ${liked ? "!bg-gray-400" : "!bg-red-500"}`}
-          onClick={handleLike}
-          disabled={liked}
+  if (!notice) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <CuteCard className="text-center" padding="lg">
+          <div className="space-y-4">
+            <div className="w-16 h-16 bg-gradient-to-r from-gray-300 to-gray-400 rounded-full flex items-center justify-center mx-auto">
+              <Megaphone className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-600">공지사항을 찾을 수 없습니다</h2>
+            <CuteButton onClick={() => router.back()} variant="primary">
+              돌아가기
+            </CuteButton>
+          </div>
+        </CuteCard>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      {/* 배경 장식 요소들 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-20 left-10"
+          animate={{
+            y: [-20, 20, -20],
+            rotate: [0, 10, -10, 0],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
         >
-          ❤️ 좋아요 {likes}
-        </Button>
+          <Star className="w-8 h-8 text-orange-300 opacity-40" fill="currentColor" />
+        </motion.div>
+        
+        <motion.div
+          className="absolute top-32 right-20"
+          animate={{
+            y: [20, -20, 20],
+            rotate: [0, -10, 10, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <Sparkles className="w-6 h-6 text-yellow-300 opacity-50" />
+        </motion.div>
+      </div>
+
+      <div className="max-w-4xl mx-auto relative z-10">
+        {/* 뒤로가기 버튼 */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-6"
+        >
+          <CuteButton
+            onClick={() => router.back()}
+            variant="secondary"
+            size="md"
+            icon={<ArrowLeft className="w-4 h-4" />}
+          >
+            목록으로
+          </CuteButton>
+        </motion.div>
+
+        {/* 공지사항 메인 카드 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <CuteCard className="space-y-6" padding="lg">
+            {/* 공지사항 헤더 */}
+            <div className="space-y-4">
+              {/* 고정 여부 표시 */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  {notice.isPinned === 'Y' ? (
+                    <CuteBadge
+                      variant="danger"
+                      size="md"
+                      icon={<Pin className="w-4 h-4" />}
+                    >
+                      고정 공지
+                    </CuteBadge>
+                  ) : (
+                    <CuteBadge
+                      variant="info"
+                      size="md"
+                      icon={<Bell className="w-4 h-4" />}
+                    >
+                      일반 공지
+                    </CuteBadge>
+                  )}
+                </div>
+              </div>
+
+              {/* 제목 */}
+              <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+                {notice.title}
+              </h1>
+
+              {/* 메타 정보 */}
+              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                <div className="flex items-center space-x-6 text-sm text-gray-500">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-full flex items-center justify-center">
+                      <Megaphone className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="font-semibold text-gray-700">관리자</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>{new Date(notice.createDate).toLocaleDateString('ko-KR')}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Eye className="w-4 h-4" />
+                    <span>{notice.viewCount.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 공지사항 내용 */}
+            <div className="prose prose-lg max-w-none">
+              {notice.contentType === 'HTML' ? (
+                <div
+                  className="text-gray-800 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: notice.content }}
+                />
+              ) : (
+                <div className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  {notice.content}
+                </div>
+              )}
+            </div>
+
+            {/* 구분선 */}
+            <div className="border-t border-gray-100"></div>
+
+            {/* 액션 버튼 */}
+            <div className="flex justify-center">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <CuteButton
+                  onClick={() => router.push('/notice')}
+                  variant="primary"
+                  size="lg"
+                  icon={<Megaphone className="w-5 h-5" />}
+                >
+                  다른 공지사항 보기
+                </CuteButton>
+              </motion.div>
+            </div>
+          </CuteCard>
+        </motion.div>
+
+        {/* AdSense at the end */}
+        {adsenseId && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mt-8"
+          >
+            <AdSense
+              adClient={adsenseId}
+              adFormat="auto"
+              fullWidthResponsive={true}
+              style={{ display: 'block', margin: '2rem 0', minHeight: '100px' }}
+            />
+          </motion.div>
+        )}
+
       </div>
     </div>
   );
