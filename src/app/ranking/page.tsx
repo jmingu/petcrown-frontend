@@ -37,7 +37,6 @@ export default function RankingPage() {
         setLastWeekRankings(lastResponse.result.ranking || []);
       }
     } catch (error) {
-      console.error('랭킹 로드 실패:', error);
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +72,7 @@ export default function RankingPage() {
     return (
       <div className="mb-8 md:mb-12">
         <div className="text-center mb-6 md:mb-10">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 px-4">{title}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent px-4">{title}</h2>
         </div>
 
         {/* 상위 3위 포디움 */}
@@ -328,8 +327,20 @@ export default function RankingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white">
       <div className="max-w-6xl mx-auto px-3 md:px-4 py-6 md:py-8">
+        {/* AdSense - 최상단 */}
+        {adsenseId && (
+          <div className="mb-6 md:mb-8">
+            <AdSense
+              adClient={adsenseId}
+              adFormat="auto"
+              fullWidthResponsive={true}
+              style={{ display: 'block', minHeight: '100px' }}
+            />
+          </div>
+        )}
+
         {/* 헤더 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -355,18 +366,6 @@ export default function RankingPage() {
           </div>
         ) : (
           <>
-            {/* 상단 광고 */}
-            {adsenseId && (
-              <div className="mb-6 md:mb-8">
-                <AdSense
-                  adClient={adsenseId}
-                  adFormat="auto"
-                  fullWidthResponsive={true}
-                  style={{ display: 'block', minHeight: '100px' }}
-                />
-              </div>
-            )}
-
             {/* 이번주 랭킹 */}
             {renderPodium(currentWeekRankings, '🔥 이번주 실시간 랭킹')}
 

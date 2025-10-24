@@ -3,17 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Lock, Mail, User, Calendar, ArrowLeft, Heart, Sparkles, Key } from 'lucide-react';
+import { Lock, Mail, User, ArrowLeft, Heart, Sparkles, Key } from 'lucide-react';
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteCard from '@/components/common/card/CuteCard';
-import DateInput from '@/components/common/input/DateInput';
 import Alert from '@/components/common/alert/Alert';
+import { resetPassword } from '@/libs/api/user/userApi';
 
 export default function FindPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [birthDate, setBirthDate] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,10 +25,6 @@ export default function FindPasswordPage() {
       setAlertMessage('이름을 입력해주세요.');
       return;
     }
-    if (!birthDate.trim()) {
-      setAlertMessage('생년월일을 입력해주세요.');
-      return;
-    }
 
     if (!email.includes('@')) {
       setAlertMessage('올바른 이메일 형식을 입력해주세요.');
@@ -38,9 +33,19 @@ export default function FindPasswordPage() {
 
     setIsLoading(true);
     try {
-      // TODO: 백엔드 API 연결
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 임시 지연
-      setAlertMessage('임시 비밀번호를 이메일로 전송했습니다! 📧');
+      const response = await resetPassword({
+        email: email.trim(),
+        name: name.trim(),
+      });
+
+      if (response.resultCode === 200) {
+        setAlertMessage('임시 비밀번호를 이메일로 전송했습니다! 📧');
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
+      } else {
+        setAlertMessage(response.resultMessageKo || '입력하신 정보와 일치하는 계정을 찾을 수 없습니다.');
+      }
     } catch (error) {
       setAlertMessage('비밀번호 찾기 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
@@ -145,20 +150,6 @@ export default function FindPasswordPage() {
                   maxLength={20}
                 />
               </div>
-            </div>
-
-            {/* 생년월일 입력 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                생년월일
-              </label>
-              <DateInput
-                value={birthDate}
-                onChange={(value) => setBirthDate(value)}
-                placeholder="YYYY-MM-DD"
-                minDate={new Date('1900-01-01')}
-                maxDate={new Date()}
-              />
             </div>
 
             <CuteButton

@@ -8,8 +8,7 @@ import { RankingListResponse } from '@/libs/interface/api/ranking/rankingRespons
  */
 export const getCurrentWeekRanking = async (): Promise<CommonResponse<RankingListResponse>> => {
   return handleApiError(
-    () => api.get('/ranking/v1/current-week'),
-    '이번주 랭킹 조회'
+    () => api.get('/ranking/v1/current-week')
   );
 };
 
@@ -18,7 +17,6 @@ export const getCurrentWeekRanking = async (): Promise<CommonResponse<RankingLis
  */
 export const getLastWeekRanking = async (): Promise<CommonResponse<RankingListResponse>> => {
   return handleApiError(
-    () => api.get('/ranking/v1/last-week'),
-    '지난주 랭킹 조회'
+    () => api.get('/ranking/v1/last-week')
   );
 };

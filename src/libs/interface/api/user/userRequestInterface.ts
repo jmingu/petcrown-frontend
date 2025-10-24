@@ -5,9 +5,6 @@ export interface SignUpRequest {
   email: string;
   name: string;
   nickname: string;
-  gender: string; // 예: "M", "F
-  birthDate: string; // ISO 형식 (예: "1990-01-01")
-  phoneNumber: string; // 전화번호 형식 (예: "010-1234-5678")
   password: string;
   passwordCheck: string; // 비밀번호 확인
 }
@@ -24,11 +21,11 @@ export interface LoginRequest {
  * 회원 정보 변경
  */
 export interface ChangeUserInfoRequest {
-  name: string;
-  nickname: string;
-  gender: string; // 예: "M", "F"
-  birthDate: string; // ISO 형식 (예: "1990-01-01")
-  phoneNumber: string; // 전화번호 형식 (예: "010-1234-5678")
+  name: string; // 필수
+  nickname: string; // 필수
+  gender?: string; // 선택 - 예: "M", "F"
+  birthDate?: string; // 선택 - ISO 형식 (예: "1990-01-01")
+  phoneNumber?: string; // 선택 - 전화번호 형식 (예: "010-1234-5678")
 }
 
 /**
@@ -53,4 +50,12 @@ export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
   newPasswordConfirm: string;
+}
+
+/**
+ * 비밀번호 찾기 (재설정)
+ */
+export interface PasswordResetRequest {
+  email: string;
+  name: string;
 }

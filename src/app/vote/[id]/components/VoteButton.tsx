@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Check } from 'lucide-react';
 import { doVote } from '@/libs/api/vote/voteApi';
 import { useUserStore } from '@/libs/store/user/userStore';
 import Alert from '@/components/common/alert/Alert';
@@ -17,7 +16,6 @@ interface VoteButtonProps {
 export default function VoteButton({ voteId, currentVoteCount, petName, isActive = true }: VoteButtonProps) {
   const { user } = useUserStore();
   const [isVoting, setIsVoting] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
   const [voteCount, setVoteCount] = useState(currentVoteCount);
   const [alertMessage, setAlertMessage] = useState('');
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -30,24 +28,17 @@ export default function VoteButton({ voteId, currentVoteCount, petName, isActive
     }
 
     // 로그인한 사용자 - 직접 투표
-    if (hasVoted) {
-      setAlertMessage('이미 투표하셨습니다.');
-      return;
-    }
-
     setIsVoting(true);
     try {
       const response = await doVote(voteId, { email: user.email });
 
       if (response.resultCode === 200) {
-        setHasVoted(true);
         setVoteCount(prev => prev + 1);
         setAlertMessage('투표가 완료되었습니다! 🎉');
       } else {
         setAlertMessage(response.resultMessageKo || '투표에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
-      console.error('투표 실패:', error);
       setAlertMessage('투표 중 오류가 발생했습니다.');
     } finally {
       setIsVoting(false);
@@ -55,7 +46,6 @@ export default function VoteButton({ voteId, currentVoteCount, petName, isActive
   };
 
   const handleEmailVoteSuccess = () => {
-    setHasVoted(true);
     setVoteCount(prev => prev + 1);
   };
 
@@ -78,14 +68,12 @@ export default function VoteButton({ voteId, currentVoteCount, petName, isActive
       <div className="text-center">
         <button
           onClick={handleVote}
-          disabled={isVoting || hasVoted}
+          disabled={isVoting}
           className={`
             inline-flex items-center justify-center space-x-3 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 min-w-[200px]
-            ${hasVoted
-              ? 'bg-green-500 text-white cursor-default'
-              : isVoting
-                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 shadow-lg hover:shadow-xl'
+            ${isVoting
+              ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 shadow-lg hover:shadow-xl'
             }
           `}
         >
@@ -93,11 +81,6 @@ export default function VoteButton({ voteId, currentVoteCount, petName, isActive
             <>
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
               <span>투표 중...</span>
-            </>
-          ) : hasVoted ? (
-            <>
-              <Check className="w-6 h-6" />
-              <span>투표 완료!</span>
             </>
           ) : (
             <span>투표하기</span>

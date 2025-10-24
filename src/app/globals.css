@@ -1,8 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
 @import 'tailwindcss';
 :root {
-  --background: #ffffff;
+  --background: #FFF9FB;
   --foreground: #171717;
+  --color-primary: #FF80AB; /* 핑크 */
+  --color-secondary: #A78BFA; /* 보라 */
+  --color-accent-mint: #34D399; /* 민트 */
+  --color-accent-yellow: #F59E0B; /* 노랑 */
+  --color-bg-primary: #FFF9FB;
+  --color-bg-secondary: #FAF5FF;
   --color-theme-green: #22c55e; /* green-500 */
   --color-theme-sky: #0ea5e9; /* sky-500 */
   --color-theme-lime: #a3e635; /* lime-400 */
@@ -63,4 +69,79 @@ body {
 
 .font-noto-sans-kr {
   font-family: 'Noto Sans KR', Arial, Helvetica, sans-serif;
+}
+
+/* 새로운 디자인 시스템 애니메이션 */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-12deg);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 128, 171, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+  }
+}
+
+.animate-shine {
+  animation: shine 3s infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* 글래스모피즘 유틸리티 */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-purple {
+  background: rgba(167, 139, 250, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.glass-pink {
+  background: rgba(255, 128, 171, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 128, 171, 0.2);
 }

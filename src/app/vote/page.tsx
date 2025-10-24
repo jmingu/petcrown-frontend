@@ -45,7 +45,6 @@ export default function VotePage() {
         setTotalCount(response.result.totalCount);
       }
     } catch (error) {
-      console.error('투표 목록 로드 실패:', error);
       
       // 개발/테스트 용도 - 임시 샘플 데이터
       const sampleVotes = Array.from({ length: 6 }, (_, i) => ({
@@ -78,23 +77,45 @@ export default function VotePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* AdSense - 최상단 */}
+        {adsenseId && (
+          <div className="mb-6">
+            <AdSense
+              adClient={adsenseId}
+              adFormat="auto"
+              fullWidthResponsive={true}
+              style={{ display: 'block', minHeight: '100px' }}
+            />
+          </div>
+        )}
+
         {/* 헤더 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8"
+          className="text-center mb-10"
         >
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <Trophy className="w-8 h-8 text-yellow-500" />
-            <h1 className="text-4xl font-bold text-gray-900">
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <motion.div
+              animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Trophy className="w-10 h-10 text-yellow-500" />
+            </motion.div>
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
               투표하기
             </h1>
-            <Trophy className="w-8 h-8 text-yellow-500" />
+            <motion.div
+              animate={{ rotate: [0, -10, 10, 0], scale: [1, 1.1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            >
+              <Trophy className="w-10 h-10 text-yellow-500" />
+            </motion.div>
           </div>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-700 text-xl font-medium">
             가장 귀여운 반려동물을 선택해주세요! 💕
           </p>
         </motion.div>
@@ -107,7 +128,7 @@ export default function VotePage() {
           className="flex justify-center md:justify-end mb-6"
         >
           <Link href="/vote/register">
-            <CuteButton variant="cute" size="lg" icon={<Plus className="w-5 h-5" />}>
+            <CuteButton variant="primary" size="lg" icon={<Plus className="w-5 h-5" />}>
               투표 등록하기
             </CuteButton>
           </Link>
@@ -167,16 +188,6 @@ export default function VotePage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            {adsenseId && (
-              <div className="mb-6">
-                <AdSense
-                  adClient={adsenseId}
-                  adFormat="auto"
-                  fullWidthResponsive={true}
-                  style={{ display: 'block', minHeight: '100px' }}
-                />
-              </div>
-            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {votes.length > 0 ? (
                 votes.map((vote, index) => (
@@ -188,7 +199,7 @@ export default function VotePage() {
                       transition={{ duration: 0.5, delay: index * 0.1 }}
                     >
                       <Link href={`/vote/${vote.voteId}`}>
-                        <CuteCard hover className="h-full" padding="lg">
+                        <CuteCard hover className="h-full" padding="lg" glassmorphism>
                           {/* 펫 이미지 */}
                           <div className="relative mb-4">
                             <div className="w-full aspect-square relative">
@@ -196,37 +207,41 @@ export default function VotePage() {
                                 src={vote.profileImageUrl}
                                 alt={vote.name}
                                 fill
-                                className="rounded-2xl object-cover shadow-lg hover:scale-105 transition-transform duration-300"
+                                className="rounded-3xl object-cover shadow-xl hover:scale-105 transition-transform duration-300"
                               />
                               {/* 투표수 배지 */}
-                              <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-1.5">
+                              <div className="absolute top-3 right-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white backdrop-blur-sm rounded-2xl px-3 py-2 shadow-lg">
                                 <div className="flex items-center space-x-1">
-                                  <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
-                                  <span className="font-bold text-gray-900">{selectedPeriod === 'weekly' ? vote.weeklyVoteCount.toLocaleString() : vote.monthlyVoteCount.toLocaleString()}</span>
+                                  <Heart className="w-4 h-4" fill="currentColor" />
+                                  <span className="font-bold">{selectedPeriod === 'weekly' ? vote.weeklyVoteCount.toLocaleString() : vote.monthlyVoteCount.toLocaleString()}</span>
                                 </div>
                               </div>
                             </div>
                           </div>
 
                           {/* 펫 정보 */}
-                          <div className="text-center space-y-2">
-                            <h3 className="text-xl font-bold text-gray-800 flex items-center justify-center space-x-2">
+                          <div className="text-center space-y-3">
+                            <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center justify-center space-x-2">
                               <span>{vote.name}</span>
-                              <Heart className="w-5 h-5 text-pink-500" fill="currentColor" />
+                              <Heart className="w-5 h-5 text-pink-500 animate-bounce-subtle" fill="currentColor" />
                             </h3>
 
                             <div className="space-y-1 text-sm text-gray-600">
                               <div className="flex justify-center items-center space-x-2">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  vote.gender === 'M'
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'bg-pink-100 text-pink-700'
-                                }`}>
-                                  {vote.gender === 'M' ? '♂ 남아' : '♀ 여아'}
-                                </span>
-                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-                                  {calculateAge(vote.birthDate)}살
-                                </span>
+                                {vote.gender && (
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    vote.gender === 'M'
+                                      ? 'bg-blue-100 text-blue-700'
+                                      : 'bg-pink-100 text-pink-700'
+                                  }`}>
+                                    {vote.gender === 'M' ? '♂ 남아' : '♀ 여아'}
+                                  </span>
+                                )}
+                                {vote.birthDate && calculateAge(vote.birthDate) !== null && (
+                                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                    {calculateAge(vote.birthDate)}살
+                                  </span>
+                                )}
                               </div>
 
                               <p className="font-medium text-gray-700">

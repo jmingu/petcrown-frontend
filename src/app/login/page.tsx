@@ -152,9 +152,36 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-white flex items-center justify-center p-4 relative overflow-hidden">
       {/* 배경 장식 요소들 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* 큰 그라데이션 블롭들 */}
+        <motion.div
+          className="absolute -top-20 -left-20 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-20 -right-20 w-96 h-96 bg-pink-200/30 rounded-full blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.5, 0.3, 0.5],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+
+        {/* 떠다니는 아이콘들 */}
         <motion.div
           className="absolute top-20 left-10"
           animate={{
@@ -167,9 +194,9 @@ export default function LoginPage() {
             ease: "easeInOut",
           }}
         >
-          <Heart className="w-8 h-8 text-pink-300 opacity-40" fill="currentColor" />
+          <Heart className="w-8 h-8 text-pink-400/40" fill="currentColor" />
         </motion.div>
-        
+
         <motion.div
           className="absolute top-32 right-20"
           animate={{
@@ -182,7 +209,22 @@ export default function LoginPage() {
             ease: "easeInOut",
           }}
         >
-          <Sparkles className="w-6 h-6 text-purple-300 opacity-50" />
+          <Sparkles className="w-6 h-6 text-purple-400/50" />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-40 right-1/4"
+          animate={{
+            y: [15, -15, 15],
+            x: [-5, 5, -5],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <Heart className="w-6 h-6 text-pink-300/30" fill="currentColor" />
         </motion.div>
       </div>
 
@@ -193,23 +235,28 @@ export default function LoginPage() {
         transition={{ duration: 0.6 }}
         className="w-full max-w-md relative z-10"
       >
-        <CuteCard className="space-y-6" padding="lg">
+        <CuteCard className="space-y-6" padding="lg" glassmorphism>
           {/* 헤더 */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-3">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{
+                type: "spring",
+                stiffness: 260,
+                damping: 20,
+                delay: 0.2
+              }}
               className="flex justify-center"
             >
-              <div className="w-16 h-16 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
-                <Heart className="w-8 h-8 text-white" fill="currentColor" />
+              <div className="w-20 h-20 bg-gradient-to-r from-pink-400 via-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-xl animate-pulse-glow">
+                <Heart className="w-10 h-10 text-white" fill="currentColor" />
               </div>
             </motion.div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
               PetCrown
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-700 text-lg">
               우리 반려동물과 함께하는 특별한 공간 💕
             </p>
           </div>
@@ -228,7 +275,7 @@ export default function LoginPage() {
                   placeholder="이메일을 입력해주세요"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
                 />
               </div>
             </div>
@@ -245,7 +292,7 @@ export default function LoginPage() {
                   placeholder="비밀번호를 입력해주세요"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-12 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
                 />
                 <button
                   type="button"
@@ -278,22 +325,28 @@ export default function LoginPage() {
           </div>
 
           {/* 링크들 */}
-          <div className="space-y-4">
+          <div className="space-y-4 pt-4 border-t border-purple-100">
             <div className="flex justify-center space-x-6 text-sm">
-              <Link href="/find-id" className="text-gray-500 hover:text-purple-600 transition-colors">
-                아이디 찾기
-              </Link>
-              <span className="text-gray-300">|</span>
-              <Link href="/find-password" className="text-gray-500 hover:text-purple-600 transition-colors">
-                비밀번호 찾기
-              </Link>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link href="/find-id" className="text-gray-600 hover:text-purple-600 transition-colors font-medium">
+                  아이디 찾기
+                </Link>
+              </motion.div>
+              <span className="text-purple-200">|</span>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link href="/find-password" className="text-gray-600 hover:text-purple-600 transition-colors font-medium">
+                  비밀번호 찾기
+                </Link>
+              </motion.div>
             </div>
-            
+
             <div className="text-center">
-              <span className="text-gray-500 text-sm">아직 회원이 아니신가요? </span>
-              <Link href="/signup" className="text-purple-600 hover:text-purple-800 font-medium transition-colors">
-                회원가입
-              </Link>
+              <span className="text-gray-600 text-sm">아직 회원이 아니신가요? </span>
+              <motion.span whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
+                <Link href="/signup" className="text-purple-600 hover:text-purple-800 font-bold transition-colors">
+                  회원가입
+                </Link>
+              </motion.span>
             </div>
           </div>
         </CuteCard>
@@ -324,7 +377,7 @@ export default function LoginPage() {
                   placeholder="인증번호를 입력해주세요"
                   value={inputCode}
                   onChange={(e) => setInputCode(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
                 />
               </div>
               

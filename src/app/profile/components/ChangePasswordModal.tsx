@@ -246,7 +246,6 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
               size="md"
               className="flex-1"
               disabled={isLoading}
-              icon={<Shield className="w-4 h-4" />}
             >
               {isLoading ? '변경 중...' : '비밀번호 변경'}
             </CuteButton>

@@ -1,14 +1,14 @@
 import Link from 'next/link';
-import { Crown, Trophy, Heart, Mail, Phone, MapPin } from 'lucide-react';
+import { Crown, Trophy, Heart } from 'lucide-react';
 
 export default function Footer() {
   return (
     <footer className="mt-12 bg-white border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* 메인 푸터 컨텐츠 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* 브랜드 섹션 */}
-          <div className="md:col-span-2">
+          <div>
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg relative">
                 <Trophy className="w-4 h-4 text-yellow-100 relative z-10 mt-1.5" />
@@ -29,76 +29,22 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* 빠른 링크 */}
-          <div>
-            <h3 className="font-bold text-gray-900 mb-4">빠른 메뉴</h3>
-            <div className="space-y-3">
-              {[
-                { name: '랭킹보기', href: '/ranking' },
-                { name: '투표하기', href: '/vote' },
-                { name: '커뮤니티', href: '/community' },
-                { name: '공지사항', href: '/notice' },
-              ].map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block text-gray-600 hover:text-purple-600 transition-colors duration-200 text-sm"
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-
           {/* 고객 지원 */}
           <div>
             <h3 className="font-bold text-gray-900 mb-4">고객 지원</h3>
             <div className="space-y-3">
-              <a
-                href="/terms"
-                className="block text-gray-600 hover:text-purple-600 transition-colors duration-200 text-sm"
-              >
-                이용약관
-              </a>
-              <a
-                href="/privacy"
-                className="block text-gray-600 hover:text-purple-600 transition-colors duration-200 text-sm"
-              >
-                개인정보처리방침
-              </a>
-              <a
+              <Link
                 href="/contact"
                 className="block text-gray-600 hover:text-purple-600 transition-colors duration-200 text-sm"
               >
                 문의하기
-              </a>
-              <a
-                href="/faq"
+              </Link>
+              <Link
+                href="/privacy"
                 className="block text-gray-600 hover:text-purple-600 transition-colors duration-200 text-sm"
               >
-                자주 묻는 질문
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* 연락처 정보 */}
-        <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 mb-8">
-          <h3 className="font-bold text-gray-900 mb-4 text-center">연락처</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="flex items-center justify-center space-x-2 text-gray-600">
-              <Mail className="w-4 h-4 text-purple-600" />
-              <a href="mailto:support@petcrown.com" className="hover:text-purple-600 transition-colors duration-200">
-                support@petcrown.com
-              </a>
-            </div>
-            <div className="flex items-center justify-center space-x-2 text-gray-600">
-              <Phone className="w-4 h-4 text-purple-600" />
-              <span>1588-1234</span>
-            </div>
-            <div className="flex items-center justify-center space-x-2 text-gray-600">
-              <MapPin className="w-4 h-4 text-purple-600" />
-              <span>서울시 강남구</span>
+                개인정보 처리방침
+              </Link>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   PartyPopper, Pin, Eye, Calendar, Clock,
-  ArrowRight, Sparkles, Star, ImageOff
+  ArrowRight, Sparkles, Star
 } from 'lucide-react';
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteCard from '@/components/common/card/CuteCard';
@@ -33,6 +33,17 @@ export default function EventPage() {
   // isPinned가 'Y'가 아닌 일반 이벤트
   const regularEvents = events.filter(event => event.isPinned !== 'Y');
 
+  const getGradientColor = (index: number) => {
+    const gradients = [
+      'from-purple-400 via-pink-400 to-red-400',
+      'from-blue-400 via-cyan-400 to-teal-400',
+      'from-orange-400 via-yellow-400 to-amber-400',
+      'from-green-400 via-emerald-400 to-lime-400',
+      'from-rose-400 via-fuchsia-400 to-purple-400',
+    ];
+    return gradients[index % gradients.length];
+  };
+
   useEffect(() => {
     loadEvents();
   }, [currentPage]);
@@ -46,7 +57,6 @@ export default function EventPage() {
         setTotalPages(1);
       }
     } catch (error) {
-      console.error('이벤트 로드 실패:', error);
       setEvents([]);
     } finally {
       setIsLoading(false);
@@ -63,7 +73,19 @@ export default function EventPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white">
+      {/* AdSense at the top */}
+      {adsenseId && (
+        <div className="mb-6">
+          <AdSense
+            adClient={adsenseId}
+            adFormat="auto"
+            fullWidthResponsive={true}
+            style={{ display: 'block', minHeight: '100px' }}
+          />
+        </div>
+      )}
+
       {/* 배경 장식 요소들 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -152,8 +174,10 @@ export default function EventPage() {
                           />
                         </div>
                       ) : (
-                        <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center">
-                          <ImageOff className="w-8 h-8 text-gray-400" />
+                        <div className={`w-20 h-20 rounded-xl bg-gradient-to-r ${getGradientColor(index)} flex items-center justify-center relative overflow-hidden`}>
+                          <div className="absolute inset-0 bg-black/10"></div>
+                          <div className="absolute -top-2 -right-2 w-8 h-8 bg-white/20 rounded-full"></div>
+                          <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-white/10 rounded-full"></div>
                         </div>
                       )}
                     </div>
@@ -204,16 +228,6 @@ export default function EventPage() {
           ) : (
             <CuteCard padding="sm">
               <div className="space-y-1">
-                {adsenseId && (
-                  <div className="my-4 py-4">
-                    <AdSense
-                      adClient={adsenseId}
-                      adFormat="auto"
-                      fullWidthResponsive={true}
-                      style={{ display: 'block', minHeight: '100px' }}
-                    />
-                  </div>
-                )}
                 {regularEvents.length > 0 ? (
                   regularEvents.map((event: Event, index: number) => (
                     <>
@@ -236,8 +250,10 @@ export default function EventPage() {
                               />
                             </div>
                           ) : (
-                            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center">
-                              <ImageOff className="w-6 h-6 text-gray-400" />
+                            <div className={`w-16 h-16 rounded-xl bg-gradient-to-r ${getGradientColor(index + pinnedEvents.length)} flex items-center justify-center relative overflow-hidden`}>
+                              <div className="absolute inset-0 bg-black/10"></div>
+                              <div className="absolute -top-2 -right-2 w-6 h-6 bg-white/20 rounded-full"></div>
+                              <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-white/10 rounded-full"></div>
                             </div>
                           )}
                         </div>
@@ -261,16 +277,6 @@ export default function EventPage() {
                         </div>
                         <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
                       </motion.div>
-                      {adsenseId && (index + 1) % 4 === 0 && index !== regularEvents.length - 1 && (
-                        <div className="my-4 py-4">
-                          <AdSense
-                            adClient={adsenseId}
-                            adFormat="auto"
-                            fullWidthResponsive={true}
-                            style={{ display: 'block', minHeight: '100px' }}
-                          />
-                        </div>
-                      )}
                     </>
                   ))
                 ) : (

@@ -28,7 +28,6 @@ export default function HomeNotice() {
         setNotices(Array.isArray(response.result) ? response.result : []);
       }
     } catch (error) {
-      console.error('공지사항 로드 실패:', error);
     } finally {
       setIsLoading(false);
     }

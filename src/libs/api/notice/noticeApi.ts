@@ -14,8 +14,7 @@ export const getNoticeList = async (
   data: NoticeListRequest
 ): Promise<CommonResponse<NoticeListResponse>> => {
   return handleApiError(
-    () => api.get(`/notices/v1?page=${data.page}&size=${data.size}&search=${data.search || ''}`),
-    '공지사항 목록 조회'
+    () => api.get(`/notices/v1?page=${data.page}&size=${data.size}&search=${data.search || ''}`)
   );
 };
 
@@ -26,7 +25,6 @@ export const getNoticeDetail = async (
   noticeId: number
 ): Promise<CommonResponse<NoticeDetailResponse>> => {
   return handleApiError(
-    () => api.get(`/notices/v1/${noticeId}`),
-    '공지사항 상세 조회'
+    () => api.get(`/notices/v1/${noticeId}`)
   );
 };

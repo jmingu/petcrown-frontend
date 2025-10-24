@@ -26,7 +26,6 @@ async function getVoteData(id: number): Promise<VoteDetailResponse | null> {
     }
     return null;
   } catch (error) {
-    console.error('투표 상세 조회 실패:', error);
     return null;
   }
 }
@@ -46,14 +45,23 @@ export async function generateMetadata({
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://petcrown.com';
-  const imageUrl = voteData.profileImageUrl.startsWith('http') 
-    ? voteData.profileImageUrl 
+  const imageUrl = voteData.profileImageUrl.startsWith('http')
+    ? voteData.profileImageUrl
     : `${baseUrl}${voteData.profileImageUrl}`;
 
-  const petDescription = `🐾 ${voteData.name} (${voteData.breedName || voteData.speciesName})에게 투표해주세요! 현재 ${voteData.monthlyVoteCount}표를 받았습니다.`;
+  const age = voteData.birthDate ? new Date().getFullYear() - new Date(voteData.birthDate).getFullYear() : null;
+  const genderText = voteData.gender === 'M' ? '남아' : voteData.gender === 'F' ? '여아' : null;
+
+  const petInfoText = [
+    voteData.breedName || voteData.speciesName,
+    age !== null && `${age}살`,
+    genderText
+  ].filter(Boolean).join(' ');
+
+  const petDescription = `🐾 귀여운 ${voteData.name}${petInfoText ? `(${petInfoText})` : ''}에게 투표해주세요! 현재 이번주 ${voteData.weeklyVoteCount.toLocaleString()}표 획득 중이에요 💕`;
 
   return {
-    title: `${voteData.name} | PetCrown 투표`,
+    title: `${voteData.name}에게 투표해주세요! 🏆 | PetCrown`,
     description: petDescription,
     openGraph: {
       title: `🏆 ${voteData.name}에게 투표해주세요!`,
@@ -107,13 +115,11 @@ export default async function VoteDetailPage({ params }: VoteDetailPageProps) {
 
   // 백엔드 API 구조에 맞춘 데이터 처리
   const isActive = true; // 투표 활성화 (백엔드에서 상태 정보가 제공되면 해당 값 사용)
-  const birthYear = new Date(voteData.birthDate).getFullYear();
-  const currentYear = new Date().getFullYear();
-  const age = currentYear - birthYear;
+  const age = voteData.birthDate ? new Date().getFullYear() - new Date(voteData.birthDate).getFullYear() : null;
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* 뒤로가기 버튼 */}
         <div className="mb-6">
@@ -125,13 +131,25 @@ export default async function VoteDetailPage({ params }: VoteDetailPageProps) {
           </Link>
         </div>
 
+        {/* AdSense - 상단 */}
+        {adsenseId && (
+          <div className="mb-6">
+            <AdSense
+              adClient={adsenseId}
+              adFormat="auto"
+              fullWidthResponsive={true}
+              style={{ display: 'block', minHeight: '100px' }}
+            />
+          </div>
+        )}
+
         {/* 메인 카드 */}
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+        <div className="glass rounded-3xl shadow-2xl overflow-hidden border border-purple-100">
           <div className="relative">
 
             {/* 공유 버튼 */}
             <div className="absolute top-4 right-4 z-10">
-              <ShareButton 
+              <ShareButton
                 url={`${process.env.NEXT_PUBLIC_BASE_URL || ''}/vote/${id}`}
                 title={voteData.name}
                 description={`${voteData.name}에게 투표해주세요!`}
@@ -151,49 +169,57 @@ export default async function VoteDetailPage({ params }: VoteDetailPageProps) {
           </div>
 
           {/* 투표 정보 */}
-          <div className="p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <div className="p-4 md:p-8">
+            <div className="text-center mb-6 md:mb-8">
+              <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4 break-words">
                 🏆 {voteData.name}에게 투표해주세요!
               </h1>
-              <p className="text-gray-600 text-xl leading-relaxed">
-                {voteData.breedName || voteData.speciesName} • {voteData.gender === 'M' ? '남아' : '여아'} • {age}살
+              <p className="text-gray-600 text-base md:text-xl leading-relaxed">
+                {[
+                  voteData.breedName || voteData.speciesName,
+                  voteData.gender && (voteData.gender === 'M' ? '남아' : '여아'),
+                  age !== null && `${age}살`
+                ].filter(Boolean).join(' • ')}
               </p>
-              <p className="text-purple-600 font-semibold text-lg mt-2">
+              <p className="text-purple-600 font-semibold text-base md:text-lg mt-2">
                 현재 {voteData.weeklyVoteCount.toLocaleString()}표 획득! 🎉
               </p>
             </div>
 
             {/* 펫 정보 카드 */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 mb-8">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 md:p-6 mb-6 md:mb-8">
               <div className="flex items-center justify-center mb-4">
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-purple-600 mb-1">{voteData.weeklyVoteCount.toLocaleString()}</p>
-                  <p className="text-sm text-gray-500">주간 투표 수</p>
+                  <p className="text-2xl md:text-3xl font-bold text-purple-600 mb-1">{voteData.weeklyVoteCount.toLocaleString()}</p>
+                  <p className="text-xs md:text-sm text-gray-500">주간 투표 수</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">이름</p>
-                  <p className="font-semibold text-lg text-gray-900">{voteData.name}</p>
+                  <p className="text-xs md:text-sm text-gray-500">이름</p>
+                  <p className="font-semibold text-sm md:text-lg text-gray-900 break-words">{voteData.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">품종</p>
-                  <p className="font-semibold text-lg text-gray-900">{voteData.breedName || voteData.speciesName}</p>
+                  <p className="text-xs md:text-sm text-gray-500">품종</p>
+                  <p className="font-semibold text-sm md:text-lg text-gray-900 break-words">{voteData.breedName || voteData.speciesName}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">성별</p>
-                  <p className="font-semibold text-lg text-gray-900">
-                    {voteData.gender === 'M' ? '남아' : '여아'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">생년월일</p>
-                  <p className="font-semibold text-lg text-gray-900">
-                    {new Date(voteData.birthDate).toLocaleDateString('ko-KR')}
-                  </p>
-                </div>
+                {voteData.gender && (
+                  <div>
+                    <p className="text-xs md:text-sm text-gray-500">성별</p>
+                    <p className="font-semibold text-sm md:text-lg text-gray-900">
+                      {voteData.gender === 'M' ? '남아' : '여아'}
+                    </p>
+                  </div>
+                )}
+                {voteData.birthDate && (
+                  <div>
+                    <p className="text-xs md:text-sm text-gray-500">생년월일</p>
+                    <p className="font-semibold text-sm md:text-lg text-gray-900 break-words">
+                      {new Date(voteData.birthDate).toLocaleDateString('ko-KR')}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* 감정 표시 */}
@@ -209,11 +235,13 @@ export default async function VoteDetailPage({ params }: VoteDetailPageProps) {
               )}
             </div>
 
-            {/* 투표 기간 */}
+            {/* 투표 안내 */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-50 rounded-full">
-                <Calendar className="w-5 h-5 text-blue-600" />
-                <span className="text-blue-600 font-medium">공유하여 더 많은 투표를 받아보세요!</span>
+                <Calendar className="w-4 h-4 md:w-5 md:h-5 text-blue-600 flex-shrink-0" />
+                <span className="text-blue-600 font-medium text-xs md:text-sm break-keep">
+                  공유하여 더 많은 투표를 받아보세요!
+                </span>
               </div>
             </div>
 
@@ -233,18 +261,6 @@ export default async function VoteDetailPage({ params }: VoteDetailPageProps) {
             />
           </div>
         </div>
-
-        {/* AdSense at the end */}
-        {adsenseId && (
-          <div className="mt-8">
-            <AdSense
-              adClient={adsenseId}
-              adFormat="auto"
-              fullWidthResponsive={true}
-              style={{ display: 'block', margin: '2rem 0', minHeight: '100px' }}
-            />
-          </div>
-        )}
       </div>
     </div>
   );

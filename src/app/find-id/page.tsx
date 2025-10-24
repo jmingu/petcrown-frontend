@@ -91,42 +91,7 @@ export default function FindIdPage() {
                 <Search className="w-8 h-8 text-white" />
               </div>
             </motion.div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              아이디 찾기
-            </h1>
-            <p className="text-gray-600">
-              가입할 때 사용한 이메일을 입력해주세요 🔍
-            </p>
-          </div>
 
-          {/* 이메일 입력 폼 */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                이메일 주소
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="email"
-                  placeholder="example@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
-            </div>
-
-            <CuteButton
-              onClick={handleFindId}
-              loading={isLoading}
-              className="w-full"
-              variant="primary"
-              size="lg"
-              icon={<Search className="w-5 h-5" />}
-            >
-              아이디 찾기
-            </CuteButton>
           </div>
 
           {/* 도움말 섹션 */}

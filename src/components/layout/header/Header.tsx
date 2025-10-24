@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import {
   Menu, X, Crown, Trophy, MessageCircle,
-  Megaphone, User, LogOut, Heart, PartyPopper
+  Megaphone, User, LogOut, Heart, PartyPopper, Info, ChevronDown, Bell
 } from 'lucide-react';
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteAvatar from '@/components/common/avatar/CuteAvatar';
@@ -16,12 +16,36 @@ import { useUserStore } from '@/libs/store/user/userStore';
 import { findUser } from '@/libs/api/user/userApi';
 import { authChannel } from '@/libs/broadcastchannel/channel';
 
-const MENU_ITEMS = [
-  { name: '랭킹보기', path: '/ranking', icon: Trophy },
-  { name: '투표하기', path: '/vote', icon: Crown },
+type MenuItem = {
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  path?: string;
+  submenus?: Array<{
+    name: string;
+    path: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }>;
+};
+
+const MENU_ITEMS: MenuItem[] = [
+  { name: '이용안내', path: '/guide', icon: Info },
+  {
+    name: '투표',
+    icon: Crown,
+    submenus: [
+      { name: '랭킹보기', path: '/ranking', icon: Trophy },
+      { name: '투표하기', path: '/vote', icon: Crown },
+    ]
+  },
   { name: '커뮤니티', path: '/community', icon: MessageCircle },
-  { name: '공지사항', path: '/notice', icon: Megaphone },
-  { name: '이벤트', path: '/event', icon: PartyPopper },
+  {
+    name: '알림',
+    icon: Bell,
+    submenus: [
+      { name: '공지사항', path: '/notice', icon: Megaphone },
+      { name: '이벤트', path: '/event', icon: PartyPopper },
+    ]
+  },
 ];
 
 export default function Header() {
@@ -32,7 +56,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState(''); // 알림 메시지
   const [alertAction, setAlertAction] = useState<(() => void) | null>(null); // 알림창 확인 버튼 동작
- 
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null); // 드롭다운 상태
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // 맨처음 렌더링 시에만 실행되는 useEffect
@@ -217,14 +241,14 @@ export default function Header() {
         <div className="relative flex items-center justify-between px-4 py-4 max-w-7xl mx-auto">
           {/* 모바일 메뉴 버튼 */}
           <button
-            className="md:hidden p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white transition-colors duration-200"
+            className="lg:hidden p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md hover:bg-white transition-colors duration-200"
             onClick={() => setIsMenuOpen(true)}
           >
             <Menu className="w-5 h-5 text-purple-600" />
           </button>
 
           {/* 로고 */}
-          <div className="md:hidden absolute left-1/2 transform -translate-x-1/2">
+          <div className="lg:hidden absolute left-1/2 transform -translate-x-1/2">
             <Link href="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg relative">
                 <Trophy className="w-3.5 h-3.5 text-yellow-100 relative z-10 mt-1.5" />
@@ -235,8 +259,8 @@ export default function Header() {
               </span>
             </Link>
           </div>
-          
-          <div className="hidden md:block">
+
+          <div className="hidden lg:block">
             <Link href="/" className="flex items-center space-x-3">
               <motion.div
                 className="w-10 h-10 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg relative"
@@ -253,25 +277,85 @@ export default function Header() {
           </div>
 
           {/* 데스크톱 네비게이션 */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {MENU_ITEMS.map(({ name, path, icon: Icon }) => (
-              <Link
-                key={path}
-                href={path}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium transition-all duration-200 ${
-                  pathname === path
-                    ? 'bg-white/80 backdrop-blur-sm shadow-md text-purple-700'
-                    : 'text-gray-700 hover:bg-white/60 hover:text-purple-600'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{name}</span>
-              </Link>
-            ))}
+          <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
+            {MENU_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const hasSubmenu = item.submenus !== undefined;
+              const isActive = hasSubmenu
+                ? item.submenus!.some(sub => pathname === sub.path)
+                : pathname === item.path;
+
+              if (hasSubmenu) {
+                return (
+                  <div
+                    key={item.name}
+                    className="relative group"
+                  >
+                    <button
+                      onMouseEnter={() => setOpenDropdown(item.name)}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'bg-white/80 backdrop-blur-sm shadow-md text-purple-700'
+                          : 'text-gray-700 hover:bg-white/60 hover:text-purple-600'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.name}</span>
+                      <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${openDropdown === item.name ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* 드롭다운 메뉴 */}
+                    {openDropdown === item.name && item.submenus && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        onMouseEnter={() => setOpenDropdown(item.name)}
+                        onMouseLeave={() => setOpenDropdown(null)}
+                        className="absolute top-full mt-2 left-0 bg-white rounded-2xl shadow-lg border border-gray-100 py-2 min-w-[160px] z-50"
+                      >
+                        {item.submenus.map((submenu) => {
+                          const SubIcon = submenu.icon;
+                          return (
+                            <Link
+                              key={submenu.path}
+                              href={submenu.path}
+                              className={`flex items-center space-x-2 px-4 py-2.5 hover:bg-purple-50 transition-colors duration-200 ${
+                                pathname === submenu.path ? 'text-purple-700 bg-purple-50/50' : 'text-gray-700'
+                              }`}
+                            >
+                              <SubIcon className="w-4 h-4" />
+                              <span className="text-sm font-medium">{submenu.name}</span>
+                            </Link>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </div>
+                );
+              }
+
+              if (!item.path) return null;
+
+              return (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-white/80 backdrop-blur-sm shadow-md text-purple-700'
+                      : 'text-gray-700 hover:bg-white/60 hover:text-purple-600'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
           </nav>
 
           {/* 사용자 메뉴 */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-4">
             {isLoading ? (
               <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 rounded-full">
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-600 border-t-transparent"></div>
@@ -313,7 +397,7 @@ export default function Header() {
 
         {/* 모바일 메뉴 */}
         {isMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-50">
+          <div className="lg:hidden fixed inset-0 z-50">
             {/* 오버레이 */}
             <div 
               className="absolute inset-0 bg-black opacity-50"
@@ -385,27 +469,84 @@ export default function Header() {
 
               {/* 메뉴 아이템들 */}
               <div className="flex-1 p-6 space-y-2 bg-white overflow-y-auto">
-                {MENU_ITEMS.map(({ name, path, icon: Icon }, index) => (
-                  <motion.div
-                    key={path}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Link
-                      href={path}
-                      className={`flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium transition-all duration-200 ${
-                        pathname === path
-                          ? 'bg-purple-100 text-purple-700 shadow-sm'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                      onClick={() => setIsMenuOpen(false)}
+                {MENU_ITEMS.map((item, index) => {
+                  const Icon = item.icon;
+                  const hasSubmenu = item.submenus !== undefined;
+                  const isActive = hasSubmenu
+                    ? item.submenus!.some(sub => pathname === sub.path)
+                    : pathname === item.path;
+                  const isExpanded = openDropdown === item.name;
+
+                  return (
+                    <motion.div
+                      key={item.name}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
                     >
-                      <Icon className="w-5 h-5" />
-                      <span>{name}</span>
-                    </Link>
-                  </motion.div>
-                ))}
+                      {hasSubmenu ? (
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => setOpenDropdown(isExpanded ? null : item.name)}
+                            className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-medium transition-all duration-200 ${
+                              isActive
+                                ? 'bg-purple-100 text-purple-700 shadow-sm'
+                                : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <Icon className="w-5 h-5" />
+                              <span>{item.name}</span>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          {/* 서브메뉴 */}
+                          {isExpanded && item.submenus && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="ml-4 space-y-1"
+                            >
+                              {item.submenus.map((submenu) => {
+                                const SubIcon = submenu.icon;
+                                return (
+                                  <Link
+                                    key={submenu.path}
+                                    href={submenu.path}
+                                    className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${
+                                      pathname === submenu.path
+                                        ? 'bg-purple-50 text-purple-600'
+                                        : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                                    onClick={() => setIsMenuOpen(false)}
+                                  >
+                                    <SubIcon className="w-4 h-4" />
+                                    <span className="text-sm">{submenu.name}</span>
+                                  </Link>
+                                );
+                              })}
+                            </motion.div>
+                          )}
+                        </div>
+                      ) : item.path ? (
+                        <Link
+                          href={item.path}
+                          className={`flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium transition-all duration-200 ${
+                            isActive
+                              ? 'bg-purple-100 text-purple-700 shadow-sm'
+                              : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span>{item.name}</span>
+                        </Link>
+                      ) : null}
+                    </motion.div>
+                  );
+                })}
               </div>
 
               {/* 로그아웃 버튼 */}

@@ -76,21 +76,21 @@ export default function Profile() {
       const response = await findMyPet();
 
       setPets(response.result.pets); // 반려동물 목록 저장 (pets 배열)
-      console.log(response.result.pets)
     } catch (error) {
       setPets([]);
     }
   }
 
   // 나이 계산 함수
-  const calculateAge = (birthdate: string) => {
+  const calculateAge = (birthdate: string | null | undefined) => {
+    if (!birthdate) return null;
     const birthYear = new Date(birthdate).getFullYear();
     const currentYear = new Date().getFullYear();
     return currentYear - birthYear;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white">
       {/* 배경 장식 요소들 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -307,12 +307,16 @@ export default function Profile() {
 
                           <div className="space-y-2 text-sm">
                             <div className="flex items-center justify-center space-x-2">
-                              <CuteBadge variant="default" size="sm">
-                                {pet.gender === 'M' ? '남아' : '여아'}
-                              </CuteBadge>
-                              <CuteBadge variant="info" size="sm">
-                                {calculateAge(pet.birthDate)}세
-                              </CuteBadge>
+                              {pet.gender && (
+                                <CuteBadge variant="default" size="sm">
+                                  {pet.gender === 'M' ? '남아' : '여아'}
+                                </CuteBadge>
+                              )}
+                              {calculateAge(pet.birthDate) !== null && (
+                                <CuteBadge variant="info" size="sm">
+                                  {calculateAge(pet.birthDate)}세
+                                </CuteBadge>
+                              )}
                             </div>
 
                             {/* 종 표시 */}

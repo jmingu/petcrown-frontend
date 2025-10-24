@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -33,7 +34,6 @@ export default function EventDetail() {
         setEvent(response.result);
       }
     } catch (error) {
-      console.error('이벤트 상세 조회 실패:', error);
     } finally {
       setIsLoading(false);
     }
@@ -41,7 +41,7 @@ export default function EventDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-500 border-t-transparent"></div>
       </div>
     );
@@ -49,7 +49,7 @@ export default function EventDetail() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white flex items-center justify-center">
         <CuteCard className="text-center" padding="lg">
           <div className="space-y-4">
             <div className="w-16 h-16 bg-gradient-to-r from-pink-300 to-purple-400 rounded-full flex items-center justify-center mx-auto">
@@ -66,7 +66,19 @@ export default function EventDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white py-8 px-4">
+      {/* AdSense at the top */}
+      {adsenseId && (
+        <div className="mb-6">
+          <AdSense
+            adClient={adsenseId}
+            adFormat="auto"
+            fullWidthResponsive={true}
+            style={{ display: 'block', minHeight: '100px' }}
+          />
+        </div>
+      )}
+
       {/* 배경 장식 요소들 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -101,22 +113,15 @@ export default function EventDetail() {
       </div>
 
       <div className="max-w-4xl mx-auto relative z-10">
-        {/* 뒤로가기 버튼 */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6"
-        >
-          <CuteButton
-            onClick={() => router.back()}
-            variant="secondary"
-            size="md"
-            icon={<ArrowLeft className="w-4 h-4" />}
+        {/* 목록으로 돌아가기 */}
+        <div className="mb-6">
+          <Link
+            href="/"
+            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
           >
-            목록으로
-          </CuteButton>
-        </motion.div>
+            ← 홈으로 돌아가기
+          </Link>
+        </div>
 
         {/* 이벤트 메인 카드 */}
         <motion.div
@@ -151,25 +156,25 @@ export default function EventDetail() {
               </div>
 
               {/* 제목 */}
-              <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight break-words">
                 {event.title}
               </h1>
 
               {/* 메타 정보 */}
-              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                <div className="flex items-center space-x-6 text-sm text-gray-500">
+              <div className="border-b border-gray-100 pb-4">
+                <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 text-xs md:text-sm text-gray-500">
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full flex items-center justify-center">
-                      <PartyPopper className="w-4 h-4 text-white" />
+                    <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full flex items-center justify-center flex-shrink-0">
+                      <PartyPopper className="w-3 h-3 md:w-4 md:h-4 text-white" />
                     </div>
                     <span className="font-semibold text-gray-700">관리자</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>{new Date(event.startDate).toLocaleDateString('ko-KR')} - {new Date(event.endDate).toLocaleDateString('ko-KR')}</span>
+                    <Calendar className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                    <span className="break-words">{new Date(event.startDate).toLocaleDateString('ko-KR')} - {new Date(event.endDate).toLocaleDateString('ko-KR')}</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
                     <span>{event.viewCount.toLocaleString()}</span>
                   </div>
                 </div>
@@ -190,44 +195,8 @@ export default function EventDetail() {
               )}
             </div>
 
-            {/* 구분선 */}
-            <div className="border-t border-gray-100"></div>
-
-            {/* 액션 버튼 */}
-            <div className="flex justify-center">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <CuteButton
-                  onClick={() => router.push('/event')}
-                  variant="primary"
-                  size="lg"
-                  icon={<PartyPopper className="w-5 h-5" />}
-                >
-                  다른 이벤트 보기
-                </CuteButton>
-              </motion.div>
-            </div>
           </CuteCard>
         </motion.div>
-
-        {/* AdSense at the end */}
-        {adsenseId && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-8"
-          >
-            <AdSense
-              adClient={adsenseId}
-              adFormat="auto"
-              fullWidthResponsive={true}
-              style={{ display: 'block', margin: '2rem 0', minHeight: '100px' }}
-            />
-          </motion.div>
-        )}
 
       </div>
     </div>

@@ -29,7 +29,6 @@ export default function ShareButton({
         });
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
-          console.error('공유 실패:', error);
         }
       }
     } else {
@@ -43,7 +42,6 @@ export default function ShareButton({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('클립보드 복사 실패:', error);
     }
   };
 

@@ -27,7 +27,6 @@ export default function HomeVote() {
         setVotes(response.result.votes);
       }
     } catch (error) {
-      console.error('투표 목록 로드 실패:', error);
     } finally {
       setIsLoading(false);
     }

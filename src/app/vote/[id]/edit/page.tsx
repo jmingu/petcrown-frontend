@@ -8,6 +8,7 @@ import { Camera, Save, Trash2, ArrowLeft } from 'lucide-react';
 import { getVoteDetail, updateVote, deleteVote } from '@/libs/api/vote/voteApi';
 import { VoteDetailResponse } from '@/libs/interface/api/vote/voteResponseInterface';
 import { useUserStore } from '@/libs/store/user/userStore';
+import Alert from '@/components/common/alert/Alert';
 
 export default function VoteEditPage() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function VoteEditPage() {
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
     initializeFromLocalStorage();
@@ -38,8 +40,8 @@ export default function VoteEditPage() {
 
           // 소유자 확인
           if (!user?.email || user.email !== data.ownerEmail) {
-            alert('수정 권한이 없습니다.');
-            router.push(`/vote/${voteId}`);
+            setAlertMessage('수정 권한이 없습니다.');
+            setTimeout(() => router.push(`/vote/${voteId}`), 1500);
             return;
           }
 
@@ -51,19 +53,17 @@ export default function VoteEditPage() {
             setImageError(false);
             setPreviewUrl(data.profileImageUrl);
           } else {
-            console.warn('이미지 URL이 없습니다:', data.profileImageUrl);
             setPreviewUrl('');
             setImageError(true);
           }
 
         } else {
-          alert('투표 정보를 불러올 수 없습니다.');
-          router.push('/vote');
+          setAlertMessage('투표 정보를 불러올 수 없습니다.');
+          setTimeout(() => router.push('/vote'), 1500);
         }
       } catch (error) {
-        console.error('투표 상세 조회 실패:', error);
-        alert('투표 정보를 불러오는 중 오류가 발생했습니다.');
-        router.push('/vote');
+        setAlertMessage('투표 정보를 불러오는 중 오류가 발생했습니다.');
+        setTimeout(() => router.push('/vote'), 1500);
       } finally {
         setIsLoading(false);
       }
@@ -98,14 +98,13 @@ export default function VoteEditPage() {
       });
 
       if (response.resultCode === 200) {
-        alert('투표가 성공적으로 수정되었습니다.');
-        router.push(`/vote/${voteId}`);
+        setAlertMessage('투표가 성공적으로 수정되었습니다.');
+        setTimeout(() => router.push(`/vote/${voteId}`), 1500);
       } else {
-        alert('투표 수정에 실패했습니다.');
+        setAlertMessage('투표 수정에 실패했습니다.');
       }
     } catch (error) {
-      console.error('투표 수정 실패:', error);
-      alert('투표 수정 중 오류가 발생했습니다.');
+      setAlertMessage('투표 수정 중 오류가 발생했습니다.');
     } finally {
       setIsSaving(false);
     }
@@ -118,14 +117,13 @@ export default function VoteEditPage() {
     try {
       const response = await deleteVote(voteId);
       if (response.resultCode === 200) {
-        alert('투표가 삭제되었습니다.');
-        router.push('/vote');
+        setAlertMessage('투표가 삭제되었습니다.');
+        setTimeout(() => router.push('/vote'), 1500);
       } else {
-        alert('투표 삭제에 실패했습니다.');
+        setAlertMessage('투표 삭제에 실패했습니다.');
       }
     } catch (error) {
-      console.error('투표 삭제 실패:', error);
-      alert('투표 삭제 중 오류가 발생했습니다.');
+      setAlertMessage('투표 삭제 중 오류가 발생했습니다.');
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
@@ -211,7 +209,6 @@ export default function VoteEditPage() {
                         priority
                         unoptimized
                         onError={(e) => {
-                          console.error('이미지 로드 실패:', previewUrl);
                           setImageError(true);
                           setImageLoading(false);
                         }}
@@ -321,6 +318,12 @@ export default function VoteEditPage() {
             </div>
           </div>
         )}
+
+        {/* Alert 컴포넌트 */}
+        <Alert
+          message={alertMessage}
+          onClose={() => setAlertMessage('')}
+        />
       </div>
     </div>
   );

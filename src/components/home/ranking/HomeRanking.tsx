@@ -23,13 +23,10 @@ export default function HomeRanking() {
     setIsLoading(true);
     try {
       const response = await getCurrentWeekRanking();
-      console.log('랭킹 API 응답:', response);
       if (response.resultCode === 200 && response.result) {
-        console.log('랭킹 데이터:', response.result.ranking);
         setRankings(response.result.ranking.slice(0, 3)); // 상위 3개만
       }
     } catch (error) {
-      console.error('랭킹 로드 실패:', error);
     } finally {
       setIsLoading(false);
     }
@@ -69,13 +66,9 @@ export default function HomeRanking() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="flex items-center justify-center space-x-3 mb-4"
+          className="flex items-center justify-center space-x-2 mb-4"
         >
-          <div className="relative">
-            <Trophy className="w-10 h-10 text-yellow-600" />
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse"></div>
-          </div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-yellow-600 via-orange-600 to-red-600 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold text-gray-900">
             🏆 이번 주 랭킹
           </h2>
         </motion.div>

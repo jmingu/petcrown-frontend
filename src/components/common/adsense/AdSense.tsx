@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface AdSenseProps {
   adClient: string;
@@ -24,24 +25,30 @@ export default function AdSense({
   style = { display: 'block' },
 }: AdSenseProps) {
   const isProduction = process.env.NODE_ENV === 'production';
+  const pathname = usePathname();
+  const adRef = useRef<HTMLModElement>(null);
 
   useEffect(() => {
     // Only push to adsbygoogle in production mode
     if (!isProduction) return;
 
     try {
-      if (typeof window !== 'undefined') {
-        const adElements = document.querySelectorAll('.adsbygoogle');
-        const hasAds = Array.from(adElements).some((el) => el.getAttribute('data-adsbygoogle-status'));
+      if (typeof window !== 'undefined' && adRef.current) {
+        // 페이지 전환 시마다 광고를 다시 로드
+        const adElement = adRef.current;
 
-        if (!hasAds) {
+        // 이미 로드된 광고인지 확인
+        const isLoaded = adElement.getAttribute('data-adsbygoogle-status');
+
+        if (!isLoaded) {
+          // 광고 푸시
           (window.adsbygoogle = window.adsbygoogle || []).push({});
         }
       }
-    } catch (error) {
-      console.error('AdSense error:', error);
+    } catch {
+      // AdSense 로드 실패 무시
     }
-  }, [isProduction]);
+  }, [isProduction, pathname]); // pathname을 의존성에 추가하여 페이지 전환 시 재실행
 
   // Show placeholder in development mode
   if (!isProduction) {
@@ -81,6 +88,7 @@ export default function AdSense({
   // Show actual AdSense in production
   return (
     <ins
+      ref={adRef}
       className="adsbygoogle"
       style={style}
       data-ad-client={adClient}

@@ -38,7 +38,6 @@ export default function VoteActionButton({
       setIsVoted(true);
       setVoteCount(prev => prev + 1);
     } catch (error) {
-      console.error('투표 실패:', error);
       alert('투표에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);

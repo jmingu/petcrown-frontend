@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Heart, Vote, Trophy, Sparkles } from 'lucide-react';
 import HomeBanner from '@/components/home/banner/HomeBanner';
 import HomeNotice from '@/components/home/notice/HomeNotice';
 import HomeRanking from '@/components/home/ranking/HomeRanking';
@@ -11,6 +13,7 @@ import AdSense from '@/components/common/adsense/AdSense';
 import { getEventList } from '@/libs/api/event/eventApi';
 import { Event } from '@/libs/interface/api/event/eventResponseInterface';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -29,7 +32,6 @@ export default function Home() {
         setEvents(response.result);
       }
     } catch (error) {
-      console.error('이벤트 로딩 실패:', error);
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +58,7 @@ export default function Home() {
     return gradients[index % gradients.length];
   };
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white">
       {/* 메인 콘텐츠 */}
       <div className="relative">
         <HomeBanner />
@@ -74,35 +76,60 @@ export default function Home() {
         )}
 
         {/* 이벤트/광고 스크롤 섹션 */}
-        {!isLoading && events.length > 0 && (
-          <div className="bg-white border-y border-gray-100 py-6">
+        {!isLoading && (
+          <div className="bg-gradient-to-r from-purple-50/30 via-pink-50/30 to-purple-50/30 border-y border-purple-100 py-8">
             <div className="max-w-7xl mx-auto px-4">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900">🎉 특별 이벤트</h2>
-                <span className="text-sm text-gray-500">좌우로 스크롤해보세요</span>
+              <div className="text-center mb-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="flex items-center justify-center space-x-2 mb-4"
+                >
+                  <h2 className="text-3xl font-bold text-gray-900">
+                    🎉 이벤트
+                  </h2>
+                </motion.div>
+                <p className="text-gray-600 text-lg">
+                  펫크라운의 다양한 이벤트에 참여해보세요!
+                </p>
               </div>
 
               <div className="overflow-x-auto scrollbar-hide">
                 <div className="flex space-x-4 pb-2" style={{ minWidth: 'max-content' }}>
                   {/* 이벤트 카드들 */}
-                  {events.map((event, index) => (
+                  {events.length > 0 && events.map((event, index) => (
                     <Link
                       key={event.eventId}
                       href={`/event/${event.eventId}`}
-                      className="flex-shrink-0 w-80 h-40 bg-gradient-to-r rounded-2xl p-6 text-white relative overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
+                      className="flex-shrink-0 w-80 h-40 bg-gradient-to-r rounded-3xl text-white relative overflow-hidden cursor-pointer hover:scale-105 hover:shadow-2xl transition-all duration-300 shadow-lg"
                       style={{
                         backgroundImage: `linear-gradient(to right, var(--tw-gradient-stops))`,
                       }}
                     >
-                      <div className={`absolute inset-0 bg-gradient-to-r ${getGradientColor(index)}`}></div>
-
-                      {/* 배경 장식 */}
-                      <div className="absolute inset-0 bg-black/10"></div>
-                      <div className="absolute -top-4 -right-4 w-20 h-20 bg-white/20 rounded-full"></div>
-                      <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-white/10 rounded-full"></div>
+                      {/* 배경 이미지 또는 디폴트 */}
+                      {event.thumbnailUrl ? (
+                        <>
+                          <Image
+                            src={event.thumbnailUrl}
+                            alt={event.title}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+                        </>
+                      ) : (
+                        <>
+                          <div className={`absolute inset-0 bg-gradient-to-r ${getGradientColor(index)}`}></div>
+                          <div className="absolute inset-0 bg-black/10"></div>
+                          <div className="absolute -top-4 -right-4 w-20 h-20 bg-white/20 rounded-full"></div>
+                          <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-white/10 rounded-full"></div>
+                        </>
+                      )}
 
                       {/* 내용 */}
-                      <div className="relative z-10 h-full flex flex-col justify-between">
+                      <div className="relative z-10 h-full flex flex-col justify-between p-6">
                         <div>
                           <div className="text-sm opacity-90 mb-1">EVENT {index + 1}</div>
                           <h3 className="text-xl font-bold mb-2 line-clamp-1">
@@ -121,14 +148,15 @@ export default function Home() {
                     </Link>
                   ))}
 
-                  {/* 준비중 표시 카드 */}
-                  <div className="flex-shrink-0 w-80 h-40 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center text-gray-400">
-                    <div className="text-center">
-                      <div className="text-3xl mb-2">🎯</div>
-                      <div className="font-semibold">더 많은 이벤트</div>
-                      <div className="text-sm">준비중입니다</div>
+                  {/* 이벤트가 없을 때 표시 */}
+                  {events.length === 0 && (
+                    <div className="flex-shrink-0 w-80 h-40 border-2 border-dashed border-purple-300 rounded-3xl flex items-center justify-center text-purple-400 bg-white/50 backdrop-blur-sm">
+                      <div className="text-center">
+                        <div className="text-3xl mb-2">🎉</div>
+                        <div className="font-bold text-purple-600">진행중인 이벤트가 없습니다</div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

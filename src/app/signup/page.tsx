@@ -3,11 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { UserPlus, Mail, User, Lock, Phone, Calendar, Heart, Sparkles, ArrowLeft } from 'lucide-react';
+import { UserPlus, Mail, User, Lock, Heart, Sparkles, ArrowLeft } from 'lucide-react';
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteCard from '@/components/common/card/CuteCard';
-import RadioGroup from '@/components/common/input/RadioGroup';
-import DateInput from '@/components/common/input/DateInput';
 import Alert from '@/components/common/alert/Alert';
 import Modal from '@/components/common/modal/Modal';
 import {
@@ -25,11 +23,6 @@ export default function SignupPage() {
   const [emailDomain, setEmailDomain] = useState('');
   const [name, setName] = useState('');
   const [nickname, setNickname] = useState('');
-  const [gender, setGender] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [phoneNumber1, setPhoneNumber1] = useState('');
-  const [phoneNumber2, setPhoneNumber2] = useState('');
-  const [phoneNumber3, setPhoneNumber3] = useState('');
   const [password, setPassword] = useState('');
   const [passwordCheck, setPasswordCheck] = useState('');
 
@@ -110,18 +103,6 @@ export default function SignupPage() {
       setAlertMessage('닉네임을 입력해주세요.');
       return;
     }
-    if (!gender) {
-      setAlertMessage('성별을 선택해주세요.');
-      return;
-    }
-    if (!birthDate) {
-      setAlertMessage('생년월일을 입력해주세요.');
-      return;
-    }
-    if (!phoneNumber1 || !phoneNumber2 || !phoneNumber3) {
-      setAlertMessage('핸드폰 번호를 입력해주세요.');
-      return;
-    }
     if (!password) {
       setAlertMessage('비밀번호를 입력해주세요.');
       return;
@@ -138,10 +119,6 @@ export default function SignupPage() {
       setAlertMessage('비밀번호가 일치하지 않습니다.');
       return;
     }
-    if (phoneNumber1.length < 3 || phoneNumber2.length < 4 || phoneNumber3.length < 4) {
-      setAlertMessage('핸드폰 번호를 올바르게 입력해주세요.');
-      return;
-    }
     if (!isEmailVerified) {
       setAlertMessage('이메일 중복 확인을 완료해주세요.');
       return;
@@ -156,9 +133,6 @@ export default function SignupPage() {
       email: emailWrite + '@' + emailDomain,
       name,
       nickname,
-      gender,
-      birthDate: formatBirthDate(birthDate),
-      phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`,
       password,
       passwordCheck,
     });
@@ -218,9 +192,36 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-white flex items-center justify-center p-4 relative overflow-hidden">
       {/* 배경 장식 요소들 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* 큰 그라데이션 블롭들 */}
+        <motion.div
+          className="absolute -top-20 -left-20 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-20 -right-20 w-96 h-96 bg-pink-200/30 rounded-full blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.5, 0.3, 0.5],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+
+        {/* 떠다니는 아이콘들 */}
         <motion.div
           className="absolute top-20 left-10"
           animate={{
@@ -233,7 +234,7 @@ export default function SignupPage() {
             ease: "easeInOut",
           }}
         >
-          <Heart className="w-8 h-8 text-pink-300 opacity-40" fill="currentColor" />
+          <Heart className="w-8 h-8 text-pink-400/40" fill="currentColor" />
         </motion.div>
 
         <motion.div
@@ -248,7 +249,22 @@ export default function SignupPage() {
             ease: "easeInOut",
           }}
         >
-          <Sparkles className="w-6 h-6 text-purple-300 opacity-50" />
+          <Sparkles className="w-6 h-6 text-purple-400/50" />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-40 left-1/4"
+          animate={{
+            y: [10, -10, 10],
+            x: [-5, 5, -5],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <Heart className="w-6 h-6 text-pink-300/30" fill="currentColor" />
         </motion.div>
       </div>
 
@@ -258,23 +274,28 @@ export default function SignupPage() {
         transition={{ duration: 0.6 }}
         className="w-full max-w-2xl relative z-10"
       >
-        <CuteCard className="space-y-6" padding="lg">
+        <CuteCard className="space-y-6" padding="lg" glassmorphism>
           {/* 헤더 */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-3">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{
+                type: "spring",
+                stiffness: 260,
+                damping: 20,
+                delay: 0.2
+              }}
               className="flex justify-center"
             >
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center">
-                <UserPlus className="w-8 h-8 text-white" />
+              <div className="w-20 h-20 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-500 rounded-full flex items-center justify-center shadow-xl animate-pulse-glow">
+                <UserPlus className="w-10 h-10 text-white" />
               </div>
             </motion.div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
               회원가입
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-700 text-lg">
               펫크라운의 가족이 되어주세요! 🐾
             </p>
           </div>
@@ -292,7 +313,7 @@ export default function SignupPage() {
                     placeholder="이메일"
                     value={emailWrite}
                     onChange={(e) => setEmailWrite(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    className="w-full pl-10 pr-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
                   />
                 </div>
                 <span className="text-gray-500 font-medium">@</span>
@@ -301,20 +322,20 @@ export default function SignupPage() {
                   placeholder="도메인"
                   value={emailDomain}
                   onChange={(e) => setEmailDomain(e.target.value)}
-                  className="w-32 px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  className="w-32 px-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
                 />
               </div>
               <div className="flex gap-2">
                 <CuteButton
                   onClick={handleCheckEmail}
-                  variant={isEmailVerified ? "secondary" : "primary"}
+                  variant={isEmailVerified ? "success" : "primary"}
                   size="sm"
                 >
                   {isEmailVerified ? "확인완료" : "중복확인"}
                 </CuteButton>
                 <select
                   onChange={(e) => handleEmailDomainChange(e.target.value)}
-                  className="px-4 py-2 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200"
+                  className="px-4 py-2 bg-white/50 border border-purple-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:bg-white transition-all duration-200"
                 >
                   <option value="custom">직접 입력</option>
                   <option value="naver.com">naver.com</option>
@@ -336,7 +357,7 @@ export default function SignupPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={10}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
                 />
               </div>
             </div>
@@ -353,79 +374,17 @@ export default function SignupPage() {
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
                     maxLength={10}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    className="w-full pl-10 pr-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
                   />
                 </div>
                 <CuteButton
                   onClick={handleCheckNickname}
-                  variant={isNicknameVerified ? "secondary" : "primary"}
+                  variant={isNicknameVerified ? "success" : "primary"}
                   size="sm"
                   className="shrink-0 whitespace-nowrap"
                 >
                   {isNicknameVerified ? "확인완료" : "중복확인"}
                 </CuteButton>
-              </div>
-            </div>
-
-            {/* 성별 선택 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">성별</label>
-              <RadioGroup
-                name="gender"
-                options={[
-                  { label: '남성', value: 'M' },
-                  { label: '여성', value: 'W' },
-                ]}
-                selectedValue={gender}
-                onChange={setGender}
-              />
-            </div>
-
-            {/* 생년월일 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">생년월일</label>
-              <DateInput
-                value={birthDate}
-                onChange={(value) => setBirthDate(value)}
-                placeholder="YYYY-MM-DD"
-                minDate={new Date('1900-01-01')}
-                maxDate={new Date()}
-              />
-            </div>
-
-            {/* 핸드폰 번호 입력 */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">핸드폰 번호</label>
-              <div className="flex gap-2 items-center">
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="010"
-                    value={phoneNumber1}
-                    onChange={(e) => setPhoneNumber1(e.target.value.replace(/[^0-9]/g, ''))}
-                    maxLength={3}
-                    className="w-20 pl-10 pr-3 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-center"
-                  />
-                </div>
-                <span className="text-gray-500">-</span>
-                <input
-                  type="text"
-                  placeholder="1234"
-                  value={phoneNumber2}
-                  onChange={(e) => setPhoneNumber2(e.target.value.replace(/[^0-9]/g, ''))}
-                  maxLength={4}
-                  className="w-24 px-3 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-center"
-                />
-                <span className="text-gray-500">-</span>
-                <input
-                  type="text"
-                  placeholder="5678"
-                  value={phoneNumber3}
-                  onChange={(e) => setPhoneNumber3(e.target.value.replace(/[^0-9]/g, ''))}
-                  maxLength={4}
-                  className="w-24 px-3 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-center"
-                />
               </div>
             </div>
 
@@ -441,7 +400,7 @@ export default function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   minLength={4}
                   maxLength={20}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
                 />
               </div>
             </div>
@@ -457,7 +416,7 @@ export default function SignupPage() {
                   onChange={(e) => setPasswordCheck(e.target.value)}
                   minLength={4}
                   maxLength={20}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
                 />
               </div>
             </div>
@@ -475,13 +434,15 @@ export default function SignupPage() {
           </div>
 
           {/* 링크들 */}
-          <div className="flex justify-center space-x-6 text-sm">
-            <button
+          <div className="flex justify-center space-x-6 text-sm pt-4 border-t border-purple-100">
+            <motion.button
               onClick={() => router.push('/login')}
-              className="text-purple-600 hover:text-purple-800 transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="text-purple-600 hover:text-purple-800 font-medium transition-colors"
             >
               이미 계정이 있으신가요?
-            </button>
+            </motion.button>
           </div>
         </CuteCard>
 
@@ -524,7 +485,7 @@ export default function SignupPage() {
                 placeholder="인증번호 입력"
                 value={inputCode}
                 onChange={(e) => setInputCode(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
               />
 
               <div className="flex gap-3">

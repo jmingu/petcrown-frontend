@@ -29,7 +29,6 @@ export default function HomeCommunity() {
         setPosts(Array.isArray(response.result) ? response.result : []);
       }
     } catch (error) {
-      console.error('커뮤니티 목록 로드 실패:', error);
     } finally {
       setIsLoading(false);
     }

@@ -7,6 +7,7 @@ import {
   SendEmailVerificationCodeRequest,
   CheckEmailVerificationCodeRequest,
   ChangePasswordRequest,
+  PasswordResetRequest,
 } from '@/libs/interface/api/user/userRequestInterface';
 import {
   VotingEmailVerificationRequest,
@@ -26,8 +27,7 @@ export const login = async (
   data: LoginRequest
 ): Promise<CommonResponse<TokenResponse>> => {
   return handleApiError(
-    () => api.post('/users/v1/login', data),
-    '로그인'
+    () => api.post('/users/v1/login', data)
   );
 };
 
@@ -36,8 +36,7 @@ export const login = async (
  */
 export const logout = async (): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.post('/users/v1/logout'),
-    '로그아웃'
+    () => api.post('/users/v1/logout')
   );
 };
 
@@ -46,8 +45,7 @@ export const logout = async (): Promise<CommonResponse<object>> => {
  */
 export const findUser = async (): Promise<CommonResponse<UserResponse>> => {
   return handleApiError(
-    () => api.get('/users/v1/info'),
-    '유저 정보 조회'
+    () => api.get('/users/v1/info')
   );
 };
 
@@ -58,8 +56,7 @@ export const checkEmail = async (
   email: string
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.get(`/users/v1/check-email?email=${email}`),
-    '이메일 중복 확인'
+    () => api.get(`/users/v1/check-email?email=${email}`)
   );
 };
 
@@ -70,8 +67,7 @@ export const checkNickname = async (
   nickname: string
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.get(`/users/v1/check-nickname?nickname=${nickname}`),
-    '닉네임 중복 확인'
+    () => api.get(`/users/v1/check-nickname?nickname=${nickname}`)
   );
 };
 
@@ -82,8 +78,7 @@ export const signup = async (
   data: SignUpRequest
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.post('/users/v1', data),
-    '회원가입'
+    () => api.post('/users/v1', data)
   );
 };
 
@@ -94,8 +89,7 @@ export const sendEmailVerificationCode = async (
   data: SendEmailVerificationCodeRequest
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.post('/users/v1/email/verification/send', data),
-    '이메일 인증코드 발송'
+    () => api.post('/users/v1/email/verification/send', data)
   );
 };
 
@@ -106,8 +100,7 @@ export const checkEmailVerificationCode = async (
   data: CheckEmailVerificationCodeRequest
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.post('/users/v1/email/verification', data),
-    '이메일 인증코드 확인'
+    () => api.post('/users/v1/email/verification', data)
   );
 };
 
@@ -118,8 +111,7 @@ export const changeUserInfo = async (
   data: ChangeUserInfoRequest
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.put('/users/v1/info', data),
-    '회원 정보 수정'
+    () => api.put('/users/v1/info', data)
   );
 };
 
@@ -130,8 +122,7 @@ export const changePassword = async (
   data: ChangePasswordRequest
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.put('/users/v1/password', data),
-    '비밀번호 변경'
+    () => api.put('/users/v1/password', data)
   );
 };
 
@@ -142,8 +133,7 @@ export const sendVotingVerificationEmail = async (
   data: VotingEmailVerificationRequest
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.post('/users/v1/vote-verification/send', data),
-    '투표 인증 이메일 발송'
+    () => api.post('/users/v1/vote-verification/send', data)
   );
 };
 
@@ -154,8 +144,7 @@ export const confirmVotingEmail = async (
   data: VotingEmailConfirmationRequest
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.post('/users/v1/vote-verification', data),
-    '투표 이메일 인증 확인'
+    () => api.post('/users/v1/vote-verification', data)
   );
 };
 
@@ -166,7 +155,17 @@ export const checkVerifiedEmailToday = async (
   email: string
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.get(`/users/v1/vote-verification/check?email=${email}`),
-    '이메일 인증 확인'
+    () => api.get(`/users/v1/vote-verification/check?email=${email}`)
+  );
+};
+
+/**
+ * 비밀번호 찾기 (재설정)
+ */
+export const resetPassword = async (
+  data: PasswordResetRequest
+): Promise<CommonResponse<object>> => {
+  return handleApiError(
+    () => api.post('/users/v1/password/reset', data)
   );
 };

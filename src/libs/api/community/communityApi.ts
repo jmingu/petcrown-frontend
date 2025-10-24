@@ -41,7 +41,7 @@ export const createCommunityPost = async (
     return api.post('/community/posts/v1', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-  }, '커뮤니티 게시글 등록');
+  });
 };
 
 /**
@@ -51,8 +51,7 @@ export const getCommunityList = async (
   data: CommunityListRequest
 ): Promise<CommonResponse<CommunityListResponse>> => {
   return handleApiError(
-    () => api.get(`/community/posts/v1?page=${data.page}&size=${data.size}&category=${data.category || ''}&search=${data.search || ''}`),
-    '커뮤니티 게시글 목록 조회'
+    () => api.get(`/community/posts/v1?page=${data.page}&size=${data.size}&category=${data.category || ''}&search=${data.search || ''}`)
   );
 };
 
@@ -63,8 +62,7 @@ export const getCommunityDetail = async (
   postId: number
 ): Promise<CommonResponse<CommunityDetailResponse>> => {
   return handleApiError(
-    () => api.get(`/community/posts/v1/${postId}`),
-    '커뮤니티 게시글 상세 조회'
+    () => api.get(`/community/posts/v1/${postId}`)
   );
 };
 
@@ -98,7 +96,7 @@ export const updateCommunityPost = async (
     return api.put(`/community/posts/v1/${postId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-  }, '커뮤니티 게시글 수정');
+  });
 };
 
 /**
@@ -108,8 +106,7 @@ export const deleteCommunityPost = async (
   postId: number
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.delete(`/community/posts/v1/${postId}`),
-    '커뮤니티 게시글 삭제'
+    () => api.delete(`/community/posts/v1/${postId}`)
   );
 };
 
@@ -120,8 +117,7 @@ export const likeCommunityPost = async (
   postId: number
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.post(`/community/posts/v1/${postId}/like`),
-    '게시글 좋아요'
+    () => api.post(`/community/posts/v1/${postId}/like`)
   );
 };
 
@@ -132,8 +128,7 @@ export const createComment = async (
   data: CommentRequest
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.post('/community/comments/v1', data),
-    '댓글 작성'
+    () => api.post('/community/comments/v1', data)
   );
 };
 
@@ -146,8 +141,7 @@ export const getCommentList = async (
   size: number = 20
 ): Promise<CommonResponse<CommentListResponse>> => {
   return handleApiError(
-    () => api.get(`/community/comments/v1/post/${postId}?page=${page}&size=${size}`),
-    '댓글 목록 조회'
+    () => api.get(`/community/comments/v1/post/${postId}?page=${page}&size=${size}`)
   );
 };
 
@@ -159,8 +153,7 @@ export const updateComment = async (
   data: CommentRequest
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.put(`/community/comments/v1/${commentId}`, data),
-    '댓글 수정'
+    () => api.put(`/community/comments/v1/${commentId}`, data)
   );
 };
 
@@ -171,8 +164,7 @@ export const deleteComment = async (
   commentId: number
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.delete(`/community/comments/v1/${commentId}`),
-    '댓글 삭제'
+    () => api.delete(`/community/comments/v1/${commentId}`)
   );
 };
 
@@ -183,7 +175,6 @@ export const likeComment = async (
   commentId: number
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.post(`/community/comments/v1/${commentId}/like`),
-    '댓글 좋아요'
+    () => api.post(`/community/comments/v1/${commentId}/like`)
   );
 };

@@ -30,10 +30,10 @@ export default function HomeBanner() {
               </h1>
             </div>
             
-            <p className="text-xl md:text-2xl text-gray-700 mb-2 font-medium">
+            <p className="text-lg md:text-2xl text-gray-700 mb-2 font-medium break-keep">
               우리 반려동물이 세상에서 제일 귀여워요! 💕
             </p>
-            <p className="text-lg md:text-xl text-gray-600 mb-8">
+            <p className="text-base md:text-xl text-gray-600 mb-8 break-keep">
               투표하고, 공유하고, 함께 소통해보세요
             </p>
           </motion.div>

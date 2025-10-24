@@ -47,7 +47,6 @@ export default function NoticePage() {
         setTotalPages(1);
       }
     } catch (error) {
-      console.error('공지사항 로드 실패:', error);
       setNotices([]);
     } finally {
       setIsLoading(false);
@@ -64,7 +63,19 @@ export default function NoticePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white">
+      {/* AdSense at the top */}
+      {adsenseId && (
+        <div className="mb-6">
+          <AdSense
+            adClient={adsenseId}
+            adFormat="auto"
+            fullWidthResponsive={true}
+            style={{ display: 'block', minHeight: '100px' }}
+          />
+        </div>
+      )}
+
       {/* 배경 장식 요소들 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -188,16 +199,6 @@ export default function NoticePage() {
           ) : (
             <CuteCard padding="sm">
               <div className="space-y-1">
-                {adsenseId && (
-                  <div className="my-4 py-4">
-                    <AdSense
-                      adClient={adsenseId}
-                      adFormat="auto"
-                      fullWidthResponsive={true}
-                      style={{ display: 'block', minHeight: '100px' }}
-                    />
-                  </div>
-                )}
                 {regularNotices.length > 0 ? (
                   regularNotices.map((notice: Notice, index: number) => (
                     <>
@@ -229,16 +230,6 @@ export default function NoticePage() {
                         </div>
                         <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
                       </motion.div>
-                      {adsenseId && (index + 1) % 4 === 0 && index !== regularNotices.length - 1 && (
-                        <div className="my-4 py-4">
-                          <AdSense
-                            adClient={adsenseId}
-                            adFormat="auto"
-                            fullWidthResponsive={true}
-                            style={{ display: 'block', minHeight: '100px' }}
-                          />
-                        </div>
-                      )}
                     </>
                   ))
                 ) : (

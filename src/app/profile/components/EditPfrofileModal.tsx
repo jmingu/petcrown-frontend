@@ -32,9 +32,12 @@ export default function EditProfileModal({
   const [nickname, setNickname] = useState(user.nickname);
   const [gender, setGender] = useState(user.gender);
   const [birthDate, setBirthDate] = useState(user.birthDate);
-  const [phoneNumber1, setPhoneNumber1] = useState(user.phoneNumber.split('-')[0]);
-  const [phoneNumber2, setPhoneNumber2] = useState(user.phoneNumber.split('-')[1]);
-  const [phoneNumber3, setPhoneNumber3] = useState(user.phoneNumber.split('-')[2]);
+
+  // 전화번호가 없을 수 있으므로 null 체크
+  const phoneNumberParts = user.phoneNumber ? user.phoneNumber.split('-') : ['', '', ''];
+  const [phoneNumber1, setPhoneNumber1] = useState(phoneNumberParts[0] || '');
+  const [phoneNumber2, setPhoneNumber2] = useState(phoneNumberParts[1] || '');
+  const [phoneNumber3, setPhoneNumber3] = useState(phoneNumberParts[2] || '');
 
   const [isNicknameVerified, setIsNicknameVerified] = useState(false);
 
@@ -62,6 +65,7 @@ export default function EditProfileModal({
   };
 
   const changeUser = async () => {
+    // 필수 필드 검증 - 이름, 닉네임만
     if (!name) {
       setAlertMessage('이름을 입력해주세요.');
       return;
@@ -72,28 +76,21 @@ export default function EditProfileModal({
       return;
     }
 
-    if (!gender) {
-      setAlertMessage('성별을 선택해주세요.');
-      return;
-    }
+    // 전화번호 선택사항이지만 입력했다면 유효성 검사
+    if (phoneNumber1 || phoneNumber2 || phoneNumber3) {
+      if (!phoneNumber1 || !phoneNumber2 || !phoneNumber3) {
+        setAlertMessage('핸드폰 번호를 모두 입력해주세요.');
+        return;
+      }
 
-    if (!birthDate) {
-      setAlertMessage('생년월일을 입력해주세요.');
-      return;
-    }
-
-    if (!phoneNumber1 || !phoneNumber2 || !phoneNumber3) {
-      setAlertMessage('핸드폰 번호를 입력해주세요.');
-      return;
-    }
-
-    if (
-      phoneNumber1.length < 3 ||
-      phoneNumber2.length < 4 ||
-      phoneNumber3.length < 4
-    ) {
-      setAlertMessage('핸드폰 번호를 올바르게 입력해주세요.');
-      return;
+      if (
+        phoneNumber1.length < 3 ||
+        phoneNumber2.length < 4 ||
+        phoneNumber3.length < 4
+      ) {
+        setAlertMessage('핸드폰 번호를 올바르게 입력해주세요.');
+        return;
+      }
     }
 
     if (originalNickname !== nickname) {
@@ -106,9 +103,11 @@ export default function EditProfileModal({
     const changeResult = await changeUserInfo({
       name,
       nickname,
-      gender,
-      birthDate,
-      phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`,
+      ...(gender && { gender }),
+      ...(birthDate && { birthDate }),
+      ...(phoneNumber1 && phoneNumber2 && phoneNumber3 && {
+        phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`,
+      }),
     });
 
     if (changeResult.resultCode !== 200) {
@@ -126,19 +125,21 @@ export default function EditProfileModal({
       ...user,
       name,
       nickname,
-      gender,
-      birthDate,
-      phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`
+      ...(gender && { gender }),
+      ...(birthDate && { birthDate }),
+      ...(phoneNumber1 && phoneNumber2 && phoneNumber3 && {
+        phoneNumber: `${phoneNumber1}-${phoneNumber2}-${phoneNumber3}`
+      })
     };
 
     setUser({
       email: updatedUser.email,
       name: updatedUser.name,
       nickname: updatedUser.nickname,
-      phoneNumber: updatedUser.phoneNumber,
+      phoneNumber: updatedUser.phoneNumber || '',
       profileImageUrl: updatedUser.profileImageUrl,
-      birthDate: updatedUser.birthDate,
-      gender: updatedUser.gender,
+      birthDate: updatedUser.birthDate || '',
+      gender: updatedUser.gender || '',
     });
 
     setTimeout(() => {
@@ -182,7 +183,7 @@ export default function EditProfileModal({
 
               {/* 이름 */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">이름</label>
+                <label className="block text-sm font-medium text-gray-700">이름 *</label>
                 <input
                   type="text"
                   placeholder="이름을 입력해주세요"
@@ -195,7 +196,7 @@ export default function EditProfileModal({
 
               {/* 닉네임 */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">닉네임</label>
+                <label className="block text-sm font-medium text-gray-700">닉네임 *</label>
                 <div className="flex space-x-2">
                   <input
                     type="text"
@@ -218,7 +219,7 @@ export default function EditProfileModal({
 
               {/* 성별 선택 */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">성별</label>
+                <label className="block text-sm font-medium text-gray-700">성별 (선택사항)</label>
                 <RadioGroup
                   name="gender"
                   options={[
@@ -232,7 +233,7 @@ export default function EditProfileModal({
 
               {/* 생년월일 */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">생년월일</label>
+                <label className="block text-sm font-medium text-gray-700">생년월일 (선택사항)</label>
                 <DateInput
                   value={birthDate}
                   onChange={(value) => setBirthDate(value)}
@@ -244,7 +245,7 @@ export default function EditProfileModal({
 
               {/* 핸드폰 번호 입력 */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">핸드폰 번호</label>
+                <label className="block text-sm font-medium text-gray-700">핸드폰 번호 (선택사항)</label>
                 <div className="flex space-x-2 items-center">
                   <input
                     type="text"

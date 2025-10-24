@@ -8,7 +8,13 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'kr.object.ncloudstorage.com',
         port: '',
-        pathname: '/dev-os-bm-petcrown/**',
+        pathname: '/petcrown-dev/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'kr.object.ncloudstorage.com',
+        port: '',
+        pathname: '/petcrown/**',
       },
       {
         protocol: 'https',

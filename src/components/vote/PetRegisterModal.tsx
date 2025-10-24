@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { X, Crown, Heart, Camera, Upload, Plus, Trash2, Smile } from 'lucide-react';
@@ -21,6 +22,7 @@ interface PetModalProps {
 }
 
 export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
+  const router = useRouter();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(pet.imageUrl);
   const [alertMessage, setAlertMessage] = useState('');
@@ -41,7 +43,6 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
         setPetModes(response.result.petModes);
       }
     } catch (error) {
-      console.error('감정 목록 로드 실패:', error);
     }
   };
 
@@ -87,12 +88,12 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
         setAlertMessage('투표가 성공적으로 등록되었습니다! 🎉');
         setTimeout(() => {
           onClose();
+          router.push('/vote');
         }, 1500);
       } else {
         setAlertMessage(voteResult.resultMessageKo || '투표 등록에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
-      console.error('투표 등록 실패:', error);
       setAlertMessage('투표 등록 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
@@ -105,20 +106,20 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4"
+        className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4 overflow-y-auto"
         onClick={onClose}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          transition={{ 
-            type: "spring", 
-            damping: 25, 
+          transition={{
+            type: "spring",
+            damping: 25,
             stiffness: 300,
-            duration: 0.3 
+            duration: 0.3
           }}
-          className="w-full max-w-md mx-auto"
+          className="w-full max-w-md mx-auto my-8"
           onClick={(e) => e.stopPropagation()}
         >
           <CuteCard className="relative overflow-hidden" padding="lg">
@@ -134,24 +135,24 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
             </button>
 
             {/* 펫 정보 */}
-            <div className="text-center space-y-6">
+            <div className="text-center space-y-4">
               {/* 제목 */}
               <div className="space-y-2">
                 <div className="flex items-center justify-center space-x-2">
-                  <Crown className="w-6 h-6 text-yellow-500" />
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <Crown className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
+                  <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                     투표 등록
                   </h2>
-                  <Crown className="w-6 h-6 text-yellow-500" />
+                  <Crown className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
                 </div>
-                <p className="text-gray-600">
+                <p className="text-sm md:text-base text-gray-600">
                   {pet.name}를 투표에 등록하시겠어요? 🏆
                 </p>
               </div>
 
               {/* 투표에 등록될 펫 이미지 */}
               <div className="relative">
-                <div className="w-40 h-40 mx-auto relative">
+                <div className="w-32 h-32 md:w-40 md:h-40 mx-auto relative">
                   <Image
                     src={imagePreview}
                     alt={pet.name}
@@ -160,8 +161,8 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
                   />
                   {(pet.awards && pet.awards > 0) && (
                     <div className="absolute -top-2 -right-2">
-                      <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                        <Crown className="w-5 h-5 text-white" />
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                        <Crown className="w-4 h-4 md:w-5 md:h-5 text-white" />
                       </div>
                     </div>
                   )}
@@ -169,13 +170,13 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
               </div>
 
               {/* 펫 상세 정보 */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4">
-                <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center justify-center space-x-2">
-                  <Heart className="w-5 h-5 text-pink-500" fill="currentColor" />
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-3 md:p-4">
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3 flex items-center justify-center space-x-2">
+                  <Heart className="w-4 h-4 md:w-5 md:h-5 text-pink-500" fill="currentColor" />
                   <span>{pet.name}</span>
                 </h3>
-                
-                <div className="flex justify-center space-x-3 mb-3">
+
+                <div className="flex justify-center space-x-2 md:space-x-3 mb-2 md:mb-3">
                   <CuteBadge variant={pet.gender === 'F' ? 'success' : 'info'}>
                     {pet.gender === 'F' ? '♀ 여아' : '♂ 남아'}
                   </CuteBadge>
@@ -195,15 +196,15 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
               </div>
 
               {/* 감정 선택 드롭다운 */}
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center justify-center space-x-2">
-                  <Smile className="w-4 h-4 text-orange-500" />
-                  <span>반려동물의 감정을 선택해주세요</span>
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-3 md:p-4">
+                <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2 flex items-center justify-center space-x-2">
+                  <Smile className="w-3 h-3 md:w-4 md:h-4 text-orange-500" />
+                  <span>사진의 기분을 선택해주세요</span>
                 </label>
                 <select
                   value={selectedModeId || ''}
                   onChange={(e) => setSelectedModeId(e.target.value ? Number(e.target.value) : undefined)}
-                  className="w-full px-4 py-3 border-2 border-orange-200 rounded-xl focus:outline-none focus:border-orange-400 transition-colors bg-white text-gray-700 font-medium"
+                  className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border-2 border-orange-200 rounded-xl focus:outline-none focus:border-orange-400 transition-colors bg-white text-gray-700 font-medium"
                 >
                   <option value="">감정을 선택해주세요</option>
                   {petModes.map((mode) => (
@@ -215,7 +216,7 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
               </div>
 
               {/* 이미지 업로드 섹션 */}
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-3">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-2 md:p-3">
                 {/* 이미지 업로드 버튼 */}
                 <div className="flex flex-col space-y-2">
                   <input
@@ -225,23 +226,23 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
                     onChange={handleImageChange}
                     className="hidden"
                   />
-                  
+
                   <CuteButton
                     onClick={() => document.getElementById('vote-image-input')?.click()}
                     variant="secondary"
                     size="sm"
-                    className="w-full"
+                    className="w-full text-sm"
                     icon={<Camera className="w-4 h-4" />}
                   >
                     새로운 사진 업로드
                   </CuteButton>
-                  
+
                   {imageFile && (
                     <CuteButton
                       onClick={handleImageRemove}
                       variant="secondary"
                       size="sm"
-                      className="w-full"
+                      className="w-full text-sm"
                       icon={<Trash2 className="w-4 h-4" />}
                     >
                       기본 사진으로 복원
@@ -255,7 +256,7 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
               </div>
 
               {/* 액션 버튼들 */}
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 <CuteButton
                   onClick={handleSave}
                   variant="primary"

@@ -56,7 +56,6 @@ export default function EmailVerificationModal({
         setAlertType('error');
       }
     } catch (error) {
-      console.error('이메일 인증 발송 실패:', error);
       setAlertMessage('이메일 인증 발송에 실패했습니다.');
       setAlertType('error');
     } finally {
@@ -97,7 +96,6 @@ export default function EmailVerificationModal({
         setAlertType('error');
       }
     } catch (error) {
-      console.error('투표 실패:', error);
       setAlertMessage('투표 중 오류가 발생했습니다.');
       setAlertType('error');
     } finally {
@@ -189,8 +187,8 @@ export default function EmailVerificationModal({
                 size="lg"
                 className="w-full"
                 disabled={!email || isVerifying}
+                icon={<Mail className="w-5 h-5" />}
               >
-                <Mail className="w-5 h-5 mr-2" />
                 {isVerifying ? '인증 메일 발송 중...' : '이메일 인증하기'}
               </CuteButton>
 

@@ -65,7 +65,6 @@ api.interceptors.response.use(
         )}`;
         return api(originalRequest); // 재요청
       } catch (refreshError) {
-        console.error('토큰 재발급 실패:', refreshError);
         if (typeof window !== 'undefined') {
           localStorage.removeItem('a_t');
           localStorage.removeItem('r_t');

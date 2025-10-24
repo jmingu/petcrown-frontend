@@ -53,7 +53,6 @@ export default function CommunityPage() {
         }
       }
     } catch (error) {
-      console.error('커뮤니티 게시글 로드 실패:', error);
       setPosts([]);
     } finally {
       setIsLoading(false);
@@ -70,8 +69,20 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white">
       <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* AdSense at the top */}
+        {adsenseId && (
+          <div className="mb-6">
+            <AdSense
+              adClient={adsenseId}
+              adFormat="auto"
+              fullWidthResponsive={true}
+              style={{ display: 'block', minHeight: '100px' }}
+            />
+          </div>
+        )}
+
         {/* 헤더 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -122,16 +133,6 @@ export default function CommunityPage() {
           ) : (
             <CuteCard padding="sm">
               <div className="space-y-1">
-                {adsenseId && (
-                  <div className="my-4 py-4">
-                    <AdSense
-                      adClient={adsenseId}
-                      adFormat="auto"
-                      fullWidthResponsive={true}
-                      style={{ display: 'block', minHeight: '100px' }}
-                    />
-                  </div>
-                )}
                 {posts.length > 0 ? (
                   posts.map((post, index) => (
                     <>
@@ -178,16 +179,6 @@ export default function CommunityPage() {
                           </div>
                         </div>
                       </motion.div>
-                      {adsenseId && (index + 1) % 3 === 0 && index !== posts.length - 1 && (
-                        <div className="my-4 py-4">
-                          <AdSense
-                            adClient={adsenseId}
-                            adFormat="auto"
-                            fullWidthResponsive={true}
-                            style={{ display: 'block', minHeight: '100px' }}
-                          />
-                        </div>
-                      )}
                     </>
                   ))
                 ) : (

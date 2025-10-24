@@ -33,15 +33,5 @@ export default function OwnerCheck({ ownerEmail, voteId, petName }: OwnerCheckPr
     return <OwnerActions voteId={voteId} />;
   }
 
-  // 소유자가 아닌 경우 기본 액션 버튼들
-  return (
-    <div className="flex justify-center space-x-4 mt-8 pt-8 border-t border-gray-100">
-      <div className="relative">
-        <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-purple-600 transition-colors duration-200">
-          <Share2 className="w-5 h-5" />
-          <span>공유하기</span>
-        </button>
-      </div>
-    </div>
-  );
+
 }

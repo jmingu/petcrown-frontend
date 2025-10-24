@@ -38,7 +38,7 @@ export const voteRegistration = async (
     return api.post('/votes/v1', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-  }, '투표 등록');
+  });
 };
 
 /**
@@ -48,8 +48,7 @@ export const getVoteList = async (
   data: VoteListRequest
 ): Promise<CommonResponse<VoteListResponse>> => {
   return handleApiError(
-    () => api.get(`/votes/v1?page=${data.page}&size=${data.size}`),
-    '투표 목록 조회'
+    () => api.get(`/votes/v1?page=${data.page}&size=${data.size}`)
   );
 };
 
@@ -60,8 +59,7 @@ export const getVoteDetail = async (
   voteId: number
 ): Promise<CommonResponse<VoteDetailResponse>> => {
   return handleApiError(
-    () => api.get(`/votes/v1/${voteId}`),
-    '투표 상세 조회'
+    () => api.get(`/votes/v1/${voteId}`)
   );
 };
 
@@ -73,8 +71,7 @@ export const doVote = async (
   data: VoteActionRequest
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.post(`/votes/v1/${voteId}/weekly`, data),
-    '투표하기'
+    () => api.post(`/votes/v1/${voteId}/weekly`, data)
   );
 };
 
@@ -105,7 +102,7 @@ export const updateVote = async (
     return api.put(`/votes/v1/${voteId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-  }, '투표 수정');
+  });
 };
 
 
@@ -116,7 +113,6 @@ export const deleteVote = async (
   voteId: number
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
-    () => api.delete(`/votes/v1/${voteId}`),
-    '투표 삭제'
+    () => api.delete(`/votes/v1/${voteId}`)
   );
 };

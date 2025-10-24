@@ -46,9 +46,7 @@ export default function MyPetsPage() {
   useEffect(() => {
     // 로그인 체크
     const accessToken = localStorage.getItem('a_t');
-    console.log('투표 등록 - 토큰 체크:', accessToken);
     if (!accessToken) {
-      console.log('투표 등록 - 로그인 필요');
       setAlertMessage('로그인이 필요한 페이지입니다.');
       setNeedsLogin(true);
       return;
@@ -72,7 +70,6 @@ export default function MyPetsPage() {
 
   // 로그인이 필요한 경우
   if (needsLogin) {
-    console.log('투표 등록 - Alert 표시:', alertMessage);
     return (
       <>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -89,7 +86,6 @@ export default function MyPetsPage() {
         <Alert
           message={alertMessage}
           onClose={() => {
-            console.log('투표 등록 - Alert 닫기 클릭');
             setAlertMessage('');
             router.push('/login');
           }}
@@ -161,6 +157,15 @@ export default function MyPetsPage() {
           </div>
         </motion.div>
 
+        {/* 목록으로 돌아가기 */}
+        <div className="mb-6">
+          <Link
+            href="/vote"
+            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
+          >
+            ← 투표 목록으로 돌아가기
+          </Link>
+        </div>
 
         {/* 반려동물 목록 */}
         <motion.div
