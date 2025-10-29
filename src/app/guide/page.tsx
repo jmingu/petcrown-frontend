@@ -161,7 +161,7 @@ export default function GuidePage() {
                 <ul className="space-y-2 text-gray-700 ml-9 md:ml-11 text-sm md:text-base">
                   <li className="flex items-start">
                     <span className="text-purple-600 font-bold mr-2 flex-shrink-0">•</span>
-                    <span className="break-keep"><strong>회원가입</strong> 후 로그인하여 투표하면 <strong className="text-purple-600">추가 1표</strong></span>
+                    <span className="break-keep"><strong>회원가입</strong> 후 투표 등록하면 <strong className="text-purple-600">추가 1표</strong></span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-purple-600 font-bold mr-2 flex-shrink-0">•</span>
@@ -293,7 +293,11 @@ export default function GuidePage() {
                 <Award className="w-5 h-5 text-purple-500 mr-3 mt-1 flex-shrink-0" />
                 <div>
                   <h3 className="font-bold text-base md:text-lg text-gray-900 mb-2 break-keep">공정한 투표</h3>
-                  <p className="text-sm md:text-base break-keep">이메일 인증으로 중복 투표를 방지하여 공정한 랭킹을 유지합니다.</p>
+                  <p className="text-sm md:text-base break-keep">
+                    이메일 인증으로 중복 투표를 방지하여 공정한 랭킹을 유지합니다.
+                    <br />
+                    <strong className="text-purple-600">본인이 등록한 투표(내 펫)에는 투표할 수 없습니다.</strong> 공정성 유지를 위해 자신의 반려동물에게는 투표가 불가능합니다.
+                  </p>
                 </div>
               </div>
 

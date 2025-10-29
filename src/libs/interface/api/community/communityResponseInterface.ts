@@ -1,7 +1,10 @@
 /**
  * 커뮤니티 게시글 목록 조회 response
  */
-export type CommunityListResponse = CommunityPost[];
+export interface CommunityListResponse {
+  posts: CommunityPost[];
+  totalCount: number;
+}
 
 /**
  * 커뮤니티 게시글 정보
@@ -38,6 +41,7 @@ export interface CommunityDetailResponse {
   pinOrder: number;
   createDate: string;
   imageUrls: string[];
+  postWriteYn: 'Y' | 'N';
 }
 
 /**
@@ -58,4 +62,5 @@ export interface Comment {
   depth: number;
   createDate: string;
   replies: Comment[];
+  commentWriteYn: 'Y' | 'N';
 }

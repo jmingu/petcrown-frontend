@@ -87,18 +87,18 @@ export default function EmailVerificationModal({
       if (voteResponse.resultCode === 200) {
         setAlertMessage('투표가 완료되었습니다! 🎉');
         setAlertType('success');
-        onVoteSuccess();
+        // 투표 성공 시 페이지 새로고침
         setTimeout(() => {
-          onClose();
-        }, 2000);
+          window.location.reload();
+        }, 1000);
       } else {
         setAlertMessage(voteResponse.resultMessageKo || '투표에 실패했습니다. 다시 시도해주세요.');
         setAlertType('error');
+        setIsVoting(false);
       }
     } catch (error) {
       setAlertMessage('투표 중 오류가 발생했습니다.');
       setAlertType('error');
-    } finally {
       setIsVoting(false);
     }
   };

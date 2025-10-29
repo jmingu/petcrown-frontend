@@ -59,3 +59,12 @@ export interface PasswordResetRequest {
   email: string;
   name: string;
 }
+
+/**
+ * 회원탈퇴
+ */
+export interface DeleteAccountRequest {
+  email: string;
+  name: string;
+  password: string;
+}

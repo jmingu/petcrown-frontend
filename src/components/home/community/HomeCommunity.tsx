@@ -24,9 +24,9 @@ export default function HomeCommunity() {
   const loadPosts = async () => {
     setIsLoading(true);
     try {
-      const response = await getCommunityList({ page: 1, size: 6 }); // 최신 6개
+      const response = await getCommunityList({ page: 1, size: 3 }); // 최신 3개
       if (response.resultCode === 200 && response.result) {
-        setPosts(Array.isArray(response.result) ? response.result : []);
+        setPosts(response.result.posts || []);
       }
     } catch (error) {
     } finally {

@@ -14,7 +14,7 @@ export const getEventList = async (
   data: EventListRequest
 ): Promise<CommonResponse<EventListResponse>> => {
   return handleApiError(
-    () => api.get(`/events/v1?page=${data.page}&size=${data.size}&search=${data.search || ''}`)
+    () => api.get(`/events/v1?page=${data.page}&size=${data.size}`)
   );
 };
 

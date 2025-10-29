@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Eye, Calendar, User, MessageCircle,
-  Sparkles, Heart
+  Sparkles, Heart, Edit, Trash2
 } from 'lucide-react';
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteCard from '@/components/common/card/CuteCard';
@@ -14,7 +14,7 @@ import CuteBadge from '@/components/common/badge/CuteBadge';
 import Alert from '@/components/common/alert/Alert';
 import AdSense from '@/components/common/adsense/AdSense';
 import Comment from '@/app/community/commponents/Comment';
-import { getCommunityDetail, getCommentList } from '@/libs/api/community/communityApi';
+import { getCommunityDetail, getCommentList, deleteCommunityPost } from '@/libs/api/community/communityApi';
 import { CommunityDetailResponse } from '@/libs/interface/api/community/communityResponseInterface';
 import Image from 'next/image';
 
@@ -32,6 +32,8 @@ export default function PostDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [alertMessage, setAlertMessage] = useState('');
   const [needsLogin, setNeedsLogin] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
 
   useEffect(() => {
@@ -67,6 +69,26 @@ export default function PostDetail() {
         setComments(Array.isArray(response.result) ? response.result : []);
       }
     } catch (error) {
+    }
+  };
+
+  const handleDelete = async () => {
+    if (isDeleting) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await deleteCommunityPost(Number(params.id));
+      if (response.resultCode === 200) {
+        setAlertMessage('게시글이 삭제되었습니다.');
+        setTimeout(() => router.push('/community'), 1500);
+      } else {
+        setAlertMessage('게시글 삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      setAlertMessage('게시글 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -259,9 +281,31 @@ export default function PostDetail() {
             <div className="border-t border-gray-100"></div>
 
             {/* 상호작용 정보 */}
-            <div className="flex items-center space-x-2 text-gray-500">
-              <MessageCircle className="w-5 h-5" />
-              <span>댓글 {post.commentCount}</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-gray-500">
+                <MessageCircle className="w-5 h-5" />
+                <span>댓글 {post.commentCount}</span>
+              </div>
+
+              {/* 수정/삭제 버튼 (작성자만 표시) */}
+              {post.postWriteYn === 'Y' && (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => router.push(`/community/${post.postId}/edit`)}
+                    className="flex items-center space-x-1 px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors duration-200 text-sm"
+                  >
+                    <Edit className="w-4 h-4" />
+                    <span>수정</span>
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="flex items-center space-x-1 px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors duration-200 text-sm"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>삭제</span>
+                  </button>
+                </div>
+              )}
             </div>
           </CuteCard>
         </motion.div>
@@ -276,6 +320,46 @@ export default function PostDetail() {
           <Comment postId={post.postId} comments={comments} onCommentAdded={loadComments} />
         </motion.div>
       </div>
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 md:p-8 max-w-md mx-4 w-full">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">게시글 삭제</h3>
+              <p className="text-gray-600 mb-6 break-keep">
+                게시글을 정말 삭제하시겠습니까?<br/>
+                이 작업은 되돌릴 수 없습니다.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
+                  disabled={isDeleting}
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex-1 px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
+                >
+                  {isDeleting ? '삭제 중...' : '삭제'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 알림 */}
+      <Alert
+        message={alertMessage}
+        onClose={() => setAlertMessage('')}
+      />
     </div>
   );
 }

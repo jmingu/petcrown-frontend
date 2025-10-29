@@ -191,94 +191,88 @@ export default function VotePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {votes.length > 0 ? (
                 votes.map((vote, index) => (
-                  <>
-                    <motion.div
-                      key={vote.voteId}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                    >
-                      <Link href={`/vote/${vote.voteId}`}>
-                        <CuteCard hover className="h-full" padding="lg" glassmorphism>
-                          {/* 펫 이미지 */}
-                          <div className="relative mb-4">
-                            <div className="w-full aspect-square relative">
+                  <motion.div
+                    key={vote.voteId}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <Link href={`/vote/${vote.voteId}`}>
+                      <CuteCard hover className="h-full" padding="lg" glassmorphism>
+                        {/* 펫 이미지 */}
+                        <div className="relative mb-4">
+                          <div className="w-full aspect-square relative">
+                            {vote.profileImageUrl ? (
                               <Image
                                 src={vote.profileImageUrl}
                                 alt={vote.name}
                                 fill
                                 className="rounded-3xl object-cover shadow-xl hover:scale-105 transition-transform duration-300"
                               />
-                              {/* 투표수 배지 */}
-                              <div className="absolute top-3 right-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white backdrop-blur-sm rounded-2xl px-3 py-2 shadow-lg">
-                                <div className="flex items-center space-x-1">
-                                  <Heart className="w-4 h-4" fill="currentColor" />
-                                  <span className="font-bold">{selectedPeriod === 'weekly' ? vote.weeklyVoteCount.toLocaleString() : vote.monthlyVoteCount.toLocaleString()}</span>
-                                </div>
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl">
+                                <span className="text-6xl">🐾</span>
+                              </div>
+                            )}
+                            {/* 투표수 배지 */}
+                            <div className="absolute top-3 right-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white backdrop-blur-sm rounded-2xl px-3 py-2 shadow-lg">
+                              <div className="flex items-center space-x-1">
+                                <Heart className="w-4 h-4" fill="currentColor" />
+                                <span className="font-bold">{selectedPeriod === 'weekly' ? vote.weeklyVoteCount.toLocaleString() : vote.monthlyVoteCount.toLocaleString()}</span>
                               </div>
                             </div>
                           </div>
+                        </div>
 
-                          {/* 펫 정보 */}
-                          <div className="text-center space-y-3">
-                            <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center justify-center space-x-2">
-                              <span>{vote.name}</span>
-                              <Heart className="w-5 h-5 text-pink-500 animate-bounce-subtle" fill="currentColor" />
-                            </h3>
+                        {/* 펫 정보 */}
+                        <div className="text-center space-y-3">
+                          <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center justify-center space-x-2">
+                            <span>{vote.name}</span>
+                            <Heart className="w-5 h-5 text-pink-500 animate-bounce-subtle" fill="currentColor" />
+                          </h3>
 
-                            <div className="space-y-1 text-sm text-gray-600">
-                              <div className="flex justify-center items-center space-x-2">
-                                {vote.gender && (
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    vote.gender === 'M'
-                                      ? 'bg-blue-100 text-blue-700'
-                                      : 'bg-pink-100 text-pink-700'
-                                  }`}>
-                                    {vote.gender === 'M' ? '♂ 남아' : '♀ 여아'}
-                                  </span>
-                                )}
-                                {vote.birthDate && calculateAge(vote.birthDate) !== null && (
-                                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-                                    {calculateAge(vote.birthDate)}살
-                                  </span>
-                                )}
-                              </div>
-
-                              <p className="font-medium text-gray-700">
-                                {vote.speciesName} {vote.speciesName === '강아지' ? '🐶' : vote.speciesName === '고양이' ? '🐱' : '🐹'}
-                              </p>
-
-                              {/* 품종 또는 커스텀 품종 표시 */}
-                              {vote.breedId && vote.breedName ? (
-                                <p className="text-gray-500 text-sm">{vote.breedName}</p>
-                              ) : vote.customBreed ? (
-                                <p className="text-gray-500 text-sm">{vote.customBreed}</p>
-                              ) : null}
-
-                              {/* 감정 표시 */}
-                              {vote.petModeName && (
-                                <div className="flex justify-center mt-2">
-                                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-700">
-                                    {vote.petModeName}
-                                  </span>
-                                </div>
+                          <div className="space-y-1 text-sm text-gray-600">
+                            <div className="flex justify-center items-center space-x-2">
+                              {vote.gender && (
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  vote.gender === 'M'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-pink-100 text-pink-700'
+                                }`}>
+                                  {vote.gender === 'M' ? '♂ 남아' : '♀ 여아'}
+                                </span>
+                              )}
+                              {vote.birthDate && calculateAge(vote.birthDate) !== null && (
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                  {calculateAge(vote.birthDate)}살
+                                </span>
                               )}
                             </div>
+
+                            <p className="font-medium text-gray-700">
+                              {vote.speciesName} {vote.speciesName === '강아지' ? '🐶' : vote.speciesName === '고양이' ? '🐱' : '🐹'}
+                            </p>
+
+                            {/* 품종 또는 커스텀 품종 표시 */}
+                            {vote.breedId && vote.breedName ? (
+                              <p className="text-gray-500 text-sm">{vote.breedName}</p>
+                            ) : vote.customBreed ? (
+                              <p className="text-gray-500 text-sm">{vote.customBreed}</p>
+                            ) : null}
+
+                            {/* 감정 표시 */}
+                            {vote.petModeName && (
+                              <div className="flex justify-center mt-2">
+                                <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-700">
+                                  {vote.petModeName}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        </CuteCard>
-                      </Link>
-                    </motion.div>
-                    {adsenseId && (index + 1) % 4 === 0 && index !== votes.length - 1 && (
-                      <div className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-4 my-4 py-4">
-                        <AdSense
-                          adClient={adsenseId}
-                          adFormat="auto"
-                          fullWidthResponsive={true}
-                          style={{ display: 'block', minHeight: '100px' }}
-                        />
-                      </div>
-                    )}
-                  </>
+                        </div>
+                      </CuteCard>
+                    </Link>
+                  </motion.div>
                 ))
               ) : (
                 <div className="col-span-full text-center py-20">

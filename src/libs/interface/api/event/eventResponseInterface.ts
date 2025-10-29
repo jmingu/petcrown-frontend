@@ -1,7 +1,10 @@
 /**
  * 이벤트 목록 조회 response
  */
-export type EventListResponse = Event[];
+export interface EventListResponse {
+  events: Event[];
+  totalCount: number;
+}
 
 /**
  * 이벤트 정보

@@ -196,7 +196,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
               <p className="text-red-500 text-xs mt-1">{errors.newPassword}</p>
             )}
             <p className="text-gray-500 text-xs mt-1">
-              8자 이상, 영문자와 숫자를 포함해야 합니다
+              4자 이상 입력해주세요
             </p>
           </div>
 

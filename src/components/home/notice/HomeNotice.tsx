@@ -25,7 +25,7 @@ export default function HomeNotice() {
     try {
       const response = await getNoticeList({ page: 1, size: 3 }); // 최신 3개만
       if (response.resultCode === 200 && response.result) {
-        setNotices(Array.isArray(response.result) ? response.result : []);
+        setNotices(response.result.notices || []);
       }
     } catch (error) {
     } finally {

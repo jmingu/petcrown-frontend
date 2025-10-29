@@ -73,18 +73,16 @@ export default function HomeVote() {
                 {/* 펫 이미지 */}
                 <div className="relative mb-4">
                   <div className="w-full aspect-square relative">
-                    <Image
-                      src={vote.profileImageUrl}
-                      alt={vote.name}
-                      fill
-                      className="rounded-2xl object-cover shadow-lg hover:scale-105 transition-transform duration-300"
-                    />
-                    {/* HOT 배지 */}
-                    {index === 0 && (
-                      <div className="absolute top-2 left-2">
-                        <CuteBadge variant="cute" icon={<Crown className="w-3 h-3" />}>
-                          HOT
-                        </CuteBadge>
+                    {vote.profileImageUrl ? (
+                      <Image
+                        src={vote.profileImageUrl}
+                        alt={vote.name}
+                        fill
+                        className="rounded-2xl object-cover shadow-lg hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl">
+                        <span className="text-6xl">🐾</span>
                       </div>
                     )}
                     {/* 투표수 배지 */}

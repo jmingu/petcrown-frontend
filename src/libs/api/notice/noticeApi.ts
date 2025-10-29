@@ -14,7 +14,7 @@ export const getNoticeList = async (
   data: NoticeListRequest
 ): Promise<CommonResponse<NoticeListResponse>> => {
   return handleApiError(
-    () => api.get(`/notices/v1?page=${data.page}&size=${data.size}&search=${data.search || ''}`)
+    () => api.get(`/notices/v1?page=${data.page}&size=${data.size}`)
   );
 };
 

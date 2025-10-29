@@ -1,16 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { PenTool, FileText, Heart, Sparkles, ArrowLeft, Save, X, Upload, Image as ImageIcon, User } from 'lucide-react';
+import { PenTool, FileText, ArrowLeft, Save, X, Upload, Image as ImageIcon } from 'lucide-react';
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteCard from '@/components/common/card/CuteCard';
 import Alert from '@/components/common/alert/Alert';
-import { createCommunityPost } from '@/libs/api/community/communityApi';
+import { getCommunityDetail, updateCommunityPost } from '@/libs/api/community/communityApi';
+import { CommunityDetailResponse } from '@/libs/interface/api/community/communityResponseInterface';
 
-export default function CommunityWrite() {
+export default function CommunityEdit() {
   const router = useRouter();
+  const params = useParams();
+  const postId = Number(params.id);
+
+  const [post, setPost] = useState<CommunityDetailResponse | null>(null);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [content, setContent] = useState('');
@@ -18,16 +23,42 @@ export default function CommunityWrite() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-  const [needsLogin, setNeedsLogin] = useState(false);
 
   useEffect(() => {
-    // 로그인 체크
-    const accessToken = localStorage.getItem('a_t');
-    if (!accessToken) {
-      setAlertMessage('로그인이 필요한 페이지입니다.');
-      setNeedsLogin(true);
+    loadPostData();
+  }, [postId]);
+
+  const loadPostData = async () => {
+    try {
+      const response = await getCommunityDetail(postId);
+      if (response.resultCode === 200 && response.result) {
+        const postData = response.result;
+
+        // 작성자 확인
+        if (postData.postWriteYn !== 'Y') {
+          setAlertMessage('수정 권한이 없습니다.');
+          setTimeout(() => router.push(`/community/${postId}`), 1500);
+          return;
+        }
+
+        setPost(postData);
+        setTitle(postData.title);
+        setCategory(postData.category);
+        setContent(postData.content);
+
+        // 기존 이미지 미리보기 설정
+        if (postData.imageUrls && postData.imageUrls.length > 0) {
+          setImagePreviews(postData.imageUrls);
+        }
+      } else {
+        setAlertMessage('게시글을 불러올 수 없습니다.');
+        setTimeout(() => router.push('/community'), 1500);
+      }
+    } catch (error) {
+      setAlertMessage('게시글을 불러오는 중 오류가 발생했습니다.');
+      setTimeout(() => router.push('/community'), 1500);
     }
-  }, []);
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -69,7 +100,7 @@ export default function CommunityWrite() {
     setIsLoading(true);
 
     try {
-      const response = await createCommunityPost({
+      const response = await updateCommunityPost(postId, {
         title,
         category,
         content,
@@ -78,81 +109,30 @@ export default function CommunityWrite() {
       });
 
       if (response.resultCode === 200) {
-        setAlertMessage('게시글이 성공적으로 등록되었습니다! 🎉');
+        setAlertMessage('게시글이 성공적으로 수정되었습니다! 🎉');
         setTimeout(() => {
-          router.push('/community');
+          router.push(`/community/${postId}`);
         }, 1500);
       } else {
-        setAlertMessage(response.resultMessageKo || '게시글 등록에 실패했습니다.');
+        setAlertMessage(response.resultMessageKo || '게시글 수정에 실패했습니다.');
       }
     } catch (error) {
-      setAlertMessage('게시글 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setAlertMessage('게시글 수정 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 로그인이 필요한 경우
-  if (needsLogin) {
+  if (!post) {
     return (
-      <>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <CuteCard className="text-center" padding="lg">
-            <div className="space-y-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center mx-auto">
-                <User className="w-8 h-8 text-white" />
-              </div>
-              <h2 className="text-xl font-semibold text-gray-600">로그인이 필요합니다</h2>
-              <p className="text-gray-500">커뮤니티 글 작성은 로그인 후 이용할 수 있습니다.</p>
-            </div>
-          </CuteCard>
-        </div>
-        <Alert
-          message={alertMessage}
-          onClose={() => {
-            setAlertMessage('');
-            router.push('/login');
-          }}
-        />
-      </>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+      </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
-      {/* 배경 장식 요소들 */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-20 left-10"
-          animate={{
-            y: [-20, 20, -20],
-            rotate: [0, 10, -10, 0],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          <Heart className="w-8 h-8 text-pink-300 opacity-40" fill="currentColor" />
-        </motion.div>
-        
-        <motion.div
-          className="absolute top-32 right-20"
-          animate={{
-            y: [20, -20, 20],
-            rotate: [0, -10, 10, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          <Sparkles className="w-6 h-6 text-purple-300 opacity-50" />
-        </motion.div>
-      </div>
-
       <div className="max-w-4xl mx-auto relative z-10">
         {/* 헤더 */}
         <motion.div
@@ -162,20 +142,15 @@ export default function CommunityWrite() {
           className="text-center mb-8"
         >
           <div className="flex items-center justify-center mb-4">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mr-4"
-            >
+            <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mr-4">
               <PenTool className="w-8 h-8 text-white" />
-            </motion.div>
+            </div>
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                게시글 작성
+                게시글 수정
               </h1>
               <p className="text-gray-600 mt-2">
-                반려동물과의 소중한 이야기를 공유해보세요! 🐾
+                게시글 내용을 수정해보세요
               </p>
             </div>
           </div>
@@ -294,11 +269,11 @@ export default function CommunityWrite() {
                   icon={<Save className="w-4 h-4 sm:w-5 sm:h-5" />}
                   className="w-full sm:w-auto sm:min-w-32 text-sm sm:text-base"
                 >
-                  게시글 등록
+                  수정 완료
                 </CuteButton>
 
                 <CuteButton
-                  onClick={() => router.back()}
+                  onClick={() => router.push(`/community/${postId}`)}
                   variant="secondary"
                   size="md"
                   icon={<X className="w-4 h-4 sm:w-5 sm:h-5" />}
@@ -320,12 +295,12 @@ export default function CommunityWrite() {
           className="mt-8"
         >
           <CuteButton
-            onClick={() => router.back()}
+            onClick={() => router.push(`/community/${postId}`)}
             variant="secondary"
             size="md"
             icon={<ArrowLeft className="w-4 h-4" />}
           >
-            목록으로 돌아가기
+            상세로 돌아가기
           </CuteButton>
         </motion.div>
       </div>

@@ -45,15 +45,17 @@ export async function generateMetadata({
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://petcrown.com';
-  const imageUrl = voteData.profileImageUrl.startsWith('http')
+  const imageUrl = voteData.profileImageUrl && voteData.profileImageUrl.startsWith('http')
     ? voteData.profileImageUrl
-    : `${baseUrl}${voteData.profileImageUrl}`;
+    : voteData.profileImageUrl
+    ? `${baseUrl}${voteData.profileImageUrl}`
+    : `${baseUrl}/opengraph-image.png`;
 
   const age = voteData.birthDate ? new Date().getFullYear() - new Date(voteData.birthDate).getFullYear() : null;
   const genderText = voteData.gender === 'M' ? '남아' : voteData.gender === 'F' ? '여아' : null;
 
   const petInfoText = [
-    voteData.breedName || voteData.speciesName,
+    voteData.breedName || voteData.customBreed || voteData.speciesName,
     age !== null && `${age}살`,
     genderText
   ].filter(Boolean).join(' ');
@@ -158,13 +160,19 @@ export default async function VoteDetailPage({ params }: VoteDetailPageProps) {
 
             {/* 펫 이미지 */}
             <div className="relative h-96 bg-gradient-to-b from-purple-100 to-pink-100">
-              <Image
-                src={voteData.profileImageUrl}
-                alt={`${voteData.name} - ${voteData.breedName || voteData.speciesName}`}
-                fill
-                className="object-cover"
-                priority
-              />
+              {voteData.profileImageUrl ? (
+                <Image
+                  src={voteData.profileImageUrl}
+                  alt={`${voteData.name} - ${voteData.breedName || voteData.speciesName}`}
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <span className="text-6xl">🐾</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -176,25 +184,15 @@ export default async function VoteDetailPage({ params }: VoteDetailPageProps) {
               </h1>
               <p className="text-gray-600 text-base md:text-xl leading-relaxed">
                 {[
-                  voteData.breedName || voteData.speciesName,
+                  voteData.breedName || voteData.customBreed || voteData.speciesName,
                   voteData.gender && (voteData.gender === 'M' ? '남아' : '여아'),
                   age !== null && `${age}살`
                 ].filter(Boolean).join(' • ')}
-              </p>
-              <p className="text-purple-600 font-semibold text-base md:text-lg mt-2">
-                현재 {voteData.weeklyVoteCount.toLocaleString()}표 획득! 🎉
               </p>
             </div>
 
             {/* 펫 정보 카드 */}
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 md:p-6 mb-6 md:mb-8">
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-center">
-                  <p className="text-2xl md:text-3xl font-bold text-purple-600 mb-1">{voteData.weeklyVoteCount.toLocaleString()}</p>
-                  <p className="text-xs md:text-sm text-gray-500">주간 투표 수</p>
-                </div>
-              </div>
-
               <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div>
                   <p className="text-xs md:text-sm text-gray-500">이름</p>
@@ -202,7 +200,7 @@ export default async function VoteDetailPage({ params }: VoteDetailPageProps) {
                 </div>
                 <div>
                   <p className="text-xs md:text-sm text-gray-500">품종</p>
-                  <p className="font-semibold text-sm md:text-lg text-gray-900 break-words">{voteData.breedName || voteData.speciesName}</p>
+                  <p className="font-semibold text-sm md:text-lg text-gray-900 break-words">{voteData.breedName || voteData.customBreed || voteData.speciesName}</p>
                 </div>
                 {voteData.gender && (
                   <div>

@@ -1,7 +1,10 @@
 /**
  * 공지사항 목록 조회 response
  */
-export type NoticeListResponse = Notice[];
+export interface NoticeListResponse {
+  notices: Notice[];
+  totalCount: number;
+}
 
 /**
  * 공지사항 정보

@@ -59,7 +59,8 @@ export default function RankingPage() {
     }
   };
 
-  const calculateAge = (birthDate: string) => {
+  const calculateAge = (birthDate: string | null | undefined) => {
+    if (!birthDate) return null;
     const birth = new Date(birthDate);
     const today = new Date();
     return today.getFullYear() - birth.getFullYear();
@@ -100,18 +101,25 @@ export default function RankingPage() {
                         {getRankIcon(2)}
                       </div>
                       <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3">
-                        <Image
-                          src={topThree[1].profileImageUrl}
-                          alt={topThree[1].name}
-                          fill
-                          className="object-cover rounded-full ring-4 ring-gray-300"
-                        />
+                        {topThree[1].profileImageUrl ? (
+                          <Image
+                            src={topThree[1].profileImageUrl}
+                            alt={topThree[1].name}
+                            fill
+                            className="object-cover rounded-full ring-4 ring-gray-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                            <span className="text-2xl">🐾</span>
+                          </div>
+                        )}
                       </div>
                       <h3 className="font-bold text-base md:text-lg text-gray-900 mb-1 truncate px-2">
                         {topThree[1].name}
                       </h3>
                       <p className="text-xs md:text-sm text-gray-500 mb-2 truncate px-2">
-                        {topThree[1].breedName || topThree[1].speciesName} • {calculateAge(topThree[1].birthDate)}살
+                        {topThree[1].breedName || topThree[1].speciesName}
+                        {calculateAge(topThree[1].birthDate) !== null && ` • ${calculateAge(topThree[1].birthDate)}살`}
                       </p>
                       <div className="flex items-center justify-center space-x-2">
                         <Trophy className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
@@ -162,21 +170,30 @@ export default function RankingPage() {
                         </motion.div>
                       </div>
                       <div className="relative w-20 h-20 md:w-24 md:h-24 mx-auto mb-3">
-                        <Image
-                          src={topThree[0].profileImageUrl}
-                          alt={topThree[0].name}
-                          fill
-                          className="object-cover rounded-full ring-4 ring-yellow-400"
-                        />
-                        <div className="absolute -top-2 -right-2">
-                          <Crown className="w-6 h-6 md:w-8 md:h-8 text-yellow-500" />
-                        </div>
+                        {topThree[0].profileImageUrl ? (
+                          <>
+                            <Image
+                              src={topThree[0].profileImageUrl}
+                              alt={topThree[0].name}
+                              fill
+                              className="object-cover rounded-full ring-4 ring-yellow-400"
+                            />
+                            <div className="absolute -top-2 -right-2">
+                              <Crown className="w-6 h-6 md:w-8 md:h-8 text-yellow-500" />
+                            </div>
+                          </>
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center ring-4 ring-yellow-400">
+                            <span className="text-3xl">🐾</span>
+                          </div>
+                        )}
                       </div>
                       <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-1 truncate px-2">
                         {topThree[0].name}
                       </h3>
                       <p className="text-xs md:text-sm text-gray-500 mb-3 truncate px-2">
-                        {topThree[0].breedName || topThree[0].speciesName} • {calculateAge(topThree[0].birthDate)}살
+                        {topThree[0].breedName || topThree[0].speciesName}
+                        {calculateAge(topThree[0].birthDate) !== null && ` • ${calculateAge(topThree[0].birthDate)}살`}
                       </p>
                       <div className="flex items-center justify-center space-x-2 mb-3">
                         <Trophy className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
@@ -225,18 +242,25 @@ export default function RankingPage() {
                         {getRankIcon(3)}
                       </div>
                       <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3">
-                        <Image
-                          src={topThree[2].profileImageUrl}
-                          alt={topThree[2].name}
-                          fill
-                          className="object-cover rounded-full ring-4 ring-orange-300"
-                        />
+                        {topThree[2].profileImageUrl ? (
+                          <Image
+                            src={topThree[2].profileImageUrl}
+                            alt={topThree[2].name}
+                            fill
+                            className="object-cover rounded-full ring-4 ring-orange-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                            <span className="text-2xl">🐾</span>
+                          </div>
+                        )}
                       </div>
                       <h3 className="font-bold text-base md:text-lg text-gray-900 mb-1 truncate px-2">
                         {topThree[2].name}
                       </h3>
                       <p className="text-xs md:text-sm text-gray-500 mb-2 truncate px-2">
-                        {topThree[2].breedName || topThree[2].speciesName} • {calculateAge(topThree[2].birthDate)}살
+                        {topThree[2].breedName || topThree[2].speciesName}
+                        {calculateAge(topThree[2].birthDate) !== null && ` • ${calculateAge(topThree[2].birthDate)}살`}
                       </p>
                       <div className="flex items-center justify-center space-x-2">
                         <Trophy className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
@@ -292,12 +316,18 @@ export default function RankingPage() {
                       </div>
 
                       <div className="relative w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
-                        <Image
-                          src={item.profileImageUrl}
-                          alt={item.name}
-                          fill
-                          className="object-cover rounded-full"
-                        />
+                        {item.profileImageUrl ? (
+                          <Image
+                            src={item.profileImageUrl}
+                            alt={item.name}
+                            fill
+                            className="object-cover rounded-full"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                            <span className="text-lg">🐾</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex-1 min-w-0">
@@ -305,7 +335,8 @@ export default function RankingPage() {
                           {item.name}
                         </h3>
                         <p className="text-xs md:text-sm text-gray-500 truncate">
-                          {item.breedName || item.speciesName} • {calculateAge(item.birthDate)}살
+                          {item.breedName || item.speciesName}
+                          {calculateAge(item.birthDate) !== null && ` • ${calculateAge(item.birthDate)}살`}
                         </p>
                       </div>
 

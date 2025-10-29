@@ -51,7 +51,7 @@ export const getCommunityList = async (
   data: CommunityListRequest
 ): Promise<CommonResponse<CommunityListResponse>> => {
   return handleApiError(
-    () => api.get(`/community/posts/v1?page=${data.page}&size=${data.size}&category=${data.category || ''}&search=${data.search || ''}`)
+    () => api.get(`/community/posts/v1?page=${data.page}&size=${data.size}&category=${data.category || ''}`)
   );
 };
 

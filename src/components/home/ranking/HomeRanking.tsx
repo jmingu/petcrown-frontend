@@ -92,12 +92,18 @@ export default function HomeRanking() {
                 <CuteCard hover padding="lg" className="bg-gradient-to-br from-gray-50 to-gray-100">
                   <div className="relative mb-4">
                     <div className="w-full aspect-square relative">
-                      <Image
-                        src={rankings[1].profileImageUrl}
-                        alt={rankings[1].name}
-                        fill
-                        className="rounded-2xl object-cover shadow-lg hover:scale-105 transition-transform duration-300"
-                      />
+                      {rankings[1].profileImageUrl ? (
+                        <Image
+                          src={rankings[1].profileImageUrl}
+                          alt={rankings[1].name}
+                          fill
+                          className="rounded-2xl object-cover shadow-lg hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl">
+                          <span className="text-6xl">🐾</span>
+                        </div>
+                      )}
                       <div className="absolute top-2 left-2">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-r from-gray-300 to-gray-500 flex items-center justify-center shadow-lg">
                           <Trophy className="w-6 h-6 text-white" />
@@ -146,12 +152,18 @@ export default function HomeRanking() {
               <CuteCard hover padding="lg" className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-400">
                 <div className="relative mb-4">
                   <div className="w-full aspect-square relative">
-                    <Image
-                      src={rankings[0].profileImageUrl}
-                      alt={rankings[0].name}
-                      fill
-                      className="rounded-2xl object-cover shadow-xl hover:scale-105 transition-transform duration-300"
-                    />
+                    {rankings[0].profileImageUrl ? (
+                      <Image
+                        src={rankings[0].profileImageUrl}
+                        alt={rankings[0].name}
+                        fill
+                        className="rounded-2xl object-cover shadow-xl hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl">
+                        <span className="text-6xl">🐾</span>
+                      </div>
+                    )}
                     <div className="absolute top-2 left-2">
                       <div className="w-14 h-14 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 flex items-center justify-center shadow-xl animate-pulse">
                         <Crown className="w-7 h-7 text-white" />
@@ -188,12 +200,18 @@ export default function HomeRanking() {
                 <CuteCard hover padding="lg" className="bg-gradient-to-br from-amber-50 to-amber-100">
                   <div className="relative mb-4">
                     <div className="w-full aspect-square relative">
-                      <Image
-                        src={rankings[2].profileImageUrl}
-                        alt={rankings[2].name}
-                        fill
-                        className="rounded-2xl object-cover shadow-lg hover:scale-105 transition-transform duration-300"
-                      />
+                      {rankings[2].profileImageUrl ? (
+                        <Image
+                          src={rankings[2].profileImageUrl}
+                          alt={rankings[2].name}
+                          fill
+                          className="rounded-2xl object-cover shadow-lg hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl">
+                          <span className="text-6xl">🐾</span>
+                        </div>
+                      )}
                       <div className="absolute top-2 left-2">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 flex items-center justify-center shadow-lg">
                           <Trophy className="w-6 h-6 text-white" />

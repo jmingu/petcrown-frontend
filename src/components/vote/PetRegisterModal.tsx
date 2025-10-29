@@ -51,15 +51,26 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
   // 이미지 변경 처리
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && /image\/(jpeg|jpg|png)/.test(file.type)) {
+    if (file) {
+      // 파일 타입 검증
+      if (!/image\/(jpeg|jpg|png)/.test(file.type)) {
+        setAlertMessage('JPEG, JPG, PNG 형식의 이미지만 업로드 가능합니다.');
+        return;
+      }
+
+      // 파일 크기 검증 (10MB = 10 * 1024 * 1024 bytes)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        setAlertMessage('이미지 파일은 10MB 이하만 업로드 가능합니다.');
+        return;
+      }
+
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-    } else {
-      setAlertMessage('jpg, jpeg, png 파일만 업로드 가능합니다.');
     }
   };
 

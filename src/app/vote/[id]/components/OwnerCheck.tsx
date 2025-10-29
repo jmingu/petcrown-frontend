@@ -30,7 +30,7 @@ export default function OwnerCheck({ ownerEmail, voteId, petName }: OwnerCheckPr
   const isOwner = user?.email === ownerEmail;
 
   if (isOwner) {
-    return <OwnerActions voteId={voteId} />;
+    return <OwnerActions voteId={voteId} petName={petName} />;
   }
 
 

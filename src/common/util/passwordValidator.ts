@@ -11,15 +11,11 @@ export const validatePassword = (password: string): string => {
   if (!password) {
     return '비밀번호를 입력해주세요.';
   }
-  
-  if (password.length < 8) {
-    return '비밀번호는 8자 이상이어야 합니다.';
+
+  if (password.length < 4) {
+    return '비밀번호는 4자 이상이어야 합니다.';
   }
-  
-  if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(password)) {
-    return '비밀번호는 영문자와 숫자를 포함해야 합니다.';
-  }
-  
+
   return '';
 };
 

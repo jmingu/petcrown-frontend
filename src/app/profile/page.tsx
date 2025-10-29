@@ -4,18 +4,20 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { 
-  Edit2, User, Phone, Mail, Calendar, Heart, 
-  Award, Crown, Plus, Sparkles, Shield 
+import {
+  Edit2, User, Phone, Mail, Calendar, Heart,
+  Award, Crown, Plus, Sparkles, Shield, Trash2
 } from 'lucide-react';
 import EditProfileModal from '@/app/profile/components/EditPfrofileModal';
 import EditPetModal from '@/app/profile/components/EditPetModal';
 import ChangePasswordModal from '@/app/profile/components/ChangePasswordModal';
+import DeleteAccountModal from '@/app/profile/components/DeleteAccountModal';
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteCard from '@/components/common/card/CuteCard';
 import CuteBadge from '@/components/common/badge/CuteBadge';
 import CuteAvatar from '@/components/common/avatar/CuteAvatar';
 import Alert from '@/components/common/alert/Alert';
+import AdSense from '@/components/common/adsense/AdSense';
 import { UserResponse } from '@/libs/interface/api/user/userResponseInterface';
 import { findUser } from '@/libs/api/user/userApi';
 import { findMyPet } from '@/libs/api/pet/petApi';
@@ -33,6 +35,8 @@ export default function Profile() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPet, setSelectedPet] = useState<MyPetResponse | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
+  const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
 
   // 로그인 여부 확인
   useEffect(() => {
@@ -89,6 +93,19 @@ export default function Profile() {
     return currentYear - birthYear;
   };
 
+  // 로그아웃 처리
+  const handleLogout = () => {
+    localStorage.removeItem('a_t');
+    localStorage.removeItem('r_t');
+    sessionStorage.removeItem('sess');
+    router.push('/login');
+  };
+
+  // 회원탈퇴 성공 처리
+  const handleDeleteSuccess = () => {
+    handleLogout();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white">
       {/* 배경 장식 요소들 */}
@@ -125,6 +142,18 @@ export default function Profile() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
+        {/* AdSense - 최상단 */}
+        {adsenseId && (
+          <div className="mb-6">
+            <AdSense
+              adClient={adsenseId}
+              adFormat="auto"
+              fullWidthResponsive={true}
+              style={{ display: 'block', minHeight: '100px' }}
+            />
+          </div>
+        )}
+
         {/* 헤더 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -178,9 +207,20 @@ export default function Profile() {
                       variant="secondary"
                       size="sm"
                       icon={<Shield className="w-4 h-4" />}
-                      className="w-full mb-4"
+                      className="w-full mb-2"
                     >
                       비밀번호 변경
+                    </CuteButton>
+
+                    {/* 회원탈퇴 버튼 */}
+                    <CuteButton
+                      onClick={() => setIsDeleteAccountModalOpen(true)}
+                      variant="danger"
+                      size="sm"
+                      icon={<Trash2 className="w-4 h-4" />}
+                      className="w-full mb-4"
+                    >
+                      회원탈퇴
                     </CuteButton>
 
                     <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-2xl">
@@ -203,10 +243,12 @@ export default function Profile() {
                       <Heart className="w-5 h-5 text-pink-600" />
                       <div>
                         <p className="text-sm text-gray-500">성별</p>
-                        <p className="font-medium text-gray-900">{user.gender === 'M' ? '남성' : '여성'}</p>
+                        <p className="font-medium text-gray-900">
+                          {user.gender === 'M' ? '남성' : user.gender === 'F' ? '여성' : null}
+                        </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-2xl">
                       <Calendar className="w-5 h-5 text-purple-600" />
                       <div>
@@ -214,7 +256,7 @@ export default function Profile() {
                         <p className="font-medium text-gray-900">{user.birthDate}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-2xl">
                       <Phone className="w-5 h-5 text-orange-600" />
                       <div>
@@ -395,6 +437,14 @@ export default function Profile() {
           onSuccess={() => {
             // 모달에서 이미 성공 메시지를 표시하므로 추가 처리 없음
           }}
+        />
+      )}
+
+      {/* 회원탈퇴 모달 */}
+      {isDeleteAccountModalOpen && (
+        <DeleteAccountModal
+          onClose={() => setIsDeleteAccountModalOpen(false)}
+          onSuccess={handleDeleteSuccess}
         />
       )}
 

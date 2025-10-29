@@ -27,9 +27,9 @@ export default function Home() {
   const loadEvents = async () => {
     try {
       setIsLoading(true);
-      const response = await getEventList({ page: 1, size: 10, search: '' });
+      const response = await getEventList({ page: 1, size: 3 });
       if (response.resultCode === 200 && response.result) {
-        setEvents(response.result);
+        setEvents(response.result.events || []);
       }
     } catch (error) {
     } finally {
@@ -163,79 +163,19 @@ export default function Home() {
           </div>
         )}
 
-        {/* AdSense after Event Section */}
-        {adsenseId && (
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <AdSense
-              adClient={adsenseId}
-              adFormat="auto"
-              fullWidthResponsive={true}
-              style={{ display: 'block', minHeight: '100px' }}
-            />
-          </div>
-        )}
-
         {/* 섹션들을 감싸는 컨테이너 */}
         <div className="max-w-7xl mx-auto px-4 py-8 space-y-12">
           {/* 인기 투표 섹션 */}
           <HomeVote />
 
-          {/* AdSense after Vote */}
-          {adsenseId && (
-            <div className="my-8">
-              <AdSense
-                adClient={adsenseId}
-                adFormat="auto"
-                fullWidthResponsive={true}
-                style={{ display: 'block', margin: '2rem 0', minHeight: '100px' }}
-              />
-            </div>
-          )}
-
           {/* 랭킹 섹션 */}
           <HomeRanking />
-
-          {/* AdSense after Ranking */}
-          {adsenseId && (
-            <div className="my-8">
-              <AdSense
-                adClient={adsenseId}
-                adFormat="auto"
-                fullWidthResponsive={true}
-                style={{ display: 'block', margin: '2rem 0', minHeight: '100px' }}
-              />
-            </div>
-          )}
 
           {/* 커뮤니티 섹션 */}
           <HomeCommunity />
 
-          {/* AdSense after Community */}
-          {adsenseId && (
-            <div className="my-8">
-              <AdSense
-                adClient={adsenseId}
-                adFormat="auto"
-                fullWidthResponsive={true}
-                style={{ display: 'block', margin: '2rem 0', minHeight: '100px' }}
-              />
-            </div>
-          )}
-
           {/* 공지사항 섹션 */}
           <HomeNotice />
-
-          {/* AdSense after Notice */}
-          {adsenseId && (
-            <div className="my-8">
-              <AdSense
-                adClient={adsenseId}
-                adFormat="auto"
-                fullWidthResponsive={true}
-                style={{ display: 'block', margin: '2rem 0', minHeight: '100px' }}
-              />
-            </div>
-          )}
         </div>
       </div>
 

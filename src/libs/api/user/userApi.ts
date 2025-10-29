@@ -8,6 +8,7 @@ import {
   CheckEmailVerificationCodeRequest,
   ChangePasswordRequest,
   PasswordResetRequest,
+  DeleteAccountRequest,
 } from '@/libs/interface/api/user/userRequestInterface';
 import {
   VotingEmailVerificationRequest,
@@ -167,5 +168,16 @@ export const resetPassword = async (
 ): Promise<CommonResponse<object>> => {
   return handleApiError(
     () => api.post('/users/v1/password/reset', data)
+  );
+};
+
+/**
+ * 회원탈퇴
+ */
+export const deleteAccount = async (
+  data: DeleteAccountRequest
+): Promise<CommonResponse<object>> => {
+  return handleApiError(
+    () => api.delete('/users/v1', { data })
   );
 };

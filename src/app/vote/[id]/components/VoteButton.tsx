@@ -33,14 +33,17 @@ export default function VoteButton({ voteId, currentVoteCount, petName, isActive
       const response = await doVote(voteId, { email: user.email });
 
       if (response.resultCode === 200) {
-        setVoteCount(prev => prev + 1);
         setAlertMessage('투표가 완료되었습니다! 🎉');
+        // 투표 성공 시 페이지 새로고침
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         setAlertMessage(response.resultMessageKo || '투표에 실패했습니다. 다시 시도해주세요.');
+        setIsVoting(false);
       }
     } catch (error) {
       setAlertMessage('투표 중 오류가 발생했습니다.');
-    } finally {
       setIsVoting(false);
     }
   };

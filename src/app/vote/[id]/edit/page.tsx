@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Camera, Save, Trash2, ArrowLeft } from 'lucide-react';
+import { Camera, Save, Trash2, ArrowLeft, Smile } from 'lucide-react';
 import { getVoteDetail, updateVote, deleteVote } from '@/libs/api/vote/voteApi';
 import { VoteDetailResponse } from '@/libs/interface/api/vote/voteResponseInterface';
 import { useUserStore } from '@/libs/store/user/userStore';
+import { getPetModeList } from '@/libs/api/pet/petApi';
+import { PetModeDto } from '@/libs/interface/api/pet/petModeInterface';
 import Alert from '@/components/common/alert/Alert';
 
 export default function VoteEditPage() {
@@ -26,10 +28,24 @@ export default function VoteEditPage() {
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [petModes, setPetModes] = useState<PetModeDto[]>([]);
+  const [selectedModeId, setSelectedModeId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     initializeFromLocalStorage();
+    loadPetModes();
   }, [initializeFromLocalStorage]);
+
+  const loadPetModes = async () => {
+    try {
+      const response = await getPetModeList();
+      if (response.resultCode === 200 && response.result) {
+        setPetModes(response.result.petModes);
+      }
+    } catch (error) {
+      // 감정 목록 로드 실패는 치명적이지 않으므로 조용히 처리
+    }
+  };
 
   useEffect(() => {
     const fetchVoteData = async () => {
@@ -46,6 +62,11 @@ export default function VoteEditPage() {
           }
 
           setVoteData(data);
+
+          // 기존 감정 설정
+          if (data.petModeId) {
+            setSelectedModeId(data.petModeId);
+          }
 
           // 이미지 URL 검증 및 설정
           if (data.profileImageUrl && data.profileImageUrl.trim()) {
@@ -77,6 +98,19 @@ export default function VoteEditPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // 파일 타입 검증
+      if (!/image\/(jpeg|jpg|png)/.test(file.type)) {
+        setAlertMessage('JPEG, JPG, PNG 형식의 이미지만 업로드 가능합니다.');
+        return;
+      }
+
+      // 파일 크기 검증 (10MB = 10 * 1024 * 1024 bytes)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        setAlertMessage('이미지 파일은 10MB 이하만 업로드 가능합니다.');
+        return;
+      }
+
       setSelectedImage(file);
       const reader = new FileReader();
       reader.onload = () => {
@@ -87,14 +121,21 @@ export default function VoteEditPage() {
   };
 
   const handleSave = async () => {
-    if (!voteData || isSaving || !selectedImage) return;
+    if (!voteData || isSaving) return;
+
+    // 감정 선택 검증
+    if (!selectedModeId) {
+      setAlertMessage('사진의 기분을 선택해주세요.');
+      return;
+    }
 
     setIsSaving(true);
     try {
       const response = await updateVote(voteId, {
         petId: voteData.petId,
-        image: selectedImage,
-        profileImageUrl: voteData.profileImageUrl
+        petModeId: selectedModeId,
+        ...(selectedImage && { image: selectedImage }),
+        ...(!selectedImage && { profileImageUrl: voteData.profileImageUrl })
       });
 
       if (response.resultCode === 200) {
@@ -232,7 +273,7 @@ export default function VoteEditPage() {
                       <Camera className="w-6 h-6 text-purple-600" />
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/jpg,image/png"
                         onChange={handleImageChange}
                         className="hidden"
                       />
@@ -248,7 +289,7 @@ export default function VoteEditPage() {
                   이미지 선택
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/jpg,image/png"
                     onChange={handleImageChange}
                     className="hidden"
                   />
@@ -261,12 +302,35 @@ export default function VoteEditPage() {
               </div>
             </div>
 
+            {/* 감정 선택 섹션 */}
+            <div className="mb-8">
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center space-x-2">
+                  <Smile className="w-5 h-5 text-orange-500" />
+                  <span>사진의 기분을 선택해주세요</span>
+                </label>
+                <select
+                  value={selectedModeId || ''}
+                  onChange={(e) => setSelectedModeId(e.target.value ? Number(e.target.value) : undefined)}
+                  className="w-full px-4 py-3 border-2 border-orange-200 rounded-xl focus:outline-none focus:border-orange-400 transition-colors bg-white text-gray-700 font-medium"
+                  required
+                >
+                  <option value="">감정을 선택해주세요</option>
+                  {petModes.map((mode) => (
+                    <option key={mode.petModeId} value={mode.petModeId}>
+                      {mode.modeName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             {/* 액션 버튼들 */}
             <div className="flex flex-col space-y-4">
               {/* 저장 버튼 */}
               <button
                 onClick={handleSave}
-                disabled={isSaving || !selectedImage}
+                disabled={isSaving}
                 className="flex items-center justify-center px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 <Save className="w-5 h-5 mr-2" />

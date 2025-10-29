@@ -1,11 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
-import { MessageCircle, Send, CornerDownRight, User } from 'lucide-react';
+import { MessageCircle, Send, CornerDownRight, User, Edit, Trash2 } from 'lucide-react';
 import Pagination from "react-js-pagination";
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteCard from '@/components/common/card/CuteCard';
 import Alert from '@/components/common/alert/Alert';
-import { createComment } from '@/libs/api/community/communityApi';
+import { createComment, updateComment, deleteComment } from '@/libs/api/community/communityApi';
 import { Comment as CommentType } from '@/libs/interface/api/community/communityResponseInterface';
 
 const commentsPerPage = 5;
@@ -24,6 +24,9 @@ export default function Comment({ postId, comments: initialComments, onCommentAd
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editText, setEditText] = useState('');
+  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
 
   useEffect(() => {
     if (initialComments) {
@@ -66,6 +69,62 @@ export default function Comment({ postId, comments: initialComments, onCommentAd
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleEditComment = async (commentId: number) => {
+    if (editText.trim() === "") {
+      setAlertMessage('댓글 내용을 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await updateComment(commentId, {
+        postId,
+        content: editText,
+      });
+
+      if (response.resultCode === 200) {
+        setAlertMessage('댓글이 수정되었습니다.');
+        if (onCommentAdded) {
+          onCommentAdded();
+        }
+        setEditingCommentId(null);
+        setEditText('');
+      } else {
+        setAlertMessage(response.resultMessageKo || '댓글 수정에 실패했습니다.');
+      }
+    } catch (error) {
+      setAlertMessage('댓글 수정 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    setIsLoading(true);
+    try {
+      const response = await deleteComment(commentId);
+
+      if (response.resultCode === 200) {
+        setAlertMessage('댓글이 삭제되었습니다.');
+        if (onCommentAdded) {
+          onCommentAdded();
+        }
+        setDeletingCommentId(null);
+      } else {
+        setAlertMessage(response.resultMessageKo || '댓글 삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      setAlertMessage('댓글 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startEdit = (comment: CommentType) => {
+    setEditingCommentId(comment.commentId);
+    setEditText(comment.content);
   };
 
   const parentComments = comments.filter(comment => comment.parentCommentId === null);
@@ -127,16 +186,72 @@ export default function Comment({ postId, comments: initialComments, onCommentAd
                         {new Date(comment.createDate).toLocaleDateString('ko-KR')}
                       </span>
                     </div>
-                    <p className="text-gray-700 whitespace-pre-wrap break-words">{comment.content}</p>
 
-                    {/* 답글 달기 버튼 */}
-                    <button
-                      onClick={() => setReplyingTo(replyingTo === comment.commentId ? null : comment.commentId)}
-                      className="mt-2 text-sm text-purple-600 hover:text-purple-800 transition-colors flex items-center space-x-1"
-                    >
-                      <CornerDownRight className="w-3 h-3" />
-                      <span>{replyingTo === comment.commentId ? "취소" : "답글 달기"}</span>
-                    </button>
+                    {/* 수정 중인 경우 */}
+                    {editingCommentId === comment.commentId ? (
+                      <div className="space-y-2 mt-2">
+                        <textarea
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                          rows={2}
+                          disabled={isLoading}
+                        />
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEditComment(comment.commentId)}
+                            disabled={isLoading}
+                            className="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm disabled:opacity-50"
+                          >
+                            수정 완료
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingCommentId(null);
+                              setEditText('');
+                            }}
+                            disabled={isLoading}
+                            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm disabled:opacity-50"
+                          >
+                            취소
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-gray-700 whitespace-pre-wrap break-words">{comment.content}</p>
+
+                        {/* 답글 달기 / 수정 / 삭제 버튼 */}
+                        <div className="mt-2 flex items-center space-x-3">
+                          <button
+                            onClick={() => setReplyingTo(replyingTo === comment.commentId ? null : comment.commentId)}
+                            className="text-sm text-purple-600 hover:text-purple-800 transition-colors flex items-center space-x-1"
+                          >
+                            <CornerDownRight className="w-3 h-3" />
+                            <span>{replyingTo === comment.commentId ? "취소" : "답글 달기"}</span>
+                          </button>
+
+                          {comment.commentWriteYn === 'Y' && (
+                            <>
+                              <button
+                                onClick={() => startEdit(comment)}
+                                className="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center space-x-1"
+                              >
+                                <Edit className="w-3 h-3" />
+                                <span>수정</span>
+                              </button>
+                              <button
+                                onClick={() => setDeletingCommentId(comment.commentId)}
+                                className="text-sm text-red-600 hover:text-red-800 transition-colors flex items-center space-x-1"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>삭제</span>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -181,7 +296,62 @@ export default function Comment({ postId, comments: initialComments, onCommentAd
                               {new Date(reply.createDate).toLocaleDateString('ko-KR')}
                             </span>
                           </div>
-                          <p className="text-gray-700 text-sm whitespace-pre-wrap break-words">{reply.content}</p>
+
+                          {/* 수정 중인 경우 */}
+                          {editingCommentId === reply.commentId ? (
+                            <div className="space-y-2 mt-2">
+                              <textarea
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none text-sm"
+                                rows={2}
+                                disabled={isLoading}
+                              />
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => handleEditComment(reply.commentId)}
+                                  disabled={isLoading}
+                                  className="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-xs disabled:opacity-50"
+                                >
+                                  수정 완료
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingCommentId(null);
+                                    setEditText('');
+                                  }}
+                                  disabled={isLoading}
+                                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-xs disabled:opacity-50"
+                                >
+                                  취소
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <p className="text-gray-700 text-sm whitespace-pre-wrap break-words">{reply.content}</p>
+
+                              {/* 수정 / 삭제 버튼 */}
+                              {reply.commentWriteYn === 'Y' && (
+                                <div className="mt-2 flex items-center space-x-3">
+                                  <button
+                                    onClick={() => startEdit(reply)}
+                                    className="text-xs text-blue-600 hover:text-blue-800 transition-colors flex items-center space-x-1"
+                                  >
+                                    <Edit className="w-3 h-3" />
+                                    <span>수정</span>
+                                  </button>
+                                  <button
+                                    onClick={() => setDeletingCommentId(reply.commentId)}
+                                    className="text-xs text-red-600 hover:text-red-800 transition-colors flex items-center space-x-1"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                    <span>삭제</span>
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -219,6 +389,40 @@ export default function Comment({ postId, comments: initialComments, onCommentAd
           )}
         </div>
       </CuteCard>
+
+      {/* 삭제 확인 모달 */}
+      {deletingCommentId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 md:p-8 max-w-md mx-4 w-full">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">댓글 삭제</h3>
+              <p className="text-gray-600 mb-6 break-keep">
+                댓글을 정말 삭제하시겠습니까?<br/>
+                이 작업은 되돌릴 수 없습니다.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setDeletingCommentId(null)}
+                  className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
+                  disabled={isLoading}
+                >
+                  취소
+                </button>
+                <button
+                  onClick={() => handleDeleteComment(deletingCommentId)}
+                  disabled={isLoading}
+                  className="flex-1 px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
+                >
+                  {isLoading ? '삭제 중...' : '삭제'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Alert */}
       <Alert

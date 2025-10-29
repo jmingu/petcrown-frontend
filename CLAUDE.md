@@ -224,7 +224,27 @@ Header (드롭다운 메뉴)
 ```env
 NEXT_PUBLIC_API_BASE_URL=https://api.example.com
 NEXT_PUBLIC_ADSENSE_ID=ca-pub-xxxxxxxxxxxxxxxx
+NEXT_PUBLIC_SITE_URL=https://www.petcrown.com
 ```
+
+### SEO 및 소셜 미디어 최적화
+
+#### Open Graph 메타데이터
+- 카카오톡, 페이스북, 트위터 등 SNS 공유 시 미리보기 제공
+- OG 이미지: `/public/og-image.png` (1200x630px)
+- 메타데이터는 `src/app/layout.tsx`에 설정됨
+
+#### OG 이미지 요구사항
+- **크기**: 1200 x 630 픽셀
+- **포맷**: PNG 또는 JPG
+- **내용**: 브랜드 로고, 캐치프레이즈, 시각적 요소
+- **색상**: 보라색-핑크 그라데이션 (브랜드 컬러)
+
+#### 메타데이터 구성
+- **Title**: "펫크라운 - 반려동물 투표 & 커뮤니티"
+- **Description**: 투표 시스템 및 혜택 설명
+- **Keywords**: 반려동물, 투표, 랭킹, 커뮤니티 관련 키워드
+- **Robots**: 검색엔진 최적화 설정
 
 ### 개발 시 주의사항
 

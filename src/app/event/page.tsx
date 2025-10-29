@@ -14,14 +14,13 @@ import AdSense from '@/components/common/adsense/AdSense';
 import { getEventList } from '@/libs/api/event/eventApi';
 import { Event } from '@/libs/interface/api/event/eventResponseInterface';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
 export default function EventPage() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [events, setEvents] = useState<Event[]>([]);
-  const [totalElements, setTotalElements] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
 
@@ -53,11 +52,12 @@ export default function EventPage() {
     try {
       const response = await getEventList({ page: currentPage, size: ITEMS_PER_PAGE });
       if (response.resultCode === 200 && response.result) {
-        setEvents(Array.isArray(response.result) ? response.result : []);
-        setTotalPages(1);
+        setEvents(response.result.events || []);
+        setTotalCount(response.result.totalCount || 0);
       }
     } catch (error) {
       setEvents([]);
+      setTotalCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -72,20 +72,11 @@ export default function EventPage() {
     router.push(`/event/${eventId}`);
   };
 
+  // 총 페이지 수 계산
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white">
-      {/* AdSense at the top */}
-      {adsenseId && (
-        <div className="mb-6">
-          <AdSense
-            adClient={adsenseId}
-            adFormat="auto"
-            fullWidthResponsive={true}
-            style={{ display: 'block', minHeight: '100px' }}
-          />
-        </div>
-      )}
-
       {/* 배경 장식 요소들 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -120,6 +111,18 @@ export default function EventPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-8 relative z-10">
+        {/* AdSense - 최상단 */}
+        {adsenseId && (
+          <div className="mb-6">
+            <AdSense
+              adClient={adsenseId}
+              adFormat="auto"
+              fullWidthResponsive={true}
+              style={{ display: 'block', minHeight: '100px' }}
+            />
+          </div>
+        )}
+
         {/* 헤더 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -230,9 +233,8 @@ export default function EventPage() {
               <div className="space-y-1">
                 {regularEvents.length > 0 ? (
                   regularEvents.map((event: Event, index: number) => (
-                    <>
-                      <motion.div
-                        key={event.eventId}
+                    <motion.div
+                      key={event.eventId}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: index * 0.05 }}
@@ -276,8 +278,7 @@ export default function EventPage() {
                           </div>
                         </div>
                         <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                      </motion.div>
-                    </>
+                    </motion.div>
                   ))
                 ) : (
                   <div className="text-center py-20">
@@ -292,33 +293,35 @@ export default function EventPage() {
         </motion.div>
 
         {/* 페이지네이션 */}
-        {totalPages > 1 && (
+        {totalPages > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex justify-center items-center space-x-2 mt-8"
           >
+            {/* 이전 버튼 */}
             <button
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               className="p-2 rounded-xl bg-white border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-pink-50 transition-colors duration-200"
             >
               <ArrowRight className="w-5 h-5 transform rotate-180" />
             </button>
 
+            {/* 페이지 번호들 */}
             <div className="flex space-x-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
+                // 현재 페이지를 기준으로 표시할 페이지 범위 계산
+                let startPage = Math.max(1, currentPage - 2);
+                const endPage = Math.min(totalPages, startPage + 4);
+
+                // 끝에서 5개 미만일 때 시작 페이지 조정
+                if (endPage - startPage < 4) {
+                  startPage = Math.max(1, endPage - 4);
                 }
+
+                const pageNum = startPage + i;
 
                 return (
                   <button
@@ -336,9 +339,10 @@ export default function EventPage() {
               })}
             </div>
 
+            {/* 다음 버튼 */}
             <button
-              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
               className="p-2 rounded-xl bg-white border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-pink-50 transition-colors duration-200"
             >
               <ArrowRight className="w-5 h-5" />
