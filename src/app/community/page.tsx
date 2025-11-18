@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -22,13 +22,16 @@ const CATEGORY_MAP: { [key: string]: string } = {
 
 export default function CommunityPage() {
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
+  const searchParams = useSearchParams();
   const [posts, setPosts] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
 
   const POSTS_PER_PAGE = 5;
+
+  // URL에서 페이지 번호 가져오기
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
   useEffect(() => {
     loadPosts();
@@ -54,12 +57,12 @@ export default function CommunityPage() {
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    router.push(`/community?page=${page}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handlePostClick = (postId: number) => {
-    router.push(`/community/${postId}`);
+    router.push(`/community/${postId}?from=page-${currentPage}`);
   };
 
   // 총 페이지 수 계산

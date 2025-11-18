@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -20,12 +21,16 @@ import { calculateAge } from '@/common/util/calculateUtil';
 type PeriodType = 'weekly' | 'monthly';
 
 export default function VotePage() {
-  const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [votes, setVotes] = useState<VotePetResponse[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('weekly');
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
+
+  // URL에서 페이지 번호 가져오기
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
   const ITEMS_PER_PAGE = 12;
 
@@ -72,7 +77,7 @@ export default function VotePage() {
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    router.push(`/vote?page=${page}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -197,7 +202,7 @@ export default function VotePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <Link href={`/vote/${vote.voteId}`}>
+                    <Link href={`/vote/${vote.voteId}?from=page-${currentPage}`}>
                       <CuteCard hover className="h-full" padding="lg" glassmorphism>
                         {/* 펫 이미지 */}
                         <div className="relative mb-4">

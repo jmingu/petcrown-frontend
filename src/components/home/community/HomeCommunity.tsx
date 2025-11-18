@@ -145,7 +145,7 @@ export default function HomeCommunity() {
         )) : (
           <div className="col-span-full text-center py-12">
             <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">준비중입니다</p>
+            <p className="text-gray-500">등록된 글이 없습니다</p>
           </div>
         )}
       </div>

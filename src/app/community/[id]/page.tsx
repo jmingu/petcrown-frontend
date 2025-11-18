@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -17,6 +17,7 @@ import Comment from '@/app/community/commponents/Comment';
 import { getCommunityDetail, getCommentList, deleteCommunityPost } from '@/libs/api/community/communityApi';
 import { CommunityDetailResponse } from '@/libs/interface/api/community/communityResponseInterface';
 import Image from 'next/image';
+import ClickableImage from '@/components/common/image/ClickableImage';
 
 const CATEGORY_MAP: { [key: string]: string } = {
   DAILY: '일상',
@@ -27,6 +28,7 @@ const CATEGORY_MAP: { [key: string]: string } = {
 export default function PostDetail() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const [post, setPost] = useState<CommunityDetailResponse | null>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,6 +37,10 @@ export default function PostDetail() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
+
+  // URL에서 돌아갈 페이지 정보 가져오기
+  const fromPage = searchParams.get('from') || 'page-1';
+  const pageNumber = fromPage.replace('page-', '');
 
   useEffect(() => {
     // 로그인 체크
@@ -80,7 +86,7 @@ export default function PostDetail() {
       const response = await deleteCommunityPost(Number(params.id));
       if (response.resultCode === 200) {
         setAlertMessage('게시글이 삭제되었습니다.');
-        setTimeout(() => router.push('/community'), 1500);
+        setTimeout(() => router.push(`/community?page=${pageNumber}`), 1500);
       } else {
         setAlertMessage('게시글 삭제에 실패했습니다.');
       }
@@ -195,7 +201,7 @@ export default function PostDetail() {
         {/* 목록으로 돌아가기 */}
         <div className="mb-6">
           <Link
-            href="/community"
+            href={`/community?page=${pageNumber}`}
             className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
           >
             ← 커뮤니티 목록으로 돌아가기
@@ -266,7 +272,7 @@ export default function PostDetail() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {post.imageUrls.map((imageUrl, index) => (
                   <div key={index} className="relative w-full h-64 rounded-2xl overflow-hidden">
-                    <Image
+                    <ClickableImage
                       src={imageUrl}
                       alt={`게시글 이미지 ${index + 1}`}
                       fill

@@ -9,7 +9,9 @@ import ShareButton from './components/ShareButton';
 import OwnerActions from './components/OwnerActions';
 import OwnerCheck from './components/OwnerCheck';
 import VoteButton from './components/VoteButton';
+import BackButton from './components/BackButton';
 import AdSense from '@/components/common/adsense/AdSense';
+import ClickableImage from '@/components/common/image/ClickableImage';
 
 interface VoteDetailPageProps {
   params: Promise<{
@@ -125,12 +127,7 @@ export default async function VoteDetailPage({ params }: VoteDetailPageProps) {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* 뒤로가기 버튼 */}
         <div className="mb-6">
-          <Link 
-            href="/vote" 
-            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
-          >
-            ← 투표 목록으로 돌아가기
-          </Link>
+          <BackButton />
         </div>
 
         {/* AdSense - 상단 */}
@@ -161,7 +158,7 @@ export default async function VoteDetailPage({ params }: VoteDetailPageProps) {
             {/* 펫 이미지 */}
             <div className="relative h-96 bg-gradient-to-b from-purple-100 to-pink-100">
               {voteData.profileImageUrl ? (
-                <Image
+                <ClickableImage
                   src={voteData.profileImageUrl}
                   alt={`${voteData.name} - ${voteData.breedName || voteData.speciesName}`}
                   fill

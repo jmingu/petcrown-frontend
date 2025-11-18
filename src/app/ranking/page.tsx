@@ -9,6 +9,7 @@ import {
 import CuteCard from '@/components/common/card/CuteCard';
 import CuteBadge from '@/components/common/badge/CuteBadge';
 import AdSense from '@/components/common/adsense/AdSense';
+import ClickableImage from '@/components/common/image/ClickableImage';
 import { getCurrentWeekRanking, getLastWeekRanking } from '@/libs/api/ranking/rankingApi';
 
 export default function RankingPage() {
@@ -102,7 +103,7 @@ export default function RankingPage() {
                       </div>
                       <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3">
                         {topThree[1].profileImageUrl ? (
-                          <Image
+                          <ClickableImage
                             src={topThree[1].profileImageUrl}
                             alt={topThree[1].name}
                             fill
@@ -172,7 +173,7 @@ export default function RankingPage() {
                       <div className="relative w-20 h-20 md:w-24 md:h-24 mx-auto mb-3">
                         {topThree[0].profileImageUrl ? (
                           <>
-                            <Image
+                            <ClickableImage
                               src={topThree[0].profileImageUrl}
                               alt={topThree[0].name}
                               fill
@@ -243,7 +244,7 @@ export default function RankingPage() {
                       </div>
                       <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3">
                         {topThree[2].profileImageUrl ? (
-                          <Image
+                          <ClickableImage
                             src={topThree[2].profileImageUrl}
                             alt={topThree[2].name}
                             fill
@@ -317,7 +318,7 @@ export default function RankingPage() {
 
                       <div className="relative w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
                         {item.profileImageUrl ? (
-                          <Image
+                          <ClickableImage
                             src={item.profileImageUrl}
                             alt={item.name}
                             fill

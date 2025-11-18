@@ -131,7 +131,7 @@ export default function HomeVote() {
         )) : (
           <div className="col-span-full text-center py-12">
             <Crown className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">준비중입니다</p>
+            <p className="text-gray-500">등록된 투표가 없습니다</p>
           </div>
         )}
       </div>
@@ -144,9 +144,9 @@ export default function HomeVote() {
         className="text-center"
       >
         <Link href="/vote">
-          <CuteButton 
-            variant="primary" 
-            size="lg" 
+          <CuteButton
+            variant="primary"
+            size="lg"
             icon={<ArrowRight className="w-5 h-5" />}
           >
             모든 투표 보기

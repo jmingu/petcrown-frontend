@@ -18,6 +18,7 @@ import CuteBadge from '@/components/common/badge/CuteBadge';
 import CuteAvatar from '@/components/common/avatar/CuteAvatar';
 import Alert from '@/components/common/alert/Alert';
 import AdSense from '@/components/common/adsense/AdSense';
+import ClickableImage from '@/components/common/image/ClickableImage';
 import { UserResponse } from '@/libs/interface/api/user/userResponseInterface';
 import { findUser } from '@/libs/api/user/userApi';
 import { findMyPet } from '@/libs/api/pet/petApi';
@@ -329,14 +330,14 @@ export default function Profile() {
                         <div className="text-center">
                           {/* 펫 이미지 */}
                           <div className="relative w-32 h-32 mx-auto mb-4">
-                            <Image
+                            <ClickableImage
                               src={pet.imageUrl}
                               alt={pet.name}
                               fill
-                              className="object-cover rounded-full ring-4 ring-gradient-to-r from-pink-200 to-purple-200"
+                              className="object-cover rounded-2xl ring-4 ring-gradient-to-r from-pink-200 to-purple-200"
                             />
                             {(pet.awards && pet.awards > 0) && (
-                              <div className="absolute -top-2 -right-2">
+                              <div className="absolute -top-2 -right-2 pointer-events-none">
                                 <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                                   <Crown className="w-5 h-5 text-white" />
                                 </div>

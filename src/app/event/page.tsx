@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   PartyPopper, Pin, Eye, Calendar, Clock,
@@ -18,11 +18,14 @@ const ITEMS_PER_PAGE = 5;
 
 export default function EventPage() {
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
+  const searchParams = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
+
+  // URL에서 페이지 번호 가져오기
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
   // isPinned가 'Y'인 이벤트를 pinOrder 순으로 정렬한 고정 이벤트
   const pinnedEvents = events
@@ -64,12 +67,12 @@ export default function EventPage() {
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    router.push(`/event?page=${page}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleEventClick = (eventId: number) => {
-    router.push(`/event/${eventId}`);
+    router.push(`/event/${eventId}?from=page-${currentPage}`);
   };
 
   // 총 페이지 수 계산

@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -18,9 +18,14 @@ import { EventDetailResponse } from '@/libs/interface/api/event/eventResponseInt
 export default function EventDetail() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const [event, setEvent] = useState<EventDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
+
+  // URL에서 페이지 정보 추출
+  const fromPage = searchParams.get('from') || 'page-1';
+  const pageNumber = fromPage.replace('page-', '');
 
   useEffect(() => {
     loadEventDetail();
@@ -116,10 +121,10 @@ export default function EventDetail() {
         {/* 목록으로 돌아가기 */}
         <div className="mb-6">
           <Link
-            href="/"
+            href={`/event?page=${pageNumber}`}
             className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
           >
-            ← 홈으로 돌아가기
+            ← 이벤트 목록으로 돌아가기
           </Link>
         </div>
 

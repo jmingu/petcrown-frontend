@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 export const runtime = 'edge'; // 또는 'nodejs'
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
@@ -15,8 +15,12 @@ export default function VerifyVotingEmailPage() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('이메일 인증을 처리중입니다...');
+  const hasVerified = useRef(false);
 
   useEffect(() => {
+    // 이미 인증을 시도했으면 다시 실행하지 않음
+    if (hasVerified.current) return;
+
     const verifyEmail = async () => {
       const email = searchParams.get('email');
       const token = searchParams.get('token');
@@ -26,6 +30,8 @@ export default function VerifyVotingEmailPage() {
         setMessage('이메일 또는 토큰 정보가 없습니다.');
         return;
       }
+
+      hasVerified.current = true;
 
       try {
         const response = await api.get('/users/v1/verify-voting-email', {

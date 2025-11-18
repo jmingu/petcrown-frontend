@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Megaphone, Pin, Eye, Calendar, Clock,
@@ -18,11 +18,14 @@ const ITEMS_PER_PAGE = 5;
 
 export default function NoticePage() {
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
+  const searchParams = useSearchParams();
   const [notices, setNotices] = useState<Notice[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
+
+  // URL에서 페이지 번호 가져오기
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
   // isPinned가 'Y'인 공지사항을 pinOrder 순으로 정렬한 고정 공지사항
   const pinnedNotices = notices
@@ -53,12 +56,12 @@ export default function NoticePage() {
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    router.push(`/notice?page=${page}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNoticeClick = (noticeId: number) => {
-    router.push(`/notice/${noticeId}`);
+    router.push(`/notice/${noticeId}?from=page-${currentPage}`);
   };
 
   // 총 페이지 수 계산
