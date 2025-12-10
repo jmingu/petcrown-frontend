@@ -27,7 +27,6 @@ export default function FindIdPage() {
 
     setIsLoading(true);
     try {
-      // TODO: 백엔드 API 연결
       await new Promise(resolve => setTimeout(resolve, 1000)); // 임시 지연
       setAlertMessage('해당 이메일로 아이디 정보를 전송했습니다! 📧');
     } catch (error) {
@@ -38,40 +37,37 @@ export default function FindIdPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      {/* 배경 장식 요소들 */}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative">
+      
+      {/* 최상단 뒤로가기 버튼 */}
+      <button
+        onClick={() => router.back()}
+        className="absolute top-4 left-4 z-20 text-purple-600 hover:text-purple-800 transition-colors duration-200 flex items-center"
+      >
+        <ArrowLeft className="w-5 h-5 mr-1" />
+        뒤로가기
+      </button>
+
+      {/* 배경 장식 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           className="absolute top-20 left-10"
-          animate={{
-            y: [-20, 20, -20],
-            rotate: [0, 10, -10, 0],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          animate={{ y: [-20, 20, -20], rotate: [0, 10, -10, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         >
           <Heart className="w-8 h-8 text-pink-300 opacity-40" fill="currentColor" />
         </motion.div>
-        
+
         <motion.div
           className="absolute top-32 right-20"
-          animate={{
-            y: [20, -20, 20],
-            rotate: [0, -10, 10, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          animate={{ y: [20, -20, 20], rotate: [0, -10, 10, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         >
           <Sparkles className="w-6 h-6 text-purple-300 opacity-50" />
         </motion.div>
       </div>
 
+      {/* 메인 카드 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -79,7 +75,8 @@ export default function FindIdPage() {
         className="w-full max-w-md relative z-10"
       >
         <CuteCard className="space-y-6" padding="lg">
-          {/* 헤더 */}
+          
+          {/* 헤더 아이콘 */}
           <div className="text-center space-y-2">
             <motion.div
               initial={{ scale: 0 }}
@@ -91,10 +88,9 @@ export default function FindIdPage() {
                 <Search className="w-8 h-8 text-white" />
               </div>
             </motion.div>
-
           </div>
 
-          {/* 도움말 섹션 */}
+          {/* 도움말 */}
           <div className="bg-blue-50 rounded-2xl p-4">
             <div className="flex items-start space-x-3">
               <HelpCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -113,7 +109,7 @@ export default function FindIdPage() {
             </div>
           </div>
 
-          {/* 링크들 */}
+          {/* 아래 링크 버튼 */}
           <div className="flex justify-center space-x-6 text-sm">
             <button
               onClick={() => router.push('/find-password')}
@@ -130,23 +126,6 @@ export default function FindIdPage() {
             </button>
           </div>
         </CuteCard>
-
-        {/* 뒤로가기 버튼 */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-6"
-        >
-          <CuteButton
-            onClick={() => router.back()}
-            variant="secondary"
-            size="md"
-            icon={<ArrowLeft className="w-4 h-4" />}
-          >
-            돌아가기
-          </CuteButton>
-        </motion.div>
       </motion.div>
 
       {/* 알림창 */}

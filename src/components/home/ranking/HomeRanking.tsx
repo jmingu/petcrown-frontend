@@ -109,21 +109,16 @@ export default function HomeRanking() {
                         alt={rankings[1].name}
                         fill
                         className="rounded-2xl object-cover shadow-lg group-hover:scale-105 transition-transform duration-300"
+                        style={{ pointerEvents: 'none' }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl">
                         <span className="text-6xl">🐾</span>
                       </div>
                     )}
-                      <div className="absolute top-2 left-2">
+                      <div className="absolute top-2 left-2" style={{ pointerEvents: 'none' }}>
                         <div className="w-12 h-12 rounded-full bg-gradient-to-r from-gray-300 to-gray-500 flex items-center justify-center shadow-lg">
                           <Trophy className="w-6 h-6 text-white" />
-                        </div>
-                      </div>
-                      <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-1.5">
-                        <div className="flex items-center space-x-1">
-                          <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
-                          <span className="font-bold text-gray-900">{rankings[1].weeklyVoteCount.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -131,10 +126,12 @@ export default function HomeRanking() {
                   <Link href={`/vote/${rankings[1].voteId}`}>
                     <div className="text-center space-y-2 cursor-pointer hover:opacity-80 transition-opacity">
                       <div className="text-2xl font-bold text-gray-600">2위</div>
-                      <h3 className="text-lg font-bold text-gray-800">{rankings[1].name}</h3>
-                      {rankings[1].speciesName && (
-                        <p className="text-sm text-gray-600">{rankings[1].speciesName}</p>
-                      )}
+                      <h3 className="text-lg font-bold text-gray-800">{rankings[1].nickname || rankings[1].name}</h3>
+                      <p className="text-sm text-gray-600">{rankings[1].name}</p>
+                      <div className="flex items-center justify-center space-x-1 mt-2">
+                        <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
+                        <span className="font-bold text-gray-900">{rankings[1].weeklyVoteCount.toLocaleString()}표</span>
+                      </div>
                     </div>
                   </Link>
                 </CuteCard>
@@ -178,21 +175,16 @@ export default function HomeRanking() {
                       alt={rankings[0].name}
                       fill
                       className="rounded-2xl object-cover shadow-xl group-hover:scale-105 transition-transform duration-300"
+                      style={{ pointerEvents: 'none' }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl">
                       <span className="text-6xl">🐾</span>
                     </div>
                   )}
-                    <div className="absolute top-2 left-2">
+                    <div className="absolute top-2 left-2" style={{ pointerEvents: 'none' }}>
                       <div className="w-14 h-14 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 flex items-center justify-center shadow-xl animate-pulse">
                         <Crown className="w-7 h-7 text-white" />
-                      </div>
-                    </div>
-                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-1.5">
-                      <div className="flex items-center space-x-1">
-                        <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
-                        <span className="font-bold text-gray-900">{rankings[0].weeklyVoteCount.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -200,10 +192,12 @@ export default function HomeRanking() {
                 <Link href={`/vote/${rankings[0].voteId}`}>
                   <div className="text-center space-y-2 cursor-pointer hover:opacity-80 transition-opacity">
                     <div className="text-3xl font-bold text-yellow-600">1위</div>
-                    <h3 className="text-xl font-bold text-gray-800">{rankings[0].name}</h3>
-                    {rankings[0].speciesName && (
-                      <p className="text-sm text-gray-600">{rankings[0].speciesName}</p>
-                    )}
+                    <h3 className="text-xl font-bold text-gray-800">{rankings[0].nickname || rankings[0].name}</h3>
+                    <p className="text-sm text-gray-600">{rankings[0].name}</p>
+                    <div className="flex items-center justify-center space-x-1 mt-2">
+                      <Heart className="w-5 h-5 text-red-500" fill="currentColor" />
+                      <span className="font-bold text-yellow-600 text-lg">{rankings[0].weeklyVoteCount.toLocaleString()}표</span>
+                    </div>
                   </div>
                 </Link>
               </CuteCard>
@@ -235,21 +229,16 @@ export default function HomeRanking() {
                         alt={rankings[2].name}
                         fill
                         className="rounded-2xl object-cover shadow-lg group-hover:scale-105 transition-transform duration-300"
+                        style={{ pointerEvents: 'none' }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl">
                         <span className="text-6xl">🐾</span>
                       </div>
                     )}
-                      <div className="absolute top-2 left-2">
+                      <div className="absolute top-2 left-2" style={{ pointerEvents: 'none' }}>
                         <div className="w-12 h-12 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 flex items-center justify-center shadow-lg">
                           <Trophy className="w-6 h-6 text-white" />
-                        </div>
-                      </div>
-                      <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-1.5">
-                        <div className="flex items-center space-x-1">
-                          <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
-                          <span className="font-bold text-gray-900">{rankings[2].weeklyVoteCount.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -257,10 +246,12 @@ export default function HomeRanking() {
                   <Link href={`/vote/${rankings[2].voteId}`}>
                     <div className="text-center space-y-2 cursor-pointer hover:opacity-80 transition-opacity">
                       <div className="text-2xl font-bold text-amber-600">3위</div>
-                      <h3 className="text-lg font-bold text-gray-800">{rankings[2].name}</h3>
-                      {rankings[2].speciesName && (
-                        <p className="text-sm text-gray-600">{rankings[2].speciesName}</p>
-                      )}
+                      <h3 className="text-lg font-bold text-gray-800">{rankings[2].nickname || rankings[2].name}</h3>
+                      <p className="text-sm text-gray-600">{rankings[2].name}</p>
+                      <div className="flex items-center justify-center space-x-1 mt-2">
+                        <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
+                        <span className="font-bold text-gray-900">{rankings[2].weeklyVoteCount.toLocaleString()}표</span>
+                      </div>
                     </div>
                   </Link>
                 </CuteCard>
@@ -304,10 +295,9 @@ export default function HomeRanking() {
         className="text-center"
       >
         <Link href="/ranking">
-          <CuteButton 
-            variant="primary" 
-            size="lg" 
-            icon={<ArrowRight className="w-5 h-5" />}
+          <CuteButton
+            variant="primary"
+            size="lg"
           >
             전체 랭킹 보기
           </CuteButton>

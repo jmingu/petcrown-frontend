@@ -3,7 +3,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
 interface DateInputProps {
-  value: string; // YYYY-MM-DD 형식의 문자열
+  value: string | null; // YYYY-MM-DD 형식의 문자열 또는 null
   onChange: (value: string) => void;
   placeholder?: string;
   minDate?: Date; // 과거 날짜 선택 방지
@@ -39,7 +39,7 @@ const DateInput: React.FC<DateInputProps> = ({
     <div className={`relative ${wrapperClassName} w-full`}>
       <input
         type="text"
-        value={value}
+        value={value ?? ''}
         onClick={() => setIsCalendarOpen(!isCalendarOpen)}
         placeholder={placeholder}
         readOnly

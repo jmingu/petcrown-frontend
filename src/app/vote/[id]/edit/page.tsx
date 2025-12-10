@@ -303,11 +303,11 @@ export default function VoteEditPage() {
             </div>
 
             {/* 감정 선택 섹션 */}
-            <div className="mb-8">
+            {/* <div className="mb-8">
               <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-4">
                 <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center space-x-2">
                   <Smile className="w-5 h-5 text-orange-500" />
-                  <span>사진의 기분을 선택해주세요</span>
+                  <span>사진의 기분을 선택해주세요(선택)</span>
                 </label>
                 <select
                   value={selectedModeId || ''}
@@ -323,7 +323,7 @@ export default function VoteEditPage() {
                   ))}
                 </select>
               </div>
-            </div>
+            </div> */}
 
             {/* 액션 버튼들 */}
             <div className="flex flex-col space-y-4">

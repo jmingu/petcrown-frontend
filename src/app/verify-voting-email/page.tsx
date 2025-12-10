@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 export const runtime = 'edge'; // 또는 'nodejs'
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
@@ -10,7 +10,7 @@ import CuteCard from '@/components/common/card/CuteCard';
 import CuteButton from '@/components/common/button/CuteButton';
 import api from '@/libs/axiosInstance';
 
-export default function VerifyVotingEmailPage() {
+function VerifyVotingEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -100,7 +100,7 @@ export default function VerifyVotingEmailPage() {
             >
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 {status === 'loading' && '인증 처리중'}
-                {status === 'success' && '인증 완료! 🎉'}
+                {status === 'success' && '인증 완료!'}
                 {status === 'error' && '인증 실패'}
               </h1>
               <p className="text-gray-600 text-lg">
@@ -168,5 +168,17 @@ export default function VerifyVotingEmailPage() {
         </CuteCard>
       </motion.div>
     </div>
+  );
+}
+
+export default function VerifyVotingEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+      </div>
+    }>
+      <VerifyVotingEmailContent />
+    </Suspense>
   );
 }

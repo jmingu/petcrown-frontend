@@ -78,6 +78,7 @@ export default function EmailVerificationModal({
       if (verificationCheck.resultCode !== 200) {
         setAlertMessage(verificationCheck.resultMessageKo || '이메일 인증이 완료되지 않았습니다. 먼저 이메일 인증을 완료해주세요.');
         setAlertType('error');
+        setIsVoting(false);  
         return;
       }
 

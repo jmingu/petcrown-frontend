@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -16,7 +16,7 @@ import { Event } from '@/libs/interface/api/event/eventResponseInterface';
 
 const ITEMS_PER_PAGE = 5;
 
-export default function EventPage() {
+function EventContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
@@ -354,5 +354,17 @@ export default function EventPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function EventPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-500 border-t-transparent"></div>
+      </div>
+    }>
+      <EventContent />
+    </Suspense>
   );
 }

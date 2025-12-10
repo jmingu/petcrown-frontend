@@ -158,10 +158,9 @@ export default function HomeCommunity() {
         className="text-center"
       >
         <Link href="/community">
-          <CuteButton 
-            variant="primary" 
-            size="lg" 
-            icon={<ArrowRight className="w-5 h-5" />}
+          <CuteButton
+            variant="primary"
+            size="lg"
           >
             모든 게시글 보기
           </CuteButton>

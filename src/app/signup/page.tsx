@@ -274,7 +274,17 @@ export default function SignupPage() {
         transition={{ duration: 0.6 }}
         className="w-full max-w-2xl relative z-10"
       >
+        {/* 뒤로가기 버튼 */}
+        <div className="max-w-2xl mx-auto relative z-10 mb-6">
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
+          >
+            ← 돌아가기
+          </button>
+        </div>
         <CuteCard className="space-y-6" padding="lg" glassmorphism>
+          
           {/* 헤더 */}
           <div className="text-center space-y-3">
             <motion.div
@@ -445,23 +455,6 @@ export default function SignupPage() {
             </motion.button>
           </div>
         </CuteCard>
-
-        {/* 뒤로가기 버튼 */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-6"
-        >
-          <CuteButton
-            onClick={() => router.back()}
-            variant="secondary"
-            size="md"
-            icon={<ArrowLeft className="w-4 h-4" />}
-          >
-            돌아가기
-          </CuteButton>
-        </motion.div>
       </motion.div>
 
       {/* 인증번호 모달 */}
@@ -475,6 +468,7 @@ export default function SignupPage() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">인증번호 확인</h3>
                 <p className="text-gray-600 text-sm">
+                  회원가입 완료<br />
                   이메일로 인증번호가 전송되었습니다.<br />
                   인증까지 완료해야 최종 가입이 완료됩니다.
                 </p>

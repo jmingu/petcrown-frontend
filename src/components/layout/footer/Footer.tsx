@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Crown, Trophy, Heart } from 'lucide-react';
+import Image from 'next/image';
+import { Heart } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -10,10 +11,13 @@ export default function Footer() {
           {/* 브랜드 섹션 */}
           <div>
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg relative">
-                <Trophy className="w-4 h-4 text-yellow-100 relative z-10 mt-1.5" />
-                <Crown className="w-3 h-3 text-white absolute top-1 left-1/2 transform -translate-x-1/2 drop-shadow-sm" />
-              </div>
+              <Image
+                src="/logo.svg"
+                alt="PetCrown Logo"
+                width={40}
+                height={40}
+                className="w-10 h-10"
+              />
               <span className="text-2xl font-bold text-gray-900">
                 PetCrown
               </span>

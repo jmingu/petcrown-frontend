@@ -2,10 +2,10 @@
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, Eye, Calendar, Megaphone,
+  Eye, Calendar, Megaphone,
   Star, Sparkles, Pin, Bell
 } from 'lucide-react';
 import CuteButton from '@/components/common/button/CuteButton';
@@ -15,20 +15,25 @@ import AdSense from '@/components/common/adsense/AdSense';
 import { getNoticeDetail } from '@/libs/api/notice/noticeApi';
 import { NoticeDetailResponse } from '@/libs/interface/api/notice/noticeResponseInterface';
 
-export default function NoticeDetail() {
+function NoticeDetailContent() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const [notice, setNotice] = useState<NoticeDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
+  const hasFetchedRef = useRef<string | null>(null);
 
   // URL에서 페이지 정보 추출
   const fromPage = searchParams.get('from') || 'page-1';
   const pageNumber = fromPage.replace('page-', '');
 
   useEffect(() => {
-    loadNoticeDetail();
+    const currentId = String(params.id);
+    if (hasFetchedRef.current !== currentId) {
+      loadNoticeDetail();
+      hasFetchedRef.current = currentId;
+    }
   }, [params.id]);
 
   const loadNoticeDetail = async () => {
@@ -204,5 +209,17 @@ export default function NoticeDetail() {
 
       </div>
     </div>
+  );
+}
+
+export default function NoticeDetail() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
+      </div>
+    }>
+      <NoticeDetailContent />
+    </Suspense>
   );
 }

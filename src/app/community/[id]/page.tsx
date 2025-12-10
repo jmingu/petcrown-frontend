@@ -2,7 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Eye, Calendar, User, MessageCircle,
@@ -25,7 +25,7 @@ const CATEGORY_MAP: { [key: string]: string } = {
   TIP: '팁/정보공유',
 };
 
-export default function PostDetail() {
+function PostDetailContent() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -204,7 +204,7 @@ export default function PostDetail() {
             href={`/community?page=${pageNumber}`}
             className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
           >
-            ← 커뮤니티 목록으로 돌아가기
+            ← 돌아가기
           </Link>
         </div>
 
@@ -367,5 +367,17 @@ export default function PostDetail() {
         onClose={() => setAlertMessage('')}
       />
     </div>
+  );
+}
+
+export default function PostDetail() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+      </div>
+    }>
+      <PostDetailContent />
+    </Suspense>
   );
 }

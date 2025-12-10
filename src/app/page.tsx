@@ -8,7 +8,7 @@ import HomeNotice from '@/components/home/notice/HomeNotice';
 import HomeRanking from '@/components/home/ranking/HomeRanking';
 import HomeCommunity from '@/components/home/community/HomeCommunity';
 import HomeVote from '@/components/home/vote/HomeVote';
-import FloatingActionButton from '@/components/common/floating/FloatingActionButton';
+import HomeGameRanking from '@/components/home/game/HomeGameRanking';
 import AdSense from '@/components/common/adsense/AdSense';
 import { getEventList } from '@/libs/api/event/eventApi';
 import { Event } from '@/libs/interface/api/event/eventResponseInterface';
@@ -171,6 +171,9 @@ export default function Home() {
           {/* 랭킹 섹션 */}
           <HomeRanking />
 
+          {/* 게임 랭킹 섹션 */}
+          <HomeGameRanking />
+
           {/* 커뮤니티 섹션 */}
           <HomeCommunity />
 
@@ -178,9 +181,6 @@ export default function Home() {
           <HomeNotice />
         </div>
       </div>
-
-      {/* 플로팅 액션 버튼 */}
-      <FloatingActionButton />
     </div>
   );
 }

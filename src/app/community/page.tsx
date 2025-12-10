@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -20,7 +20,7 @@ const CATEGORY_MAP: { [key: string]: string } = {
   TIP: '팁/정보공유',
 };
 
-export default function CommunityPage() {
+function CommunityContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [posts, setPosts] = useState<any[]>([]);
@@ -110,7 +110,7 @@ export default function CommunityPage() {
           className="flex justify-center md:justify-end mb-6"
         >
           <Link href="/community/register">
-            <CuteButton variant="primary" size="lg" icon={<Plus className="w-5 h-5" />}>
+            <CuteButton variant="primary" size="lg">
               게시글 작성
             </CuteButton>
           </Link>
@@ -250,5 +250,17 @@ export default function CommunityPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CommunityPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-purple-50/50 to-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+      </div>
+    }>
+      <CommunityContent />
+    </Suspense>
   );
 }

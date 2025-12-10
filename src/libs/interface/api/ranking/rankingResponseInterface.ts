@@ -12,6 +12,7 @@ export interface VotePetRanking {
   voteId: number;
   petId: number;
   name: string;
+  nickname?: string;
   gender: string;
   birthDate: string;
   breedId?: number;

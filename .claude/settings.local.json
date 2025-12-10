@@ -12,7 +12,13 @@
       "Bash(taskkill:*)",
       "Bash(npm run build:*)",
       "Bash(git checkout:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(npm install:*)",
+      "Bash(\"c:\\Users\\ASUS\\Desktop\\jmg\\00_개인\\99_기타\\project\\petcrown-frontend\\src\\app\\game\\ranking\\page.tsx\")",
+      "Bash(echo:*)",
+      "Bash(page.tsx)",
+      "Bash(git rm:*)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }

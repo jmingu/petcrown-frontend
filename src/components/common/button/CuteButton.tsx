@@ -7,7 +7,7 @@ interface CuteButtonProps {
   children: ReactNode;
   onClick?: () => void;
   variant?: 'primary' | 'secondary' | 'cute' | 'danger' | 'accent' | 'success';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   disabled?: boolean;
   className?: string;
   icon?: ReactNode;
@@ -75,6 +75,7 @@ export default function CuteButton({
     sm: 'px-5 py-2.5 text-sm',
     md: 'px-7 py-3.5 text-base',
     lg: 'px-10 py-4 text-lg',
+    xl: 'px-8 py-4 text-base md:px-12 md:py-5 md:text-xl',
   };
 
   return (

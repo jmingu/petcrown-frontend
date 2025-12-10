@@ -52,23 +52,17 @@ export default function ContactPage() {
         </motion.div>
       </div>
 
-      <div className="max-w-2xl mx-auto relative z-10">
-        {/* 뒤로가기 버튼 */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6"
+      {/* 뒤로가기 버튼 */}
+      <div className="max-w-2xl mx-auto relative z-10 mb-6">
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
         >
-          <CuteButton
-            onClick={() => router.back()}
-            variant="secondary"
-            size="md"
-            icon={<ArrowLeft className="w-4 h-4" />}
-          >
-            돌아가기
-          </CuteButton>
-        </motion.div>
+          ← 돌아가기
+        </button>
+      </div>
+
+      <div className="max-w-2xl mx-auto relative z-10">
 
         {/* 메인 카드 */}
         <motion.div
@@ -109,7 +103,7 @@ export default function ContactPage() {
                   <p className="text-gray-600 mb-2 text-sm">문의 이메일</p>
                   <a
                     href="mailto:kjkj173173@gmail.com"
-                    className="text-2xl font-bold text-purple-600 hover:text-purple-800 transition-colors duration-200 break-all"
+                    className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-purple-600 hover:text-purple-800 transition-colors duration-200 break-all"
                   >
                     kjkj173173@gmail.com
                   </a>
@@ -122,7 +116,7 @@ export default function ContactPage() {
                   icon={copied ? <Mail className="w-5 h-5" /> : <Send className="w-5 h-5" />}
                   className="w-full"
                 >
-                  {copied ? '이메일 주소가 복사되었습니다!' : '이메일 주소 복사하기'}
+                  {copied ? '복사되었습니다!' : '복사하기'}
                 </CuteButton>
               </div>
             </div>

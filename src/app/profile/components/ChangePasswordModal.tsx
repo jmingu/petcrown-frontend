@@ -153,7 +153,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                 className={`w-full px-4 py-3 pr-12 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
                   errors.currentPassword ? 'border-red-500 bg-red-50' : 'border-gray-300'
                 }`}
-                placeholder="현재 비밀번호를 입력해주세요"
+                placeholder="현재 비밀번호"
               />
               <button
                 type="button"
@@ -182,7 +182,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                 className={`w-full px-4 py-3 pr-12 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
                   errors.newPassword ? 'border-red-500 bg-red-50' : 'border-gray-300'
                 }`}
-                placeholder="새 비밀번호를 입력해주세요"
+                placeholder="새 비밀번호"
               />
               <button
                 type="button"
@@ -214,7 +214,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                 className={`w-full px-4 py-3 pr-12 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 ${
                   errors.newPasswordConfirm ? 'border-red-500 bg-red-50' : 'border-gray-300'
                 }`}
-                placeholder="새 비밀번호를 다시 입력해주세요"
+                placeholder="비밀번호 재입력"
               />
               <button
                 type="button"
@@ -247,7 +247,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
               className="flex-1"
               disabled={isLoading}
             >
-              {isLoading ? '변경 중...' : '비밀번호 변경'}
+              {isLoading ? '변경 중...' : '변경'}
             </CuteButton>
           </div>
         </div>

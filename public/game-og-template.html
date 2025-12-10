@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>펫 크라운 피하기 - OG 이미지</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #f0f0f0;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .og-container {
+      width: 1200px;
+      height: 630px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #ffc8dd 0%, #bde0fe 50%, #a2d2ff 100%);
+    }
+
+    /* 떨어지는 장애물들 */
+    .obstacle {
+      position: absolute;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(630px) rotate(360deg);
+        opacity: 0.3;
+      }
+    }
+
+    /* 발바닥 */
+    .paw {
+      width: 60px;
+      height: 60px;
+    }
+
+    .paw-main {
+      width: 30px;
+      height: 30px;
+      background: #ff6b9d;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 0;
+      left: 15px;
+      border: 3px solid #fff;
+    }
+
+    .paw-toe {
+      width: 16px;
+      height: 16px;
+      background: #ff6b9d;
+      border-radius: 50%;
+      position: absolute;
+      border: 2px solid #fff;
+    }
+
+    /* 하트 */
+    .heart {
+      width: 50px;
+      height: 50px;
+      position: relative;
+    }
+
+    .heart::before,
+    .heart::after {
+      content: '';
+      position: absolute;
+      width: 25px;
+      height: 40px;
+      background: #ffafcc;
+      border-radius: 25px 25px 0 0;
+      border: 3px solid #fff;
+    }
+
+    .heart::before {
+      left: 0;
+      transform: rotate(-45deg);
+      transform-origin: 100% 100%;
+    }
+
+    .heart::after {
+      left: 12.5px;
+      transform: rotate(45deg);
+      transform-origin: 0 100%;
+    }
+
+    /* 뼈다귀 */
+    .bone {
+      width: 70px;
+      height: 30px;
+      background: #ffd6a5;
+      border-radius: 15px;
+      position: relative;
+      border: 3px solid #fff;
+    }
+
+    .bone::before,
+    .bone::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #ffd6a5;
+      border-radius: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 3px solid #fff;
+    }
+
+    .bone::before {
+      left: -10px;
+    }
+
+    .bone::after {
+      right: -10px;
+    }
+
+    /* 물고기 */
+    .fish {
+      width: 60px;
+      height: 30px;
+      background: #a8dadc;
+      border-radius: 50% 0 0 50%;
+      position: relative;
+      border: 3px solid #fff;
+    }
+
+    .fish::after {
+      content: '';
+      position: absolute;
+      right: -20px;
+      top: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 15px 0 15px 25px;
+      border-color: transparent transparent transparent #a8dadc;
+    }
+
+    .fish-eye {
+      width: 6px;
+      height: 6px;
+      background: #2b2d42;
+      border-radius: 50%;
+      position: absolute;
+      left: 15px;
+      top: 8px;
+    }
+
+    /* 공 */
+    .ball {
+      width: 50px;
+      height: 50px;
+      background: #cdb4db;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      position: relative;
+    }
+
+    .ball::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      top: 0;
+      left: 0;
+    }
+
+    /* 중앙 텍스트 영역 */
+    .text-area {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 60px 80px;
+      border-radius: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      border: 5px solid #fff;
+      z-index: 100;
+    }
+
+    .title {
+      font-size: 72px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #c77dff 0%, #ff6b9d 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .subtitle {
+      font-size: 36px;
+      color: #666;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .emoji {
+      font-size: 64px;
+      margin-top: 10px;
+    }
+
+    /* 장식 별 */
+    .star {
+      position: absolute;
+      color: #ffd700;
+      font-size: 40px;
+      animation: twinkle 2s infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* 반짝이는 파티클 */
+    .sparkle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #ffd700;
+      border-radius: 50%;
+      animation: sparkle-anim 3s infinite;
+    }
+
+    @keyframes sparkle-anim {
+      0%, 100% { opacity: 0; transform: scale(0); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="og-container">
+    <!-- 떨어지는 장애물들 -->
+    <div id="obstacles"></div>
+
+    <!-- 중앙 텍스트 -->
+    <div class="text-area">
+      <div class="title">펫 크라운 피하기</div>
+      <div class="subtitle">장애물을 피해보세요!</div>
+      <div class="emoji">🐾 🎮 🏆</div>
+    </div>
+
+    <!-- 장식 별들 -->
+    <div class="star" style="top: 50px; left: 100px;">⭐</div>
+    <div class="star" style="top: 80px; right: 120px; animation-delay: 0.5s;">⭐</div>
+    <div class="star" style="bottom: 100px; left: 150px; animation-delay: 1s;">⭐</div>
+    <div class="star" style="bottom: 120px; right: 100px; animation-delay: 1.5s;">⭐</div>
+
+    <!-- 반짝이는 파티클들 -->
+    <div id="sparkles"></div>
+  </div>
+
+  <script>
+    // 장애물 생성
+    const obstaclesContainer = document.getElementById('obstacles');
+    const obstacles = [
+      { type: 'paw', count: 8 },
+      { type: 'heart', count: 6 },
+      { type: 'bone', count: 5 },
+      { type: 'fish', count: 4 },
+      { type: 'ball', count: 5 }
+    ];
+
+    obstacles.forEach(({ type, count }) => {
+      for (let i = 0; i < count; i++) {
+        const obstacle = document.createElement('div');
+        obstacle.className = `obstacle ${type}`;
+
+        // 랜덤 위치
+        obstacle.style.left = Math.random() * 1100 + 'px';
+        obstacle.style.top = -(Math.random() * 500) + 'px';
+
+        // 랜덤 애니메이션 속도 및 딜레이
+        const duration = 8 + Math.random() * 6;
+        const delay = Math.random() * 5;
+        obstacle.style.animationDuration = duration + 's';
+        obstacle.style.animationDelay = delay + 's';
+
+        // 발바닥은 특별 처리
+        if (type === 'paw') {
+          obstacle.innerHTML = `
+            <div class="paw-main"></div>
+            <div class="paw-toe" style="top: 0; left: 5px;"></div>
+            <div class="paw-toe" style="top: 0; left: 22px;"></div>
+            <div class="paw-toe" style="top: 0; left: 39px;"></div>
+          `;
+        }
+
+        // 물고기 눈 추가
+        if (type === 'fish') {
+          obstacle.innerHTML = '<div class="fish-eye"></div>';
+        }
+
+        obstaclesContainer.appendChild(obstacle);
+      }
+    });
+
+    // 반짝이는 파티클 생성
+    const sparklesContainer = document.getElementById('sparkles');
+    for (let i = 0; i < 30; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'sparkle';
+      sparkle.style.left = Math.random() * 1200 + 'px';
+      sparkle.style.top = Math.random() * 630 + 'px';
+      sparkle.style.animationDelay = Math.random() * 3 + 's';
+      sparklesContainer.appendChild(sparkle);
+    }
+  </script>
+</body>
+</html>

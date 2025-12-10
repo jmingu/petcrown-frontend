@@ -1,0 +1,547 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { Gamepad2, Trophy, Star, ArrowLeft, Check } from 'lucide-react';
+import Image from 'next/image';
+import CuteButton from '@/components/common/button/CuteButton';
+import CuteCard from '@/components/common/card/CuteCard';
+import Alert from '@/components/common/alert/Alert';
+import GameRulesModal from '@/components/game/GameRulesModal';
+import { useUserStore } from '@/libs/store/user/userStore';
+import { findMyPet } from '@/libs/api/pet/petApi';
+import { MyPetResponse } from '@/libs/interface/api/pet/petResponseInterface';
+import { getMyWeeklyScore, getWeeklyRankings } from '@/libs/api/game/gameApi';
+import { MyWeeklyScoreResponseDto, RankingItemDto } from '@/libs/interface/api/game/gameInterface';
+import Link from 'next/link';
+import AdSense from '@/components/common/adsense/AdSense';
+
+export default function GamePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user } = useUserStore();
+  const [selectedPetImage, setSelectedPetImage] = useState<string>('default');
+  const [selectedPetId, setSelectedPetId] = useState<number | null>(null);
+  const [finalScore, setFinalScore] = useState<number>(0);
+  const [showResult, setShowResult] = useState(false);
+  const [myPets, setMyPets] = useState<MyPetResponse[]>([]);
+  const [isLoadingPets, setIsLoadingPets] = useState(false);
+  const [myWeeklyScore, setMyWeeklyScore] = useState<MyWeeklyScoreResponseDto | null>(null);
+  const [weeklyRankings, setWeeklyRankings] = useState<RankingItemDto[]>([]);
+  const [isLoadingScore, setIsLoadingScore] = useState(false);
+  const [isLoadingRankings, setIsLoadingRankings] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [needsLogin, setNeedsLogin] = useState(false);
+  const [showRulesModal, setShowRulesModal] = useState(false);
+  const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
+
+  // 로그인 체크
+  useEffect(() => {
+    const accessToken = localStorage.getItem('a_t');
+    if (!accessToken) {
+      setAlertMessage('로그인이 필요한 페이지입니다.');
+      setNeedsLogin(true);
+    }
+  }, []);
+
+  // URL에서 점수 파라미터 확인
+  useEffect(() => {
+    const score = searchParams.get('score');
+    if (score) {
+      setFinalScore(parseInt(score, 10));
+      setShowResult(true);
+      // URL에서 score 파라미터 제거
+      router.replace('/game');
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    // 로그인한 사용자의 데이터 로드
+    if (user) {
+      loadMyPets();
+      loadMyWeeklyScore();
+    }
+    // 주간 랭킹은 항상 로드
+    loadWeeklyRankings();
+  }, [user]);
+
+  const loadMyPets = async () => {
+    setIsLoadingPets(true);
+    try {
+      const response = await findMyPet();
+      if (response.resultCode === 200 && response.result && response.result.pets) {
+        // 디버깅: 펫 데이터 확인
+        console.log('📸 펫 데이터:', response.result.pets);
+        response.result.pets.forEach((pet, index) => {
+          console.log(`펫 ${index + 1}:`, {
+            name: pet.name,
+            petId: pet.petId,
+            imageUrl: pet.imageUrl,
+          });
+        });
+
+        setMyPets(response.result.pets);
+        // 첫 번째 펫을 기본 선택
+        if (response.result.pets.length > 0) {
+          setSelectedPetImage(response.result.pets[0].imageUrl || 'default');
+          setSelectedPetId(response.result.pets[0].petId);
+        }
+      }
+    } catch (error) {
+      setMyPets([]);
+    } finally {
+      setIsLoadingPets(false);
+    }
+  };
+
+  const loadMyWeeklyScore = async () => {
+    setIsLoadingScore(true);
+    try {
+      const response = await getMyWeeklyScore();
+      if (response.resultCode === 200 && response.result) {
+        setMyWeeklyScore(response.result);
+      }
+    } catch (error) {
+      setMyWeeklyScore(null);
+    } finally {
+      setIsLoadingScore(false);
+    }
+  };
+
+  const loadWeeklyRankings = async () => {
+    setIsLoadingRankings(true);
+    try {
+      const response = await getWeeklyRankings();
+      if (response.resultCode === 200 && response.result && response.result.rankings) {
+        setWeeklyRankings(response.result.rankings);
+      }
+    } catch (error) {
+      setWeeklyRankings([]);
+    } finally {
+      setIsLoadingRankings(false);
+    }
+  };
+
+  const handleStartGame = () => {
+    const imageUrl = selectedPetImage && selectedPetImage !== '' ? selectedPetImage : 'default';
+    // 게임 플레이 페이지로 이동
+    router.push(`/game/play?petImage=${encodeURIComponent(imageUrl)}`);
+  };
+
+  const handleRestart = () => {
+    setShowResult(false);
+    handleStartGame();
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white py-8 px-4">
+      {/* 로그인 필요 알림 */}
+      {needsLogin && (
+        <Alert
+          message={alertMessage}
+          onClose={() => {
+            setAlertMessage('');
+            setNeedsLogin(false);
+            router.push('/login');
+          }}
+        />
+      )}
+
+      <div className="max-w-4xl mx-auto">
+        {/* 뒤로가기 */}
+        <div className="mb-6">
+          <Link
+            href="/"
+            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            홈으로 돌아가기
+          </Link>
+        </div>
+
+        {/* AdSense - 상단 */}
+        {adsenseId && (
+          <div className="mb-6">
+            <AdSense
+              adClient={adsenseId}
+              adFormat="auto"
+              adSlot=""
+              fullWidthResponsive={true}
+            />
+          </div>
+        )}
+
+        {/* 게임 결과 모달 */}
+        {showResult && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-8"
+          >
+            <CuteCard padding="lg" className="bg-gradient-to-r from-yellow-50 to-orange-50 border-4 border-yellow-400">
+              <div className="text-center space-y-4">
+                <Trophy className="w-16 h-16 text-yellow-500 mx-auto" />
+                <h2 className="text-3xl font-bold text-gray-900">게임 종료!</h2>
+                <p className="text-5xl font-bold text-purple-600">{finalScore}초</p>
+                <p className="text-gray-600">
+                  {user ? '랭킹에 등록되었습니다!' : '로그인하면 랭킹에 등록할 수 있어요!'}
+                </p>
+                <div className="flex gap-4 justify-center">
+                  <CuteButton variant="primary" onClick={handleRestart}>
+                    다시 도전하기
+                  </CuteButton>
+                  <CuteButton variant="secondary" onClick={() => router.push('/game/ranking')}>
+                    랭킹 보기
+                  </CuteButton>
+                </div>
+              </div>
+            </CuteCard>
+          </motion.div>
+        )}
+
+        {/* 헤더 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
+        >
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <Gamepad2 className="w-10 h-10 text-purple-500" />
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              펫 크라운 피하기
+            </h1>
+            <Gamepad2 className="w-10 h-10 text-pink-500" />
+          </div>
+          <p className="text-gray-600 text-lg">
+            귀여운 반려동물과 함께 장애물을 피해보세요! 🐾
+          </p>
+        </motion.div>
+
+        {/* 내 주간 점수 & 주간 랭킹 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* 내 주간 점수 */}
+          {user && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <CuteCard padding="lg" className="h-full">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center space-x-2">
+                  <Trophy className="w-5 h-5 text-yellow-500" />
+                  <span>내 주간 최고 점수</span>
+                </h2>
+                {isLoadingScore ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-purple-500 border-t-transparent"></div>
+                  </div>
+                ) : myWeeklyScore ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-4">
+                      {myWeeklyScore.imageUrl && (
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-4 border-purple-300">
+                          <Image
+                            src={myWeeklyScore.imageUrl}
+                            alt="내 캐릭터"
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <p className="text-3xl font-bold text-purple-600">{myWeeklyScore.score.toFixed(1)}초</p>
+                        <p className="text-sm text-gray-500">주 시작: {myWeeklyScore.weekStartDate}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-gray-500">
+                    <p>아직 이번 주 기록이 없습니다.</p>
+                    <p className="text-sm mt-2">게임을 시작해보세요!</p>
+                  </div>
+                )}
+              </CuteCard>
+            </motion.div>
+          )}
+
+          {/* 주간 랭킹 TOP 3 */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className={user ? '' : 'lg:col-span-2'}
+          >
+            <CuteCard padding="lg" className="h-full">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center space-x-2">
+                <Star className="w-5 h-5 text-yellow-500" fill="currentColor" />
+                <span>주간 랭킹 TOP 3</span>
+              </h2>
+              {isLoadingRankings ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-purple-500 border-t-transparent"></div>
+                </div>
+              ) : weeklyRankings.length > 0 ? (
+                <div className="space-y-3">
+                  {weeklyRankings.slice(0, 3).map((rank) => (
+                    <div
+                      key={rank.userId}
+                      className={`flex items-center space-x-3 p-3 rounded-xl ${
+                        rank.ranking === 1
+                          ? 'bg-gradient-to-r from-yellow-100 to-orange-100 border-2 border-yellow-400'
+                          : rank.ranking === 2
+                          ? 'bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-400'
+                          : 'bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-300'
+                      }`}
+                    >
+                      <div className="text-2xl font-bold min-w-[32px] text-center">
+                        {rank.ranking === 1 ? '🥇' : rank.ranking === 2 ? '🥈' : '🥉'}
+                      </div>
+                      {rank.imageUrl && (
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-white">
+                          <Image
+                            src={rank.imageUrl}
+                            alt={rank.nickname}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{rank.nickname}</p>
+                        <p className="text-sm text-gray-600">{rank.score.toFixed(1)}초</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-gray-500">
+                  <p>아직 랭킹 데이터가 없습니다.</p>
+                  <p className="text-sm mt-2">첫 번째 랭커가 되어보세요!</p>
+                </div>
+              )}
+            </CuteCard>
+          </motion.div>
+        </div>
+
+        {/* 게임 설명 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mb-8"
+        >
+          <CuteCard padding="lg">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center space-x-2">
+              <Star className="w-6 h-6 text-yellow-500" fill="currentColor" />
+              <span>게임 방법</span>
+            </h2>
+            <div className="space-y-3 text-gray-700">
+              <p className="flex items-start space-x-2">
+                <span className="font-bold text-purple-600 min-w-[24px]">1.</span>
+                <span>위에서 떨어지는 장애물을 피하세요!</span>
+              </p>
+              <p className="flex items-start space-x-2">
+                <span className="font-bold text-purple-600 min-w-[24px]">2.</span>
+                <span><strong>모바일:</strong> 화면을 터치하거나 드래그해서 좌우로 이동</span>
+              </p>
+              <p className="flex items-start space-x-2">
+                <span className="font-bold text-purple-600 min-w-[24px]">3.</span>
+                <span><strong>데스크톱:</strong> 화살표 키(← →) 또는 A/D 키로 이동</span>
+              </p>
+              <p className="flex items-start space-x-2">
+                <span className="font-bold text-purple-600 min-w-[24px]">4.</span>
+                <span className="text-red-600 font-semibold">시간이 지날수록 난이도가 올라갑니다!</span>
+              </p>
+              <p className="flex items-start space-x-2">
+                <span className="font-bold text-purple-600 min-w-[24px]">5.</span>
+                <span>최대한 오래 버티고 랭킹에 도전하세요! 🏆</span>
+              </p>
+            </div>
+          </CuteCard>
+        </motion.div>
+
+        {/* 캐릭터 선택 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mb-8"
+        >
+          <CuteCard padding="lg">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+              {user ? '캐릭터 선택' : '캐릭터'}
+            </h2>
+
+            {user ? (
+              isLoadingPets ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+                </div>
+              ) : myPets.length > 0 ? (
+                <div>
+                  <p className="text-gray-600 mb-6 text-center">
+                    내 반려동물을 선택하여 게임에 참여하세요! 🐾
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {/* 기본 캐릭터 */}
+                    <button
+                      onClick={() => {
+                        setSelectedPetImage('default');
+                        setSelectedPetId(null);
+                      }}
+                      className={`relative rounded-2xl p-4 transition-all duration-200 ${
+                        selectedPetImage === 'default' && selectedPetId === null
+                          ? 'bg-gradient-to-br from-purple-100 to-pink-100 border-4 border-purple-500 shadow-lg'
+                          : 'bg-gray-50 border-2 border-gray-200 hover:border-purple-300'
+                      }`}
+                    >
+                      <div className="aspect-square rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mb-2 relative overflow-hidden border-2 border-gray-300">
+                        {/* 강아지 실루엣 */}
+                        <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M18 6c.55 0 1 .45 1 1v1c0 1.1-.9 2-2 2h-.75v1.5c0 1.4-1.1 2.5-2.5 2.5S11.25 13 11.25 11.5v-.75h-1.5v.75c0 1.4-1.1 2.5-2.5 2.5S4.75 13 4.75 11.5V10H4c-1.1 0-2-.9-2-2V7c0-.55.45-1 1-1s1 .45 1 1v1h1V7c0-1.1.9-2 2-2h.5C7.5 3.9 8.4 3 9.5 3S11.5 3.9 11.5 5h1C12.5 3.9 13.4 3 14.5 3s2 .9 2 2h.5c1.1 0 2 .9 2 2v1h1V7c0-.55.45-1 1-1zM7 13c.55 0 1 .45 1 1v5c0 .55-.45 1-1 1s-1-.45-1-1v-5c0-.55.45-1 1-1zm5 0c.55 0 1 .45 1 1v5c0 .55-.45 1-1 1s-1-.45-1-1v-5c0-.55.45-1 1-1zm5 0c.55 0 1 .45 1 1v5c0 .55-.45 1-1 1s-1-.45-1-1v-5c0-.55.45-1 1-1z"/>
+                        </svg>
+                      </div>
+                      <p className="text-center font-semibold text-sm">기본 캐릭터</p>
+                      {selectedPetImage === 'default' && selectedPetId === null && (
+                        <div className="absolute top-2 right-2 bg-purple-500 rounded-full p-1">
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                    </button>
+
+                    {/* 사용자의 펫들 */}
+                    {myPets.map((pet) => {
+                      return (
+                        <button
+                          key={pet.petId}
+                          onClick={() => {
+                            setSelectedPetImage(pet.imageUrl || 'default');
+                            setSelectedPetId(pet.petId);
+                          }}
+                          className={`relative rounded-2xl p-4 transition-all duration-200 ${
+                            selectedPetId === pet.petId
+                              ? 'bg-gradient-to-br from-purple-100 to-pink-100 border-4 border-purple-500 shadow-lg'
+                              : 'bg-gray-50 border-2 border-gray-200 hover:border-purple-300'
+                          }`}
+                        >
+                          <div className="aspect-square rounded-xl overflow-hidden mb-2 relative">
+                            {pet.imageUrl ? (
+                              <Image
+                                src={pet.imageUrl}
+                                alt={pet.name}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                                <span className="text-4xl">🐾</span>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-center font-semibold text-sm truncate">{pet.name}</p>
+                          {selectedPetId === pet.petId && (
+                            <div className="absolute top-2 right-2 bg-purple-500 rounded-full p-1">
+                              <Check className="w-4 h-4 text-white" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <p className="text-gray-600 mb-4">
+                    등록된 반려동물이 없습니다.<br />
+                    기본 캐릭터로 플레이하세요!
+                  </p>
+                  <div className="flex justify-center">
+                    <div className="relative">
+                      <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-xl border-4 border-gray-300">
+                        {/* 강아지 실루엣 */}
+                        <svg className="w-20 h-20 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M18 6c.55 0 1 .45 1 1v1c0 1.1-.9 2-2 2h-.75v1.5c0 1.4-1.1 2.5-2.5 2.5S11.25 13 11.25 11.5v-.75h-1.5v.75c0 1.4-1.1 2.5-2.5 2.5S4.75 13 4.75 11.5V10H4c-1.1 0-2-.9-2-2V7c0-.55.45-1 1-1s1 .45 1 1v1h1V7c0-1.1.9-2 2-2h.5C7.5 3.9 8.4 3 9.5 3S11.5 3.9 11.5 5h1C12.5 3.9 13.4 3 14.5 3s2 .9 2 2h.5c1.1 0 2 .9 2 2v1h1V7c0-.55.45-1 1-1zM7 13c.55 0 1 .45 1 1v5c0 .55-.45 1-1 1s-1-.45-1-1v-5c0-.55.45-1 1-1zm5 0c.55 0 1 .45 1 1v5c0 .55-.45 1-1 1s-1-.45-1-1v-5c0-.55.45-1 1-1zm5 0c.55 0 1 .45 1 1v5c0 .55-.45 1-1 1s-1-.45-1-1v-5c0-.55.45-1 1-1z"/>
+                        </svg>
+                      </div>
+                      <div className="absolute -bottom-2 -right-2 bg-yellow-400 rounded-full p-2 shadow-lg">
+                        <Star className="w-6 h-6 text-white" fill="currentColor" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="text-center">
+                <p className="text-gray-600 mb-6">
+                  로그인하면 내 반려동물과 함께 플레이할 수 있어요!<br />
+                  지금은 기본 캐릭터로 플레이하세요!
+                </p>
+                <div className="flex justify-center">
+                  <div className="relative">
+                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-xl border-4 border-gray-300">
+                      {/* 강아지 실루엣 */}
+                      <svg className="w-20 h-20 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18 6c.55 0 1 .45 1 1v1c0 1.1-.9 2-2 2h-.75v1.5c0 1.4-1.1 2.5-2.5 2.5S11.25 13 11.25 11.5v-.75h-1.5v.75c0 1.4-1.1 2.5-2.5 2.5S4.75 13 4.75 11.5V10H4c-1.1 0-2-.9-2-2V7c0-.55.45-1 1-1s1 .45 1 1v1h1V7c0-1.1.9-2 2-2h.5C7.5 3.9 8.4 3 9.5 3S11.5 3.9 11.5 5h1C12.5 3.9 13.4 3 14.5 3s2 .9 2 2h.5c1.1 0 2 .9 2 2v1h1V7c0-.55.45-1 1-1zM7 13c.55 0 1 .45 1 1v5c0 .55-.45 1-1 1s-1-.45-1-1v-5c0-.55.45-1 1-1zm5 0c.55 0 1 .45 1 1v5c0 .55-.45 1-1 1s-1-.45-1-1v-5c0-.55.45-1 1-1zm5 0c.55 0 1 .45 1 1v5c0 .55-.45 1-1 1s-1-.45-1-1v-5c0-.55.45-1 1-1z"/>
+                      </svg>
+                    </div>
+                    <div className="absolute -bottom-2 -right-2 bg-yellow-400 rounded-full p-2 shadow-lg">
+                      <Star className="w-6 h-6 text-white" fill="currentColor" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CuteCard>
+        </motion.div>
+
+        {/* 시작 버튼 */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 w-full md:w-auto">
+            <CuteButton
+              variant="primary"
+              size="xl"
+              onClick={handleStartGame}
+              className="shadow-2xl w-full md:w-auto"
+            >
+              게임 시작하기
+            </CuteButton>
+
+            <CuteButton
+              variant="secondary"
+              size="xl"
+              onClick={() => setShowRulesModal(true)}
+              className="w-full md:w-auto"
+            >
+              게임 규칙
+            </CuteButton>
+          </div>
+
+          <button
+            className="inline-flex items-center space-x-2 text-purple-600 hover:text-purple-800 transition-colors duration-200"
+            onClick={() => router.push('/game/ranking')}
+          >
+            <Trophy className="w-5 h-5" />
+            <span>게임 랭킹 보기</span>
+          </button>
+        </motion.div>
+
+        {/* 게임 규칙 모달 */}
+        <GameRulesModal
+          isOpen={showRulesModal}
+          onClose={() => setShowRulesModal(false)}
+          onStart={handleStartGame}
+        />
+      </div>
+    </div>
+  );
+}

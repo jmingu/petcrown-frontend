@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import {
   Menu, X, Crown, Trophy, MessageCircle,
-  Megaphone, User, LogOut, Heart, PartyPopper, Info, ChevronDown, Bell
+  Megaphone, User, LogOut, PartyPopper, Info, ChevronDown, Bell, Gamepad2
 } from 'lucide-react';
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteAvatar from '@/components/common/avatar/CuteAvatar';
@@ -35,6 +36,14 @@ const MENU_ITEMS: MenuItem[] = [
     submenus: [
       { name: '랭킹보기', path: '/ranking', icon: Trophy },
       { name: '투표하기', path: '/vote', icon: Crown },
+    ]
+  },
+  {
+    name: '게임',
+    icon: Gamepad2,
+    submenus: [
+      { name: '랭킹보기', path: '/game/ranking', icon: Trophy },
+      { name: '게임하기', path: '/game', icon: Gamepad2 },
     ]
   },
   { name: '커뮤니티', path: '/community', icon: MessageCircle },
@@ -250,10 +259,13 @@ export default function Header() {
           {/* 로고 */}
           <div className="lg:hidden absolute left-1/2 transform -translate-x-1/2">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg relative">
-                <Trophy className="w-3.5 h-3.5 text-yellow-100 relative z-10 mt-1.5" />
-                <Crown className="w-2.5 h-2.5 text-white absolute top-1 left-1/2 transform -translate-x-1/2 drop-shadow-sm" />
-              </div>
+              <Image
+                src="/logo.svg"
+                alt="PetCrown Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8"
+              />
               <span className="text-xl font-bold text-gray-900">
                 PetCrown
               </span>
@@ -263,12 +275,16 @@ export default function Header() {
           <div className="hidden lg:block">
             <Link href="/" className="flex items-center space-x-3">
               <motion.div
-                className="w-10 h-10 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg relative"
                 whileHover={{ scale: 1.1, rotate: 10 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                <Trophy className="w-4 h-4 text-yellow-100 relative z-10 mt-1.5" />
-                <Crown className="w-3 h-3 text-white absolute top-1 left-1/2 transform -translate-x-1/2 drop-shadow-sm" />
+                <Image
+                  src="/logo.svg"
+                  alt="PetCrown Logo"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10"
+                />
               </motion.div>
               <span className="text-2xl font-bold text-gray-900">
                 PetCrown

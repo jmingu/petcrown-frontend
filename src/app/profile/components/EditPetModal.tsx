@@ -173,23 +173,54 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
   };
 
   const handleSave = async () => {
+    // 공통 검증: 이름 필수
+    if (!name) {
+      setAlertMessage('이름은 필수입니다.');
+      return;
+    }
+
+    // 공통 검증: 프로필 사진 필수
+    if ((!isEditMode && !imageFile) || (isEditMode && !imageFile && !imagePreview)) {
+      setAlertMessage('프로필 사진은 필수입니다.');
+      return;
+    }
+
+    // 공통 검증: 종 필수
+    if (speciesId === null || speciesId === undefined) {
+      setAlertMessage('종을 선택해주세요.');
+      return;
+    }
+
+    // 공통 검증: 품종 필수
+    const selectedSpecies = speciesList.find(s => s.speciesId === speciesId);
+    const isEtc = selectedSpecies?.name === '기타' || selectedSpecies?.name.includes('기타');
+
+    if (isEtc) {
+      // 기타 종일 경우 커스텀 품종 필수
+      if (!customBreed || customBreed.trim() === '') {
+        setAlertMessage('종류 상세를 입력해주세요.');
+        return;
+      }
+    } else {
+      // 일반 종일 경우 품종 선택 필수
+      if (!breedId) {
+        setAlertMessage('품종을 선택해주세요.');
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     try {
-      // 등록모드 - 이름과 프로필 사진만 필수
+      // 등록모드
       if(!isEditMode) {
-        if (!name || !imageFile) {
-          setAlertMessage('이름과 프로필 사진은 필수입니다.');
-          return;
-        }
-
         // 펫 등록 - 최소 필드 + breedId/customBreed
         const selectedSpecies = speciesList.find(s => s.speciesId === speciesId);
         const isEtc = selectedSpecies?.name === '기타' || selectedSpecies?.name.includes('기타');
 
         const petData: PetRegisterRequest = {
           name,
-          profileImage: imageFile,
+          profileImage: imageFile!,
           ...(isEtc && customBreed ? { customBreed } : {}),
           ...(!isEtc && breedId ? { breedId: Number(breedId) } : {}),
         };
@@ -199,22 +230,12 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
         if (registerResult.resultCode === 200) {
           setAlertMessage('반려동물이 성공적으로 등록되었습니다! 🎉');
         } else {
-          setAlertMessage('등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+          setAlertMessage(registerResult.resultMessageKo || '등록 중 오류가 발생했습니다.');
           return;
         }
 
-      // 수정모드 - 이름과 프로필 사진만 필수
+      // 수정모드
       } else {
-        if (!name) {
-          setAlertMessage('이름은 필수입니다.');
-          return;
-        }
-
-        if (!imageFile && !imagePreview) {
-          setAlertMessage('프로필 사진은 필수입니다.');
-          return;
-        }
-
         if (!pet || pet.petId === undefined) {
           setAlertMessage('수정할 반려동물 정보가 없습니다.');
           return;
@@ -240,7 +261,7 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
         if (changeResult.resultCode === 200) {
           setAlertMessage('반려동물 정보가 성공적으로 수정되었습니다! ✨');
         } else {
-          setAlertMessage('수정 중 오류가 발생했습니다. 다시 시도해주세요.');
+          setAlertMessage(changeResult.resultMessageKo || '수정 중 오류가 발생했습니다.');
           return;
         }
       }
@@ -306,7 +327,7 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
                 <label className="block text-sm font-medium text-gray-700">이름 *</label>
                 <input
                   type="text"
-                  placeholder="반려동물의 이름을 입력해주세요"
+                  placeholder="펫 이름 입력"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={10}
@@ -316,7 +337,9 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
 
               {/* 종 선택 */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">종</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  종 *
+                </label>
                 <select
                   value={speciesId ?? ''}
                   onChange={(e) => {
@@ -337,9 +360,6 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
                   <option value="">종을 선택해주세요</option>
                   {speciesList.map((species) => (
                     <option key={species.speciesId} value={species.speciesId}>
-                      {species.name === '강아지' && '🐶 '}
-                      {species.name === '고양이' && '🐱 '}
-                      {species.name === '기타' && '🐹 '}
                       {species.name}
                     </option>
                   ))}
@@ -353,7 +373,9 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
 
                 return speciesId !== null && !isEtc ? (
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">품종</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      품종 *
+                    </label>
                     {isLoadingBreeds ? (
                       <div className="w-full px-4 py-3 border border-gray-200 rounded-2xl text-gray-400">
                         품종 목록 로딩 중...
@@ -383,10 +405,12 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
 
                 return speciesId !== null && isEtc ? (
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">종류 상세</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      종류 상세 *
+                    </label>
                     <input
                       type="text"
-                      placeholder="예: 토끼, 햄스터, 페럿, 믹스 등"
+                      placeholder="예: 토끼, 햄스터"
                       value={customBreed}
                       onChange={(e) => setCustomBreed(e.target.value)}
                       className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
@@ -434,7 +458,7 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
                         <label className="block text-sm font-medium text-gray-700">종류 상세</label>
                         <input
                           type="text"
-                          placeholder="예: 토끼, 햄스터, 페럿, 믹스 등"
+                          placeholder="예: 토끼, 햄스터"
                           value={customBreed}
                           onChange={(e) => setCustomBreed(e.target.value)}
                           className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
@@ -447,7 +471,7 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">소개 (선택사항)</label>
                     <textarea
-                      placeholder="반려동물의 특징이나 성격을 알려주세요"
+                      placeholder="펫의 특징/성격"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       rows={3}
@@ -460,7 +484,7 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
                     <label className="block text-sm font-medium text-gray-700">마이크로칩 번호 (선택사항)</label>
                     <input
                       type="text"
-                      placeholder="마이크로칩 번호를 입력해주세요"
+                      placeholder="칩 번호 입력"
                       value={microchipId}
                       onChange={(e) => setMicrochipId(e.target.value)}
                       className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"

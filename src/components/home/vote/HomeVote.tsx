@@ -85,13 +85,6 @@ export default function HomeVote() {
                         <span className="text-6xl">🐾</span>
                       </div>
                     )}
-                    {/* 투표수 배지 */}
-                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-1.5">
-                      <div className="flex items-center space-x-1">
-                        <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
-                        <span className="font-bold text-gray-900">{vote.weeklyVoteCount.toLocaleString()}</span>
-                      </div>
-                    </div>
                   </div>
                 </div>
 
@@ -101,6 +94,12 @@ export default function HomeVote() {
                     <span>{vote.name}</span>
                     <Heart className="w-5 h-5 text-pink-500" fill="currentColor" />
                   </h3>
+
+                  {/* 투표수 표시 */}
+                  <div className="flex items-center justify-center space-x-1">
+                    <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
+                    <span className="font-bold text-gray-900">{vote.weeklyVoteCount.toLocaleString()}표</span>
+                  </div>
 
                   <div className="space-y-1 text-sm text-gray-600">
                     <div className="flex justify-center items-center space-x-2">
@@ -147,7 +146,6 @@ export default function HomeVote() {
           <CuteButton
             variant="primary"
             size="lg"
-            icon={<ArrowRight className="w-5 h-5" />}
           >
             모든 투표 보기
           </CuteButton>

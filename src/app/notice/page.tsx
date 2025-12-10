@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -16,7 +16,7 @@ import { Notice } from '@/libs/interface/api/notice/noticeResponseInterface';
 
 const ITEMS_PER_PAGE = 5;
 
-export default function NoticePage() {
+function NoticeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [notices, setNotices] = useState<Notice[]>([]);
@@ -306,5 +306,17 @@ export default function NoticePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function NoticePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
+      </div>
+    }>
+      <NoticeContent />
+    </Suspense>
   );
 }

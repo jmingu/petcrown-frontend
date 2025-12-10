@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -20,7 +20,7 @@ import { calculateAge } from '@/common/util/calculateUtil';
 
 type PeriodType = 'weekly' | 'monthly';
 
-export default function VotePage() {
+function VoteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [votes, setVotes] = useState<VotePetResponse[]>([]);
@@ -133,7 +133,7 @@ export default function VotePage() {
           className="flex justify-center md:justify-end mb-6"
         >
           <Link href="/vote/register">
-            <CuteButton variant="primary" size="lg" icon={<Plus className="w-5 h-5" />}>
+            <CuteButton variant="primary" size="lg">
               투표 등록하기
             </CuteButton>
           </Link>
@@ -219,13 +219,6 @@ export default function VotePage() {
                                 <span className="text-6xl">🐾</span>
                               </div>
                             )}
-                            {/* 투표수 배지 */}
-                            <div className="absolute top-3 right-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white backdrop-blur-sm rounded-2xl px-3 py-2 shadow-lg">
-                              <div className="flex items-center space-x-1">
-                                <Heart className="w-4 h-4" fill="currentColor" />
-                                <span className="font-bold">{selectedPeriod === 'weekly' ? vote.weeklyVoteCount.toLocaleString() : vote.monthlyVoteCount.toLocaleString()}</span>
-                              </div>
-                            </div>
                           </div>
                         </div>
 
@@ -235,6 +228,12 @@ export default function VotePage() {
                             <span>{vote.name}</span>
                             <Heart className="w-5 h-5 text-pink-500 animate-bounce-subtle" fill="currentColor" />
                           </h3>
+
+                          {/* 투표수 표시 */}
+                          <div className="flex items-center justify-center space-x-1">
+                            <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
+                            <span className="font-bold text-gray-900">{selectedPeriod === 'weekly' ? vote.weeklyVoteCount.toLocaleString() : vote.monthlyVoteCount.toLocaleString()}표</span>
+                          </div>
 
                           <div className="space-y-1 text-sm text-gray-600">
                             <div className="flex justify-center items-center space-x-2">
@@ -255,7 +254,7 @@ export default function VotePage() {
                             </div>
 
                             <p className="font-medium text-gray-700">
-                              {vote.speciesName} {vote.speciesName === '강아지' ? '🐶' : vote.speciesName === '고양이' ? '🐱' : '🐹'}
+                              {vote.speciesName} {vote.speciesName === null? '' : (vote.speciesName === '강아지' ? '🐶' : vote.speciesName === '고양이' ? '🐱' : '🐹')}
                             </p>
 
                             {/* 품종 또는 커스텀 품종 표시 */}
@@ -348,5 +347,17 @@ export default function VotePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function VotePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+      </div>
+    }>
+      <VoteContent />
+    </Suspense>
   );
 }

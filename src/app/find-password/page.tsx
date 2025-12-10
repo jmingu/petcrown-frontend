@@ -54,7 +54,16 @@ export default function FindPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative">
+  {/* 최상단 뒤로가기 버튼 */}
+  <button
+    onClick={() => router.back()}
+    className="absolute top-4 left-4 z-30 text-purple-600 hover:text-purple-800 transition-colors duration-200 flex items-center"
+  >
+    <ArrowLeft className="w-5 h-5 mr-1" />
+    뒤로가기
+  </button>
+
       {/* 배경 장식 요소들 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -196,23 +205,6 @@ export default function FindPasswordPage() {
             </button>
           </div>
         </CuteCard>
-
-        {/* 뒤로가기 버튼 */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-6"
-        >
-          <CuteButton
-            onClick={() => router.back()}
-            variant="secondary"
-            size="md"
-            icon={<ArrowLeft className="w-4 h-4" />}
-          >
-            돌아가기
-          </CuteButton>
-        </motion.div>
       </motion.div>
 
       {/* 알림창 */}

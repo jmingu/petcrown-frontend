@@ -45,13 +45,13 @@ export default function HomeBanner() {
             className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6"
           >
             <Link href="/vote">
-              <CuteButton variant="primary" size="lg" icon={<Heart className="w-6 h-6" />}>
+              <CuteButton variant="primary" size="lg">
                 투표 참여하기
               </CuteButton>
             </Link>
 
             <Link href="/community">
-              <CuteButton variant="secondary" size="lg" icon={<Star className="w-6 h-6" />}>
+              <CuteButton variant="secondary" size="lg">
                 커뮤니티 구경하기
               </CuteButton>
             </Link>

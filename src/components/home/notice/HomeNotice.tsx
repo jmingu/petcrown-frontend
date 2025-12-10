@@ -124,10 +124,9 @@ export default function HomeNotice() {
         className="text-center"
       >
         <Link href="/notice">
-          <CuteButton 
-            variant="primary" 
-            size="lg" 
-            icon={<ArrowRight className="w-5 h-5" />}
+          <CuteButton
+            variant="primary"
+            size="lg"
           >
             모든 공지사항 보기
           </CuteButton>

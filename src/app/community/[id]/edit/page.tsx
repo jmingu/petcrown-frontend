@@ -211,7 +211,7 @@ export default function CommunityEdit() {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
-                  placeholder="반려동물과의 소중한 이야기를 들려주세요!"
+                  placeholder="반려동물 이야기 작성"
                   rows={8}
                   maxLength={1000}
                 />

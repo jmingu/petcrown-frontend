@@ -224,22 +224,30 @@ export default function MyPetsPage() {
                     </h3>
 
                     <div className="space-y-1 text-sm text-gray-600">
-                      <div className="flex justify-center items-center space-x-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          pet.gender === 'M'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-pink-100 text-pink-700'
-                        }`}>
-                          {pet.gender === 'M' ? '♂ 남아' : '♀ 여아'}
-                        </span>
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-                          {calculateAge(pet.birthDate)}살
-                        </span>
-                      </div>
+                      {(pet.gender || pet.birthDate) && (
+                        <div className="flex justify-center items-center space-x-2">
+                          {pet.gender && (
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              pet.gender === 'M'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'bg-pink-100 text-pink-700'
+                            }`}>
+                              {pet.gender === 'M' ? '♂ 남아' : '♀ 여아'}
+                            </span>
+                          )}
+                          {pet.birthDate && (
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                              {calculateAge(pet.birthDate)}살
+                            </span>
+                          )}
+                        </div>
+                      )}
 
-                      <p className="font-medium text-gray-700">
-                        {pet.speciesName} {pet.speciesName === '강아지' ? '🐶' : pet.speciesName === '고양이' ? '🐱' : '🐹'}
-                      </p>
+                      {pet.speciesName && (
+                        <p className="font-medium text-gray-700">
+                          {pet.speciesName} {pet.speciesName === '강아지' ? '🐶' : pet.speciesName === '고양이' ? '🐱' : '🐹'}
+                        </p>
+                      )}
 
                       {/* 품종 또는 커스텀 품종 표시 */}
                       {pet.breedId && pet.breedName ? (

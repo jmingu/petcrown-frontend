@@ -4,19 +4,20 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import {
-  Trophy, Crown, Medal, Star
+  Trophy, Crown, Medal, X
 } from 'lucide-react';
 import CuteCard from '@/components/common/card/CuteCard';
 import CuteBadge from '@/components/common/badge/CuteBadge';
 import AdSense from '@/components/common/adsense/AdSense';
-import ClickableImage from '@/components/common/image/ClickableImage';
 import { getCurrentWeekRanking, getLastWeekRanking } from '@/libs/api/ranking/rankingApi';
 
 export default function RankingPage() {
   const [currentWeekRankings, setCurrentWeekRankings] = useState<any[]>([]);
   const [lastWeekRankings, setLastWeekRankings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
+
 
   useEffect(() => {
     loadRankings();
@@ -101,26 +102,35 @@ export default function RankingPage() {
                       <div className="flex justify-center mb-3">
                         {getRankIcon(2)}
                       </div>
-                      <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3">
+                      <div
+                        className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (topThree[1].profileImageUrl) {
+                            setExpandedImage(topThree[1].profileImageUrl);
+                          }
+                        }}
+                      >
                         {topThree[1].profileImageUrl ? (
-                          <ClickableImage
+                          <Image
                             src={topThree[1].profileImageUrl}
                             alt={topThree[1].name}
                             fill
-                            className="object-cover rounded-full ring-4 ring-gray-300"
+                            className="object-cover rounded-xl ring-4 ring-gray-300"
+                            unoptimized
+                            style={{ pointerEvents: 'none' }}
                           />
                         ) : (
-                          <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                          <div className="w-full h-full bg-gray-200 rounded-xl flex items-center justify-center">
                             <span className="text-2xl">🐾</span>
                           </div>
                         )}
                       </div>
                       <h3 className="font-bold text-base md:text-lg text-gray-900 mb-1 truncate px-2">
-                        {topThree[1].name}
+                        {topThree[1].nickname || topThree[1].name}
                       </h3>
                       <p className="text-xs md:text-sm text-gray-500 mb-2 truncate px-2">
-                        {topThree[1].breedName || topThree[1].speciesName}
-                        {calculateAge(topThree[1].birthDate) !== null && ` • ${calculateAge(topThree[1].birthDate)}살`}
+                        {topThree[1].name}
                       </p>
                       <div className="flex items-center justify-center space-x-2">
                         <Trophy className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
@@ -143,7 +153,7 @@ export default function RankingPage() {
                       <div className="flex justify-center mb-3">
                         {getRankIcon(2)}
                       </div>
-                      <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3 bg-gray-200 rounded-full"></div>
+                      <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3 bg-gray-200 rounded-xl"></div>
                       <p className="text-gray-400 text-xs md:text-sm">2위 자리 비어있음</p>
                     </div>
                   </CuteCard>
@@ -159,10 +169,10 @@ export default function RankingPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
                 >
-                  <CuteCard className="text-center relative overflow-hidden">
-                    <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-yellow-400 to-yellow-600"></div>
+                  <CuteCard className="text-center relative overflow-visible">
+                    <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-yellow-400 to-yellow-600" style={{ pointerEvents: 'none' }}></div>
                     <div className="pt-6 pb-4 px-2">
-                      <div className="flex justify-center mb-3">
+                      <div className="flex justify-center mb-3" style={{ pointerEvents: 'none' }}>
                         <motion.div
                           animate={{ rotate: [0, -5, 5, 0] }}
                           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -170,31 +180,40 @@ export default function RankingPage() {
                           {getRankIcon(1)}
                         </motion.div>
                       </div>
-                      <div className="relative w-20 h-20 md:w-24 md:h-24 mx-auto mb-3">
+                      <div
+                        className="relative w-20 h-20 md:w-24 md:h-24 mx-auto mb-3 cursor-pointer hover:opacity-80 transition-opacity z-10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (topThree[0].profileImageUrl) {
+                            setExpandedImage(topThree[0].profileImageUrl);
+                          }
+                        }}
+                      >
                         {topThree[0].profileImageUrl ? (
                           <>
-                            <ClickableImage
+                            <Image
                               src={topThree[0].profileImageUrl}
                               alt={topThree[0].name}
                               fill
-                              className="object-cover rounded-full ring-4 ring-yellow-400"
+                              className="object-cover rounded-xl ring-4 ring-yellow-400"
+                              unoptimized
+                              style={{ pointerEvents: 'none' }}
                             />
-                            <div className="absolute -top-2 -right-2">
+                            <div className="absolute -top-2 -right-2" style={{ pointerEvents: 'none' }}>
                               <Crown className="w-6 h-6 md:w-8 md:h-8 text-yellow-500" />
                             </div>
                           </>
                         ) : (
-                          <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center ring-4 ring-yellow-400">
+                          <div className="w-full h-full bg-gray-200 rounded-xl flex items-center justify-center ring-4 ring-yellow-400">
                             <span className="text-3xl">🐾</span>
                           </div>
                         )}
                       </div>
                       <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-1 truncate px-2">
-                        {topThree[0].name}
+                        {topThree[0].nickname || topThree[0].name}
                       </h3>
                       <p className="text-xs md:text-sm text-gray-500 mb-3 truncate px-2">
-                        {topThree[0].breedName || topThree[0].speciesName}
-                        {calculateAge(topThree[0].birthDate) !== null && ` • ${calculateAge(topThree[0].birthDate)}살`}
+                        {topThree[0].name}
                       </p>
                       <div className="flex items-center justify-center space-x-2 mb-3">
                         <Trophy className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
@@ -220,7 +239,7 @@ export default function RankingPage() {
                       <div className="flex justify-center mb-3">
                         <Crown className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
                       </div>
-                      <div className="relative w-20 h-20 md:w-24 md:h-24 mx-auto mb-3 bg-gray-200 rounded-full"></div>
+                      <div className="relative w-20 h-20 md:w-24 md:h-24 mx-auto mb-3 bg-gray-200 rounded-xl"></div>
                       <p className="text-gray-400 text-xs md:text-sm">1위 자리 비어있음</p>
                     </div>
                   </CuteCard>
@@ -242,26 +261,35 @@ export default function RankingPage() {
                       <div className="flex justify-center mb-3">
                         {getRankIcon(3)}
                       </div>
-                      <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3">
+                      <div
+                        className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (topThree[2].profileImageUrl) {
+                            setExpandedImage(topThree[2].profileImageUrl);
+                          }
+                        }}
+                      >
                         {topThree[2].profileImageUrl ? (
-                          <ClickableImage
+                          <Image
                             src={topThree[2].profileImageUrl}
                             alt={topThree[2].name}
                             fill
-                            className="object-cover rounded-full ring-4 ring-orange-300"
+                            className="object-cover rounded-xl ring-4 ring-orange-300"
+                            unoptimized
+                            style={{ pointerEvents: 'none' }}
                           />
                         ) : (
-                          <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                          <div className="w-full h-full bg-gray-200 rounded-xl flex items-center justify-center">
                             <span className="text-2xl">🐾</span>
                           </div>
                         )}
                       </div>
                       <h3 className="font-bold text-base md:text-lg text-gray-900 mb-1 truncate px-2">
-                        {topThree[2].name}
+                        {topThree[2].nickname || topThree[2].name}
                       </h3>
                       <p className="text-xs md:text-sm text-gray-500 mb-2 truncate px-2">
-                        {topThree[2].breedName || topThree[2].speciesName}
-                        {calculateAge(topThree[2].birthDate) !== null && ` • ${calculateAge(topThree[2].birthDate)}살`}
+                        {topThree[2].name}
                       </p>
                       <div className="flex items-center justify-center space-x-2">
                         <Trophy className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
@@ -284,7 +312,7 @@ export default function RankingPage() {
                       <div className="flex justify-center mb-3">
                         {getRankIcon(3)}
                       </div>
-                      <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3 bg-gray-200 rounded-full"></div>
+                      <div className="relative w-16 h-16 md:w-20 md:h-20 mx-auto mb-3 bg-gray-200 rounded-xl"></div>
                       <p className="text-gray-400 text-xs md:text-sm">3위 자리 비어있음</p>
                     </div>
                   </CuteCard>
@@ -316,13 +344,22 @@ export default function RankingPage() {
                         {getRankIcon(index + 4)}
                       </div>
 
-                      <div className="relative w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
+                      <div
+                        className="relative w-10 h-10 md:w-12 md:h-12 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.profileImageUrl) {
+                            setExpandedImage(item.profileImageUrl);
+                          }
+                        }}
+                      >
                         {item.profileImageUrl ? (
-                          <ClickableImage
+                          <Image
                             src={item.profileImageUrl}
                             alt={item.name}
                             fill
-                            className="object-cover rounded-full"
+                            className="object-cover rounded-full pointer-events-none"
+                            unoptimized
                           />
                         ) : (
                           <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
@@ -333,11 +370,10 @@ export default function RankingPage() {
 
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-sm md:text-base text-gray-900 truncate">
-                          {item.name}
+                          {item.nickname || item.name}
                         </h3>
                         <p className="text-xs md:text-sm text-gray-500 truncate">
-                          {item.breedName || item.speciesName}
-                          {calculateAge(item.birthDate) !== null && ` • ${calculateAge(item.birthDate)}살`}
+                          {item.name}
                         </p>
                       </div>
 
@@ -404,6 +440,38 @@ export default function RankingPage() {
             {/* 지난주 랭킹 */}
             {renderPodium(lastWeekRankings, '🏆 지난주 확정 랭킹')}
           </>
+        )}
+
+        {/* 이미지 확대 모달 */}
+        {expandedImage && (
+          <div
+            className="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4"
+            onClick={() => {
+              setExpandedImage(null);
+            }}
+          >
+            {/* X 버튼 */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpandedImage(null);
+              }}
+              className="absolute top-4 right-4 bg-white/90 hover:bg-white rounded-full p-2 transition-colors z-[10000]"
+              aria-label="닫기"
+            >
+              <X className="w-6 h-6 text-gray-800" />
+            </button>
+
+            <div className="relative max-w-3xl max-h-[90vh] w-full h-full flex items-center justify-center">
+              <Image
+                src={expandedImage}
+                alt="확대된 이미지"
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
+          </div>
         )}
       </div>
     </div>
