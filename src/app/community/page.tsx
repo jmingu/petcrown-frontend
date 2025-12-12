@@ -98,7 +98,7 @@ function CommunityContent() {
             <MessageCircle className="w-8 h-8 text-blue-500" />
           </div>
           <p className="text-gray-600 text-lg">
-            반려동물 이야기를 나누고 소통해보세요! 🐾
+           이야기를 나누고 소통해보세요!
           </p>
         </motion.div>
 

@@ -130,7 +130,7 @@ function NoticeContent() {
             <Megaphone className="w-8 h-8 text-orange-500" />
           </div>
           <p className="text-gray-600 text-lg">
-            PetCrown의 새로운 소식을 확인해보세요! 📢
+            새로운 소식을 확인해보세요!
           </p>
         </motion.div>
 

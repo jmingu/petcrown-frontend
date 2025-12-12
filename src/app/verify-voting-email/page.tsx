@@ -1,6 +1,5 @@
 'use client';
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge'; // 또는 'nodejs'
 
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';

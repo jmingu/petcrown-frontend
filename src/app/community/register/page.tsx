@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { PenTool, FileText, Heart, Sparkles, ArrowLeft, Save, X, Upload, Image as ImageIcon, User } from 'lucide-react';
+import { PenTool, FileText, Heart, Sparkles, Save, X, Upload, Image as ImageIcon, User } from 'lucide-react';
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteCard from '@/components/common/card/CuteCard';
 import Alert from '@/components/common/alert/Alert';
@@ -78,7 +78,7 @@ export default function CommunityWrite() {
       });
 
       if (response.resultCode === 200) {
-        setAlertMessage('게시글이 성공적으로 등록되었습니다! 🎉');
+        setAlertMessage('등록되었습니다!');
         setTimeout(() => {
           router.push('/community');
         }, 1500);
@@ -154,6 +154,16 @@ export default function CommunityWrite() {
       </div>
 
       <div className="max-w-4xl mx-auto relative z-10">
+        {/* 목록으로 돌아가기 */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
+          >
+            ← 돌아가기
+          </button>
+        </div>
+
         {/* 헤더 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -162,20 +172,12 @@ export default function CommunityWrite() {
           className="text-center mb-8"
         >
           <div className="flex items-center justify-center mb-4">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mr-4"
-            >
-              <PenTool className="w-8 h-8 text-white" />
-            </motion.div>
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 게시글 작성
               </h1>
               <p className="text-gray-600 mt-2">
-                반려동물과의 소중한 이야기를 공유해보세요! 🐾
+                자유롭게 소중한 이야기를 공유해보세요! 🐾
               </p>
             </div>
           </div>
@@ -236,7 +238,7 @@ export default function CommunityWrite() {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
-                  placeholder="반려동물 이야기 작성"
+                  placeholder="자유롭게 이야기 작성"
                   rows={8}
                   maxLength={1000}
                 />
@@ -310,23 +312,6 @@ export default function CommunityWrite() {
               </div>
             </form>
           </CuteCard>
-        </motion.div>
-
-        {/* 뒤로가기 버튼 */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-8"
-        >
-          <CuteButton
-            onClick={() => router.back()}
-            variant="secondary"
-            size="md"
-            icon={<ArrowLeft className="w-4 h-4" />}
-          >
-            목록으로 돌아가기
-          </CuteButton>
         </motion.div>
       </div>
 

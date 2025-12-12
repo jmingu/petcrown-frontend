@@ -257,7 +257,7 @@ export default function Comment({ postId, comments: initialComments, onCommentAd
 
                 {/* 답글 입력 */}
                 {replyingTo === comment.commentId && (
-                  <div className="ml-13 mt-3 space-y-2">
+                  <div className="ml-8 md:ml-13 mt-3 space-y-2">
                     <textarea
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
@@ -282,16 +282,16 @@ export default function Comment({ postId, comments: initialComments, onCommentAd
 
                 {/* 답글 목록 */}
                 {comment.replies && comment.replies.length > 0 && (
-                  <div className="ml-13 mt-3 space-y-3">
+                  <div className="ml-8 md:ml-13 mt-3 space-y-3">
                     {comment.replies.map((reply: CommentType) => (
-                      <div key={reply.commentId} className="flex items-start space-x-3 bg-gray-50 rounded-2xl p-3">
-                        <CornerDownRight className="w-4 h-4 text-gray-400 mt-1 shrink-0" />
-                        <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center shrink-0">
-                          <User className="w-4 h-4 text-white" />
+                      <div key={reply.commentId} className="flex items-start space-x-2 md:space-x-3 bg-gray-50 rounded-2xl p-3">
+                        <CornerDownRight className="w-3 h-3 md:w-4 md:h-4 text-gray-400 mt-1 shrink-0" />
+                        <div className="w-7 h-7 md:w-8 md:h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center shrink-0">
+                          <User className="w-3 h-3 md:w-4 md:h-4 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <span className="font-semibold text-gray-900 text-sm">{reply.nickname || '알 수 없음'}</span>
+                          <div className="flex flex-col md:flex-row md:items-center md:space-x-2 mb-1">
+                            <span className="font-semibold text-gray-900 text-sm truncate">{reply.nickname || '알 수 없음'}</span>
                             <span className="text-xs text-gray-400">
                               {new Date(reply.createDate).toLocaleDateString('ko-KR')}
                             </span>

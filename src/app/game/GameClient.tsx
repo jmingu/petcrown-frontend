@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Gamepad2, Trophy, Star, ArrowLeft, Check, X, Share2, Users, Search } from 'lucide-react';
+import { Gamepad2, Trophy, Star, ArrowLeft, Check, X, Users, Search } from 'lucide-react';
 import Image from 'next/image';
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteCard from '@/components/common/card/CuteCard';
 import Alert from '@/components/common/alert/Alert';
 import GameRulesModal from '@/components/game/GameRulesModal';
+import GameShareButton from '@/components/game/GameShareButton';
 import { useUserStore } from '@/libs/store/user/userStore';
 import { findMyPet } from '@/libs/api/pet/petApi';
 import { MyPetResponse } from '@/libs/interface/api/pet/petResponseInterface';
@@ -36,7 +37,6 @@ export default function GameClient() {
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [challengerScore, setChallengerScore] = useState<MyWeeklyScoreResponseDto | null>(null);
-  const [showShareCopied, setShowShareCopied] = useState(false);
   const [searchNickname, setSearchNickname] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isFromUrl, setIsFromUrl] = useState(false); // URL로 접속했는지 여부
@@ -161,26 +161,6 @@ export default function GameClient() {
     handleStartGame();
   };
 
-  const handleShareScore = async () => {
-    if (!myWeeklyScore || myWeeklyScore.score === null || !myWeeklyScore.nickname) {
-      setAlertMessage('공유할 점수가 없습니다.');
-      return;
-    }
-
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-    // 캐시 무효화를 위한 타임스탬프 추가
-    const timestamp = Date.now();
-    const shareUrl = `${baseUrl}/game?nickname=${encodeURIComponent(myWeeklyScore.nickname)}&t=${timestamp}`;
-
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setShowShareCopied(true);
-      setTimeout(() => setShowShareCopied(false), 2000);
-    } catch (error) {
-      setAlertMessage('링크 복사에 실패했습니다.');
-    }
-  };
-
   const handleSearchNickname = async () => {
     if (!searchNickname.trim()) {
       setAlertMessage('닉네임을 입력해주세요.');
@@ -273,17 +253,12 @@ export default function GameClient() {
                   <CuteButton variant="secondary" onClick={() => router.push('/game/ranking')}>
                     랭킹 보기
                   </CuteButton>
-                  {user && myWeeklyScore && myWeeklyScore.nickname && (
-                    <CuteButton
-                      variant="primary"
-                      onClick={handleShareScore}
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <Share2 className="w-4 h-4" />
-                        <span>점수 공유하기</span>
-                      </div>
-                    </CuteButton>
+                  {user && myWeeklyScore && myWeeklyScore.nickname && myWeeklyScore.score !== null && (
+                    <GameShareButton
+                      nickname={myWeeklyScore.nickname}
+                      score={myWeeklyScore.score}
+                      variant="button"
+                    />
                   )}
                 </div>
               </div>
@@ -384,7 +359,10 @@ export default function GameClient() {
                 <div className="bg-white rounded-2xl p-6 shadow-md">
                   <div className="flex items-center justify-center space-x-4 mb-4">
                     {challengerScore.imageUrl && (
-                      <div className={`relative w-20 h-20 rounded-xl overflow-hidden border-4 ${isFromUrl ? 'border-orange-400' : 'border-blue-400'}`}>
+                      <div
+                        className={`relative w-20 h-20 rounded-xl overflow-hidden border-4 ${isFromUrl ? 'border-orange-400' : 'border-blue-400'} cursor-pointer hover:opacity-80 transition-opacity`}
+                        onClick={() => setExpandedImage(challengerScore.imageUrl)}
+                      >
                         <Image
                           src={challengerScore.imageUrl}
                           alt={challengerScore.name || "유저"}
@@ -410,7 +388,7 @@ export default function GameClient() {
                     {challengerScore.score.toFixed(1)}초
                   </p>
                   <p className="text-gray-700 font-medium">
-                    {isFromUrl ? '이 기록을 이길 수 있나요? 💪' : '이 유저의 주간 최고 점수입니다! 🎮'}
+                    {isFromUrl ? '이 기록을 이길 수 있나요? 💪' : '유저의 주간 최고 점수입니다!'}
                   </p>
                 </div>
               </div>
@@ -433,23 +411,11 @@ export default function GameClient() {
                   <span>내 주간 최고 점수</span>
                 </h2>
                 {myWeeklyScore && myWeeklyScore.score !== null && myWeeklyScore.nickname && (
-                  <button
-                    onClick={handleShareScore}
-                    className="relative"
-                    title="내 점수 공유하기"
-                  >
-                    <Share2 className="w-5 h-5 text-purple-600 hover:text-purple-800 transition-colors" />
-                    {showShareCopied && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap"
-                      >
-                        링크 복사됨!
-                      </motion.div>
-                    )}
-                  </button>
+                  <GameShareButton
+                    nickname={myWeeklyScore.nickname}
+                    score={myWeeklyScore.score}
+                    variant="icon"
+                  />
                 )}
               </div>
               {!user ? (

@@ -171,7 +171,7 @@ export default function SignupPage() {
       return;
     }
 
-    setAlertMessage('인증이 완료되었습니다! 🎉');
+    setAlertMessage('인증이 완료되었습니다!');
     setEmailCheckOk(true);
     setIsModalOpen(false);
   };
@@ -332,7 +332,7 @@ export default function SignupPage() {
                   placeholder="도메인"
                   value={emailDomain}
                   onChange={(e) => setEmailDomain(e.target.value)}
-                  className="w-32 px-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
+                  className="w-28 px-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
                 />
               </div>
               <div className="flex gap-2">
@@ -375,27 +375,24 @@ export default function SignupPage() {
             {/* 닉네임 입력 */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">닉네임</label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="닉네임을 입력해주세요"
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                    maxLength={10}
-                    className="w-full pl-10 pr-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
-                  />
-                </div>
-                <CuteButton
-                  onClick={handleCheckNickname}
-                  variant={isNicknameVerified ? "success" : "primary"}
-                  size="sm"
-                  className="shrink-0 whitespace-nowrap"
-                >
-                  {isNicknameVerified ? "확인완료" : "중복확인"}
-                </CuteButton>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="닉네임을 입력해주세요"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  maxLength={10}
+                  className="w-full pl-10 pr-4 py-3 bg-white/50 border border-purple-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400"
+                />
               </div>
+              <CuteButton
+                onClick={handleCheckNickname}
+                variant={isNicknameVerified ? "success" : "primary"}
+                size="sm"
+              >
+                {isNicknameVerified ? "확인완료" : "중복확인"}
+              </CuteButton>
             </div>
 
             {/* 비밀번호 */}

@@ -77,16 +77,22 @@ export const updateCommunityPost = async (
     const formData = new FormData();
 
     // 게시글 데이터 구성
-    const postData = {
+    const postData: any = {
+      postId,
       title: data.title,
       content: data.content,
       category: data.category,
       contentType: data.contentType || 'TEXT',
     };
 
+    // imageUrls 추가 (있으면 배열, 없으면 null)
+    if (data.imageUrls !== undefined) {
+      postData.imageUrls = data.imageUrls;
+    }
+
     formData.append('data', new Blob([JSON.stringify(postData)], { type: 'application/json' }));
 
-    // 이미지가 있는 경우에만 추가
+    // 새 이미지가 있는 경우에만 추가
     if (data.images && data.images.length > 0) {
       data.images.forEach((image) => {
         formData.append('images', image);

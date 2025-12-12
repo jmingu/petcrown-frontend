@@ -86,7 +86,7 @@ export default function EmailVerificationModal({
       const voteResponse = await doVote(voteId, { email });
 
       if (voteResponse.resultCode === 200) {
-        setAlertMessage('투표가 완료되었습니다! 🎉');
+        setAlertMessage('완료되었습니다!');
         setAlertType('success');
         // 투표 성공 시 페이지 새로고침
         setTimeout(() => {

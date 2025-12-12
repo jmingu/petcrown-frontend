@@ -160,7 +160,15 @@ export default function Header() {
     // 토큰이 있으면 사용자 정보 조회
     if(user === null) {
       setIsLoading(true);
-      await findLoginUser();
+      const accessToken = localStorage.getItem('a_t');
+      const refreshToken = localStorage.getItem('r_t');
+      
+      if(accessToken === null || refreshToken === null){
+        clearLoginState();
+        return false;
+      }
+
+      await findLoginUser(accessToken, refreshToken);
       
       setIsLoading(false);
     }
@@ -217,7 +225,7 @@ export default function Header() {
   /**
    * 로그인 정보 받기
    */
-  const findLoginUser = async () => {
+  const findLoginUser = async (accessToken: string , refreshToken: string ) => {
     const userResult = await findUser(); // 사용자 정보 받아오기
     if (userResult.resultCode !== 200) {
       clearLoginState(); // 로그아웃(정보지우기)
@@ -242,6 +250,7 @@ export default function Header() {
     sessionStorage.setItem('sess', encodedUser);
 
     useUserStore.getState().setUser(userResult.result); // 전역 상태에 저장
+    useUserStore.getState().setTokens(accessToken, refreshToken); //
   };
 
   return (
@@ -431,10 +440,13 @@ export default function Header() {
               {/* 헤더 */}
               <div className="flex items-center justify-between p-6 bg-purple-50 border-b">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 rounded-full flex items-center justify-center shadow-lg relative">
-                    <Trophy className="w-3.5 h-3.5 text-yellow-100 relative z-10 mt-1.5" />
-                    <Crown className="w-2.5 h-2.5 text-white absolute top-1 left-1/2 transform -translate-x-1/2 drop-shadow-sm" />
-                  </div>
+                  <Image
+                    src="/logo.svg"
+                    alt="PetCrown Logo"
+                    width={32}
+                    height={32}
+                    className="w-8 h-8"
+                  />
                   <span className="text-xl font-bold text-gray-900">
                     PetCrown
                   </span>

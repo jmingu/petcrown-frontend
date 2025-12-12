@@ -33,7 +33,7 @@ export default function VoteButton({ voteId, currentVoteCount, petName, isActive
       const response = await doVote(voteId, { email: user.email });
 
       if (response.resultCode === 200) {
-        setAlertMessage('투표가 완료되었습니다! 🎉');
+        setAlertMessage('완료되었습니다!');
         // 투표 성공 시 페이지 새로고침
         setTimeout(() => {
           window.location.reload();

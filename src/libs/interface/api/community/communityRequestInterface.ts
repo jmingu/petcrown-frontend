@@ -7,6 +7,7 @@ export interface CommunityPostRequest {
   category: string;
   contentType?: 'TEXT' | 'HTML';
   images?: File[];
+  imageUrls?: string[] | null; // 기존 이미지 URL (수정 시 사용)
 }
 
 /**

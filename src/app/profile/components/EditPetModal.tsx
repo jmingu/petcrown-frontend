@@ -228,7 +228,7 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
         const registerResult = await petRegister(petData);
 
         if (registerResult.resultCode === 200) {
-          setAlertMessage('반려동물이 성공적으로 등록되었습니다! 🎉');
+          setAlertMessage('등록되었습니다!');
         } else {
           setAlertMessage(registerResult.resultMessageKo || '등록 중 오류가 발생했습니다.');
           return;
@@ -259,15 +259,23 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
         const changeResult = await changePet(pet?.petId, petData);
 
         if (changeResult.resultCode === 200) {
-          setAlertMessage('반려동물 정보가 성공적으로 수정되었습니다! ✨');
+          setAlertMessage('수정되었습니다!');
+          setTimeout(() => {
+            onSave();
+            onClose();
+          }, 1500);
+          return;
         } else {
           setAlertMessage(changeResult.resultMessageKo || '수정 중 오류가 발생했습니다.');
           return;
         }
       }
 
-      onSave();
-      onClose();
+      // 등록 성공 시
+      setTimeout(() => {
+        onSave();
+        onClose();
+      }, 1500);
     } catch (error) {
       setAlertMessage('처리 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
@@ -286,7 +294,7 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
       const deleteResult = await deletePet(pet.petId);
 
       if (deleteResult.resultCode === 200) {
-        setAlertMessage('반려동물이 성공적으로 삭제되었습니다.');
+        setAlertMessage('삭제되었습니다.');
         setTimeout(() => {
           onSave();
           onClose();

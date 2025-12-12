@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import './DateInput.css';
 
 interface DateInputProps {
   value: string | null; // YYYY-MM-DD 형식의 문자열 또는 null
@@ -47,14 +48,15 @@ const DateInput: React.FC<DateInputProps> = ({
         className={`w-full p-3 border rounded bg-white border-gray-300 focus:ring focus:ring-theme-sky ${inputClassName}`}
       />
       {isCalendarOpen && (
-        <>
-          {/* 오버레이 */}
-          <div
-            className="fixed inset-0 z-40 bg-opacity-10"
-            onClick={() => setIsCalendarOpen(false)}
-          />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setIsCalendarOpen(false)}>
+          {/* 오버레이 배경 */}
+          <div className="absolute inset-0 bg-black/10" />
+
           {/* 달력 팝업 */}
-          <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 bg-white shadow-lg rounded w-[90vw] max-w-xs max-h-[80vh] overflow-auto p-2">
+          <div
+            className="relative bg-white/95 backdrop-blur-sm shadow-2xl rounded-lg w-full max-w-xs p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Calendar
               onChange={(date) => handleDateChange(date as Date | null)}
               value={value ? new Date(value) : null}
@@ -62,7 +64,7 @@ const DateInput: React.FC<DateInputProps> = ({
               maxDate={maxDate}
             />
           </div>
-        </>
+        </div>
       )}
     </div>
   );

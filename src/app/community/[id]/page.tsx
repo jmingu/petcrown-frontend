@@ -78,6 +78,14 @@ function PostDetailContent() {
     }
   };
 
+  const handleCommentUpdate = async () => {
+    // 댓글 목록과 게시글 정보를 모두 다시 로드
+    await Promise.all([
+      loadComments(),
+      loadPostDetail()
+    ]);
+  };
+
   const handleDelete = async () => {
     if (isDeleting) return;
 
@@ -257,7 +265,7 @@ function PostDetailContent() {
             <div className="border-t border-gray-100"></div>
 
             {/* 게시글 내용 */}
-            <div className="prose prose-lg max-w-none">
+            <div className="prose prose-lg max-w-none mb-8">
               {post.contentType === 'HTML' ? (
                 <div dangerouslySetInnerHTML={{ __html: post.content }} />
               ) : (
@@ -269,7 +277,7 @@ function PostDetailContent() {
 
             {/* 이미지들 */}
             {post.imageUrls && post.imageUrls.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 {post.imageUrls.map((imageUrl, index) => (
                   <div key={index} className="relative w-full h-64 rounded-2xl overflow-hidden">
                     <ClickableImage
@@ -321,9 +329,9 @@ function PostDetailContent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-8"
+          className="mt-12"
         >
-          <Comment postId={post.postId} comments={comments} onCommentAdded={loadComments} />
+          <Comment postId={post.postId} comments={comments} onCommentAdded={handleCommentUpdate} />
         </motion.div>
       </div>
 

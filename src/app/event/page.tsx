@@ -141,7 +141,7 @@ function EventContent() {
             <PartyPopper className="w-8 h-8 text-pink-500" />
           </div>
           <p className="text-gray-600 text-lg">
-            PetCrown의 특별한 이벤트를 확인해보세요! 🎉
+            특별한 이벤트를 확인해보세요!
           </p>
         </motion.div>
 

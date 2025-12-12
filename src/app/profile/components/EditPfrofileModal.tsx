@@ -119,7 +119,7 @@ export default function EditProfileModal({
       return;
     }
 
-    setAlertMessage('프로필이 성공적으로 수정되었습니다!');
+    setAlertMessage('수정되었습니다!');
 
     const updatedUser: UserResponse = {
       ...user,

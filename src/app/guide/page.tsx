@@ -525,6 +525,39 @@ export default function GuidePage() {
                       💡 <strong>팁:</strong> 게임에서 보는 장애물과 똑같은 모양입니다!
                     </p>
                   </div>
+
+                  <div className="bg-blue-50 rounded-2xl p-4 md:p-6 border-2 border-blue-200">
+                    <h3 className="text-base md:text-lg font-bold text-blue-900 mb-4 flex items-center break-keep">
+                      <span className="mr-2">⚡</span>
+                      파워업 아이템
+                    </h3>
+                    <p className="text-sm md:text-base text-gray-700 break-keep mb-4">
+                      게임 중 랜덤으로 나타나는 파워업 아이템을 먹으면 특별한 효과를 얻을 수 있습니다:
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="flex items-start space-x-3 bg-white/70 rounded-xl p-4 border border-blue-200">
+                        <div className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center flex-shrink-0">
+                          <Image src="/game/obstacles/shield.svg" alt="실드" width={40} height={40} className="w-full h-full object-contain" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm md:text-base font-bold text-gray-800 mb-1">물 (실드)</p>
+                          <p className="text-xs md:text-sm text-gray-600 break-keep">5초간 무적 상태가 되어 장애물을 파괴할 수 있습니다</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3 bg-white/70 rounded-xl p-4 border border-blue-200">
+                        <div className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center flex-shrink-0">
+                          <Image src="/game/obstacles/hourglass.svg" alt="슬로우" width={40} height={40} className="w-full h-full object-contain" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm md:text-base font-bold text-gray-800 mb-1">슬로우</p>
+                          <p className="text-xs md:text-sm text-gray-600 break-keep">5초간 장애물 속도가 50% 감소합니다</p>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs md:text-sm text-gray-600 text-center break-keep bg-white/50 rounded-lg p-3">
+                      💡 <strong>팁:</strong> 파워업은 10초마다 무작위로 나타나니 놓치지 마세요!
+                    </p>
+                  </div>
                 </div>
               </CuteCard>
             </motion.div>

@@ -136,8 +136,8 @@ export default function PetDodgeGame({ petImageUrl, onGameOver }: PetDodgeGamePr
 
       <div
         ref={containerRef}
-        className="rounded-3xl shadow-2xl overflow-hidden border-4 border-purple-300"
-        style={{ maxWidth: '800px', maxHeight: '600px' }}
+        className="rounded-3xl shadow-2xl overflow-hidden border-4 border-purple-300 w-full"
+        style={{ maxWidth: '800px', aspectRatio: '4/3' }}
       />
     </div>
   );

@@ -96,7 +96,7 @@ export default function PetModal({ isOpen, onClose, pet }: PetModalProps) {
       const voteResult = await voteRegistration(voteData);
       
       if (voteResult.resultCode === 200) {
-        setAlertMessage('투표가 성공적으로 등록되었습니다! 🎉');
+        setAlertMessage('등록되었습니다!');
         setTimeout(() => {
           onClose();
           router.push('/vote');

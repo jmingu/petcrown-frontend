@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { PenTool, FileText, ArrowLeft, Save, X, Upload, Image as ImageIcon } from 'lucide-react';
+import { PenTool, FileText, Save, X, Upload, Image as ImageIcon } from 'lucide-react';
 import CuteButton from '@/components/common/button/CuteButton';
 import CuteCard from '@/components/common/card/CuteCard';
 import Alert from '@/components/common/alert/Alert';
@@ -21,6 +21,7 @@ export default function CommunityEdit() {
   const [content, setContent] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [keepExistingImages, setKeepExistingImages] = useState(true); // 기존 이미지 유지 여부
   const [isLoading, setIsLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
@@ -79,6 +80,7 @@ export default function CommunityEdit() {
   const removeImage = () => {
     setImages([]);
     setImagePreviews([]);
+    setKeepExistingImages(false); // 이미지 삭제하면 기존 이미지도 유지하지 않음
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,16 +102,25 @@ export default function CommunityEdit() {
     setIsLoading(true);
 
     try {
+      // 기존 이미지 URL 결정
+      let imageUrls: string[] | null = [];
+      if (keepExistingImages && post?.imageUrls && post.imageUrls.length > 0) {
+        // 기존 이미지를 유지하는 경우
+        imageUrls = post.imageUrls;
+      }
+      // keepExistingImages가 false면 빈 배열 (이미지 삭제)
+
       const response = await updateCommunityPost(postId, {
         title,
         category,
         content,
         contentType: 'TEXT',
         images: images.length > 0 ? images : undefined,
+        imageUrls,
       });
 
       if (response.resultCode === 200) {
-        setAlertMessage('게시글이 성공적으로 수정되었습니다! 🎉');
+        setAlertMessage('수정되었습니다!');
         setTimeout(() => {
           router.push(`/community/${postId}`);
         }, 1500);
@@ -134,6 +145,16 @@ export default function CommunityEdit() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto relative z-10">
+        {/* 상세로 돌아가기 */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push(`/community/${postId}`)}
+            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors duration-200"
+          >
+            ← 돌아가기
+          </button>
+        </div>
+
         {/* 헤더 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -142,9 +163,6 @@ export default function CommunityEdit() {
           className="text-center mb-8"
         >
           <div className="flex items-center justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mr-4">
-              <PenTool className="w-8 h-8 text-white" />
-            </div>
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 게시글 수정
@@ -285,23 +303,6 @@ export default function CommunityEdit() {
               </div>
             </form>
           </CuteCard>
-        </motion.div>
-
-        {/* 뒤로가기 버튼 */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-8"
-        >
-          <CuteButton
-            onClick={() => router.push(`/community/${postId}`)}
-            variant="secondary"
-            size="md"
-            icon={<ArrowLeft className="w-4 h-4" />}
-          >
-            상세로 돌아가기
-          </CuteButton>
         </motion.div>
       </div>
 

@@ -9,7 +9,7 @@ export default class PlayScene extends Phaser.Scene {
   private score: number = 0;
   private scoreText?: Phaser.GameObjects.Text;
   private gameOverFlag: boolean = false;
-  private obstacleSpeed: number = 200;
+  private obstacleSpeed: number = 300;
   private obstacleTimer?: Phaser.Time.TimerEvent;
   private difficultyTimer?: Phaser.Time.TimerEvent;
   private powerupTimer?: Phaser.Time.TimerEvent;
@@ -19,6 +19,7 @@ export default class PlayScene extends Phaser.Scene {
   private isShield: boolean = false;
   private shieldGraphics?: Phaser.GameObjects.Graphics;
   private mobileDirection: 'left' | 'right' | 'none' = 'none';
+  private isSlow: boolean = false;
   private backgroundParticles?: Phaser.GameObjects.Particles.ParticleEmitter;
   private playerTrail?: Phaser.GameObjects.Graphics;
   private glowLayer?: Phaser.GameObjects.Graphics;
@@ -37,7 +38,8 @@ export default class PlayScene extends Phaser.Scene {
     this.petImageUrl = data.petImageUrl || 'default';
     this.score = 0;
     this.gameOverFlag = false;
-    this.obstacleSpeed = 300; // 초기 속도 증가 (200 → 300)
+    this.isSlow = false;
+    // obstacleSpeed는 선언부의 초기값(300) 사용
   }
 
   preload() {
@@ -442,7 +444,9 @@ export default class PlayScene extends Phaser.Scene {
     this.physics.add.existing(obstacle);
 
     const body = obstacle.body as Phaser.Physics.Arcade.Body;
-    body.setVelocityY(this.obstacleSpeed);
+    // 슬로우 상태면 50% 속도, 아니면 원래 속도
+    const speed = this.isSlow ? Math.max(100, this.obstacleSpeed * 0.5) : this.obstacleSpeed;
+    body.setVelocityY(speed);
     // 더 작은 히트박스로 정밀한 충돌 감지
     body.setCircle(type.hitboxSize);
 
@@ -577,12 +581,11 @@ export default class PlayScene extends Phaser.Scene {
         }
       });
     } else if (type === 'slow') {
-      // 슬로우 효과 (5초간 장애물 속도 감소)
-      const originalSpeed = this.obstacleSpeed;
-      this.obstacleSpeed = Math.max(100, this.obstacleSpeed * 0.5);
+      // 슬로우 효과 (5초간 장애물 속도 50% 감소)
+      this.isSlow = true;
 
       this.time.delayedCall(5000, () => {
-        this.obstacleSpeed = originalSpeed;
+        this.isSlow = false;
       });
     }
   }
@@ -590,7 +593,7 @@ export default class PlayScene extends Phaser.Scene {
   increaseDifficulty() {
     if (this.gameOverFlag) return;
 
-    // 속도 증가 (20 → 35로 더 빠르게)
+    // 속도 증가 (슬로우 상관없이 항상 증가)
     this.obstacleSpeed += 35;
 
     // 생성 빈도는 타이머 재생성으로 조정 (더 빠르게 최소값 도달)

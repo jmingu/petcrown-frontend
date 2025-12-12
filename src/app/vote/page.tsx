@@ -121,7 +121,7 @@ function VoteContent() {
             </motion.div>
           </div>
           <p className="text-gray-700 text-xl font-medium">
-            가장 귀여운 반려동물을 선택해주세요! 💕
+            최고로 귀여운 펫은?
           </p>
         </motion.div>
 

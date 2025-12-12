@@ -83,6 +83,8 @@ export default function LoginPage() {
       };
       sessionStorage.setItem('sess', JSON.stringify(sessData));
       useUserStore.getState().setUser(userResult.result);
+      useUserStore.getState().setTokens(loginResult.result.accessToken, loginResult.result.refreshToken);
+
       router.push('/');
     } catch (error) {
       setAlertMessage('로그인 중 오류가 발생했습니다.');
