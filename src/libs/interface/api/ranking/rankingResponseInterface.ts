@@ -11,14 +11,18 @@ export interface RankingListResponse {
 export interface VotePetRanking {
   voteId: number;
   petId: number;
+  rank: number;
   name: string;
   nickname?: string;
-  gender: string;
-  birthDate: string;
-  breedId?: number;
-  breedName?: string;
-  speciesId?: number;
-  speciesName: string;
+  gender: string | null;
+  birthDate: string | null;
+  breedId?: number | null;
+  breedName?: string | null;
+  customBreed?: string | null;
+  speciesId?: number | null;
+  speciesName?: string | null;
+  petModeId?: number | null;
+  petModeName?: string | null;
   dailyVoteCount: number;
   weeklyVoteCount: number;
   monthlyVoteCount: number;
@@ -26,3 +30,8 @@ export interface VotePetRanking {
   profileImageUrl: string;
   ownerEmail: string;
 }
+
+/**
+ * 내 투표 랭킹 조회 response (VotePetRankResponseDto)
+ */
+export interface MyVoteRankingResponse extends VotePetRanking {}

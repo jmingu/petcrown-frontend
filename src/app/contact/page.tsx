@@ -105,7 +105,8 @@ export default function ContactPage() {
                     href="mailto:kjkj173173@gmail.com"
                     className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-purple-600 hover:text-purple-800 transition-colors duration-200 break-all"
                   >
-                    kjkj173173@gmail.com
+                    <span className="block sm:inline">kjkj173173</span>
+                    <span className="block sm:inline">@gmail.com</span>
                   </a>
                 </div>
 

@@ -23,6 +23,8 @@ export default class PlayScene extends Phaser.Scene {
   private backgroundParticles?: Phaser.GameObjects.Particles.ParticleEmitter;
   private playerTrail?: Phaser.GameObjects.Graphics;
   private glowLayer?: Phaser.GameObjects.Graphics;
+  private debugMode: boolean = false; // 충돌 범위 표시 디버그 모드
+  private debugGraphics?: Phaser.GameObjects.Graphics;
 
   constructor() {
     super({ key: 'PlayScene' });
@@ -138,6 +140,12 @@ export default class PlayScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
     });
+
+    // 디버그 그래픽 초기화 (충돌 범위 표시용)
+    if (this.debugMode) {
+      this.debugGraphics = this.add.graphics();
+      this.debugGraphics.setDepth(1000); // 최상위 레이어
+    }
 
     // 충돌 감지
     this.physics.add.overlap(this.player!, this.obstacles!, this.hitObstacle, undefined, this);
@@ -417,9 +425,10 @@ export default class PlayScene extends Phaser.Scene {
     this.playerTrail = this.add.graphics();
 
     this.physics.add.existing(this.player);
-    // 플레이어 충돌 박스를 더 작게 설정 (실제 몸통 크기만)
-    const hitboxRadius = bodySize * 0.28; // 원래 크기의 28%로 매우 작게
-    (this.player.body as Phaser.Physics.Arcade.Body).setCircle(hitboxRadius);
+    // 플레이어 충돌 박스를 적절한 크기로 설정
+    const hitboxRadius = bodySize * 0.5; // 원래 크기의 50%로 설정
+    const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
+    playerBody.setCircle(hitboxRadius, -hitboxRadius, -hitboxRadius); // offset으로 중앙 정렬
   }
 
   spawnObstacle() {
@@ -428,13 +437,13 @@ export default class PlayScene extends Phaser.Scene {
     const { width } = this.cameras.main;
     const x = Phaser.Math.Between(50, width - 50);
 
-    // 장애물 타입 정의 (SVG 사용)
+    // 장애물 타입 정의 (SVG 사용) - 비율로 설정
     const obstacleTypes = [
-      { key: 'obstacle-paw', shape: 'paw', hitboxSize: 8 },
-      { key: 'obstacle-bone', shape: 'bone', hitboxSize: 9 },
-      { key: 'obstacle-heart', shape: 'heart', hitboxSize: 8 },
-      { key: 'obstacle-fish', shape: 'fish', hitboxSize: 9 },
-      { key: 'obstacle-ball', shape: 'ball', hitboxSize: 8 },
+      { key: 'obstacle-paw', shape: 'paw', hitboxRatio: 0.28 },
+      { key: 'obstacle-bone', shape: 'bone', hitboxRatio: 0.30 },
+      { key: 'obstacle-heart', shape: 'heart', hitboxRatio: 0.28 },
+      { key: 'obstacle-fish', shape: 'fish', hitboxRatio: 0.30 },
+      { key: 'obstacle-ball', shape: 'ball', hitboxRatio: 0.33 },
     ];
     const type = Phaser.Utils.Array.GetRandom(obstacleTypes);
 
@@ -447,8 +456,11 @@ export default class PlayScene extends Phaser.Scene {
     // 슬로우 상태면 50% 속도, 아니면 원래 속도
     const speed = this.isSlow ? Math.max(100, this.obstacleSpeed * 0.5) : this.obstacleSpeed;
     body.setVelocityY(speed);
-    // 더 작은 히트박스로 정밀한 충돌 감지
-    body.setCircle(type.hitboxSize);
+    // 이미지 크기 기준 비율로 히트박스 설정 (화면 크기에 반응)
+    const obstacleSize = Math.max(obstacle.width, obstacle.height);
+    const hitboxRadius = obstacleSize * type.hitboxRatio;
+    // offset으로 이미지 중앙에 충돌 박스 정렬
+    body.setCircle(hitboxRadius, (obstacle.width - hitboxRadius * 2) / 2, (obstacle.height - hitboxRadius * 2) / 2);
 
     // 귀여운 흔들림 + 회전 효과
     this.tweens.add({
@@ -472,9 +484,6 @@ export default class PlayScene extends Phaser.Scene {
       },
       loop: true,
     }));
-
-    // 충돌 체크
-    this.physics.add.overlap(this.player!, obstacle, this.hitObstacle, undefined, this);
   }
 
   spawnPowerup() {
@@ -522,7 +531,8 @@ export default class PlayScene extends Phaser.Scene {
 
     const body = powerupContainer.body as Phaser.Physics.Arcade.Body;
     body.setVelocityY(150);
-    body.setCircle(20);
+    // offset으로 이미지 중앙에 충돌 박스 정렬
+    body.setCircle(20, -20, -20);
 
     // 귀여운 흔들림 효과
     this.tweens.add({
@@ -831,7 +841,48 @@ export default class PlayScene extends Phaser.Scene {
       playerBody.setVelocityX(0);
     }
 
-    // 화면 경계 제한
-    this.player.x = Phaser.Math.Clamp(this.player.x, 30, width - 30);
+    // 화면 경계 제한 (플레이어 충돌 박스 반경 고려)
+    const playerHitboxRadius = 70 * 0.5; // bodySize * 0.5
+    this.player.x = Phaser.Math.Clamp(this.player.x, playerHitboxRadius + 10, width - playerHitboxRadius - 10);
+
+    // 디버그 모드: 충돌 범위 표시 (실제 physics body 위치 사용)
+    if (this.debugMode && this.debugGraphics) {
+      this.debugGraphics.clear();
+
+      // 플레이어 충돌 범위 표시
+      const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
+      this.debugGraphics.lineStyle(3, 0x00ff00, 0.8); // 녹색 테두리
+      this.debugGraphics.strokeCircle(
+        playerBody.center.x,
+        playerBody.center.y,
+        playerBody.halfWidth
+      );
+
+      // 장애물 충돌 범위 표시
+      this.obstacles?.getChildren().forEach((obstacle) => {
+        const obstacleSprite = obstacle as Phaser.Physics.Arcade.Image;
+        const body = obstacleSprite.body as Phaser.Physics.Arcade.Body;
+
+        this.debugGraphics!.lineStyle(3, 0xff0000, 0.8); // 빨간색 테두리
+        this.debugGraphics!.strokeCircle(
+          body.center.x,
+          body.center.y,
+          body.halfWidth
+        );
+      });
+
+      // 파워업 충돌 범위 표시
+      this.powerups?.getChildren().forEach((powerup) => {
+        const powerupContainer = powerup as Phaser.GameObjects.Container;
+        const body = powerupContainer.body as Phaser.Physics.Arcade.Body;
+
+        this.debugGraphics!.lineStyle(3, 0x0000ff, 0.8); // 파란색 테두리
+        this.debugGraphics!.strokeCircle(
+          body.center.x,
+          body.center.y,
+          body.halfWidth
+        );
+      });
+    }
   }
 }

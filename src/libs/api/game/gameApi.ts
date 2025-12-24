@@ -6,6 +6,7 @@ import {
   WeeklyRankingListResponseDto,
   SaveScoreRequestDto,
   SaveScoreResponseDto,
+  MyWeeklyRankingResponse,
 } from '@/libs/interface/api/game/gameInterface';
 
 /**
@@ -50,5 +51,14 @@ export const saveScore = async (data: SaveScoreRequestDto): Promise<CommonRespon
 export const getWeeklyScoreByNickname = async (nickname: string): Promise<CommonResponse<MyWeeklyScoreResponseDto>> => {
   return handleApiError(
     () => api.get(`/games/v1/scores/weekly/${encodeURIComponent(nickname)}`)
+  );
+};
+
+/**
+ * 주간 게임 내 랭킹 조회
+ */
+export const getMyWeeklyRanking = async (): Promise<CommonResponse<MyWeeklyRankingResponse>> => {
+  return handleApiError(
+    () => api.get('/games/v1/my-weekly-rankings')
   );
 };

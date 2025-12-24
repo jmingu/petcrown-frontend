@@ -11,6 +11,7 @@ import CuteCard from '@/components/common/card/CuteCard';
 import CuteBadge from '@/components/common/badge/CuteBadge';
 import Alert from '@/components/common/alert/Alert';
 import PetModal from '@/components/vote/PetRegisterModal';
+import EditPetModal from '@/app/profile/components/EditPetModal';
 import {MyPetResponse, MyPetsListResponse} from '@/libs/interface/api/pet/petResponseInterface';
 import { findMyPet } from '@/libs/api/pet/petApi';
 import { calculateAge } from '@/common/util/calculateUtil';
@@ -34,6 +35,8 @@ export default function MyPetsPage() {
   const [pets, setPets] = useState<MyPetResponse[]>([]); // 반려동물 목록 상태
   const [selectedPet, setSelectedPet] = useState<MyPetResponse | null>(null); // 선택된 반려동물 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false); // 반려동물 등록 모달
+  const [newlyRegisteredPetId, setNewlyRegisteredPetId] = useState<number | null>(null); // 새로 등록한 펫 ID
   const [currentPage, setCurrentPage] = useState(1);
   const [alertMessage, setAlertMessage] = useState('');
   const [needsLogin, setNeedsLogin] = useState(false);
@@ -65,6 +68,33 @@ export default function MyPetsPage() {
       setPets(response.result.pets); // 반려동물 목록 저장 (pets 배열)
     } catch (error) {
       setPets([]);
+    }
+  }
+
+  /**
+   * 반려동물 등록 후 호출되는 함수
+   */
+  const handlePetRegistered = async () => {
+    // 펫 목록 다시 조회
+    await fetchMyPets();
+
+    // 모달 닫기
+    setIsRegisterModalOpen(false);
+
+    // 새로 조회한 펫 목록에서 가장 최근에 등록된 펫 (마지막 펫) 가져오기
+    const response = await findMyPet();
+    const newPets = response.result.pets;
+
+    if (newPets.length > 0) {
+      // 가장 최근에 등록된 펫을 선택하고 투표 등록 모달 열기
+      const latestPet = newPets[newPets.length - 1];
+      setSelectedPet(latestPet);
+      setNewlyRegisteredPetId(latestPet.petId);
+
+      // 잠시 후 투표 등록 모달 열기 (상태 업데이트가 완료된 후)
+      setTimeout(() => {
+        setIsModalOpen(true);
+      }, 100);
     }
   }
 
@@ -138,14 +168,6 @@ export default function MyPetsPage() {
           className="text-center mb-8"
         >
           <div className="flex items-center justify-center mb-4">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mr-4"
-            >
-              <Crown className="w-8 h-8 text-white" />
-            </motion.div>
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 투표 등록하기
@@ -292,7 +314,7 @@ export default function MyPetsPage() {
                   <CuteButton
                     variant="primary"
                     size="lg"
-                    onClick={() => router.push('/profile')}
+                    onClick={() => setIsRegisterModalOpen(true)}
                   >
                     반려동물 등록하기
                   </CuteButton>
@@ -355,6 +377,15 @@ export default function MyPetsPage() {
             setSelectedPet(null); // 모달이 닫힐 때 선택된 반려동물 초기화
           }}
           pet={selectedPet}
+        />
+      )}
+
+      {/* 반려동물 등록 모달 */}
+      {isRegisterModalOpen && (
+        <EditPetModal
+          pet={null}
+          onClose={() => setIsRegisterModalOpen(false)}
+          onSave={handlePetRegistered}
         />
       )}
     </div>

@@ -11,6 +11,7 @@ export interface MyWeeklyScoreResponseDto {
 
 // 주간 랭킹 아이템
 export interface RankingItemDto {
+  scoreId: number; // 점수 ID
   ranking: number; // 순위
   userId: number; // 사용자 ID
   nickname: string; // 닉네임
@@ -35,4 +36,14 @@ export interface SaveScoreResponseDto {
   saved: boolean; // 저장 여부
   message: string; // 메시지
   newScore?: number; // 새로 저장된 점수 (저장된 경우)
+}
+
+// 내 주간 랭킹 조회 응답 (단일 아이템)
+export interface MyWeeklyRankingResponse {
+  scoreId: number; // 점수 ID
+  ranking: number; // 순위
+  nickname: string; // 닉네임
+  score: number; // 점수
+  name: string; // 펫 이름
+  imageUrl: string; // 이미지 URL
 }

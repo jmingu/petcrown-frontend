@@ -18,7 +18,8 @@
       "Bash(echo:*)",
       "Bash(page.tsx)",
       "Bash(git rm:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }

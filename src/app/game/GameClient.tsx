@@ -10,6 +10,7 @@ import CuteCard from '@/components/common/card/CuteCard';
 import Alert from '@/components/common/alert/Alert';
 import GameRulesModal from '@/components/game/GameRulesModal';
 import GameShareButton from '@/components/game/GameShareButton';
+import EditPetModal from '@/app/profile/components/EditPetModal';
 import { useUserStore } from '@/libs/store/user/userStore';
 import { findMyPet } from '@/libs/api/pet/petApi';
 import { MyPetResponse } from '@/libs/interface/api/pet/petResponseInterface';
@@ -40,6 +41,7 @@ export default function GameClient() {
   const [searchNickname, setSearchNickname] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isFromUrl, setIsFromUrl] = useState(false); // URL로 접속했는지 여부
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false); // 반려동물 등록 모달
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
 
   // 로그인 체크 - 알림 제거하고 UI만 변경
@@ -185,6 +187,28 @@ export default function GameClient() {
     }
   };
 
+  /**
+   * 반려동물 등록 후 호출되는 함수
+   */
+  const handlePetRegistered = async () => {
+    // 펫 목록 다시 조회
+    await loadMyPets();
+
+    // 모달 닫기
+    setIsRegisterModalOpen(false);
+
+    // 새로 조회한 펫 목록에서 가장 최근에 등록된 펫 (마지막 펫) 가져오기
+    const response = await findMyPet();
+    const newPets = response.result.pets;
+
+    if (newPets.length > 0) {
+      // 가장 최근에 등록된 펫을 선택
+      const latestPet = newPets[newPets.length - 1];
+      setSelectedPetImage(latestPet.imageUrl || 'default');
+      setSelectedPetId(latestPet.petId);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-white py-8 px-4">
       {/* 알림 */}
@@ -253,10 +277,10 @@ export default function GameClient() {
                   <CuteButton variant="secondary" onClick={() => router.push('/game/ranking')}>
                     랭킹 보기
                   </CuteButton>
-                  {user && myWeeklyScore && myWeeklyScore.nickname && myWeeklyScore.score !== null && (
+                  {user && user.nickname && (
                     <GameShareButton
-                      nickname={myWeeklyScore.nickname}
-                      score={myWeeklyScore.score}
+                      nickname={user.nickname}
+                      score={finalScore}
                       variant="button"
                     />
                   )}
@@ -494,9 +518,9 @@ export default function GameClient() {
                 </div>
               ) : weeklyRankings.length > 0 ? (
                 <div className="space-y-3">
-                  {weeklyRankings.slice(0, 3).map((rank) => (
+                  {weeklyRankings.slice(0, 3).map((rank, index) => (
                     <div
-                      key={rank.ranking}
+                      key={rank.scoreId || `${rank.userId}-${index}`}
                       className={`flex items-center space-x-3 p-3 rounded-xl ${
                         rank.ranking === 1
                           ? 'bg-gradient-to-r from-yellow-100 to-orange-100 border-2 border-yellow-400'
@@ -672,7 +696,7 @@ export default function GameClient() {
                   <CuteButton
                     variant="primary"
                     size="lg"
-                    onClick={() => router.push('/profile')}
+                    onClick={() => setIsRegisterModalOpen(true)}
                   >
                     반려동물 등록하기
                   </CuteButton>
@@ -749,6 +773,15 @@ export default function GameClient() {
               />
             </div>
           </div>
+        )}
+
+        {/* 반려동물 등록 모달 */}
+        {isRegisterModalOpen && (
+          <EditPetModal
+            pet={null}
+            onClose={() => setIsRegisterModalOpen(false)}
+            onSave={handlePetRegistered}
+          />
         )}
       </div>
     </div>

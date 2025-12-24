@@ -195,17 +195,9 @@ export default function GuidePage() {
               <div className="bg-purple-50 rounded-2xl p-4 md:p-6">
                 <h3 className="text-lg md:text-xl font-bold text-purple-900 mb-4 flex items-center break-keep">
                   <span className="bg-purple-500 text-white w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center mr-2 md:mr-3 flex-shrink-0 text-sm md:text-base">2</span>
-                  회원가입 후 추가 투표
+                  회원가입 후 투표
                 </h3>
                 <ul className="space-y-2 text-gray-700 ml-9 md:ml-11 text-sm md:text-base">
-                  <li className="flex items-start">
-                    <span className="text-purple-600 font-bold mr-2 flex-shrink-0">•</span>
-                    <span className="break-keep"><strong>회원가입</strong> 후 투표 등록하면 <strong className="text-purple-600">추가 1표</strong></span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-purple-600 font-bold mr-2 flex-shrink-0">•</span>
-                    <span className="break-keep">회원은 최대 <strong className="text-purple-600">2표</strong>까지 투표 가능!</span>
-                  </li>
                   <li className="flex items-start">
                     <span className="text-purple-600 font-bold mr-2 flex-shrink-0">•</span>
                     <span className="text-xs md:text-sm text-gray-600 break-keep">회원가입하고 더 많은 혜택을 받으세요</span>

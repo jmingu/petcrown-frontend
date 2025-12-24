@@ -456,25 +456,6 @@ export default function PetModal({ pet, onClose, onSave }: PetModalProps) {
                     />
                   </div>
 
-                  {/* 기타 종류일 때 커스텀 품종 입력 */}
-                  {(() => {
-                    const selectedSpecies = speciesList.find(s => s.speciesId === speciesId);
-                    const isEtc = selectedSpecies?.name === '기타' || selectedSpecies?.name.includes('기타');
-
-                    return speciesId !== null && isEtc ? (
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">종류 상세</label>
-                        <input
-                          type="text"
-                          placeholder="예: 토끼, 햄스터"
-                          value={customBreed}
-                          onChange={(e) => setCustomBreed(e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                        />
-                      </div>
-                    ) : null;
-                  })()}
-
                   {/* 소개 */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">소개 (선택사항)</label>

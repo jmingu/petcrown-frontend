@@ -2,12 +2,12 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Trophy, Sparkles, Share2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, Trophy, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import PetDodgeGame from '@/components/game/PetDodgeGame';
 import AdSense from '@/components/common/adsense/AdSense';
 import CuteButton from '@/components/common/button/CuteButton';
+import GameShareButton from '@/components/game/GameShareButton';
 import { useUserStore } from '@/libs/store/user/userStore';
 import { getMyWeeklyScore, saveScore } from '@/libs/api/game/gameApi';
 
@@ -19,7 +19,6 @@ function GamePlayContent() {
   const [showResult, setShowResult] = useState(false);
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [previousRecord, setPreviousRecord] = useState<number>(0);
-  const [showShareCopied, setShowShareCopied] = useState(false);
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || '';
 
   // URL 파라미터에서 펫 이미지와 펫 ID 가져오기
@@ -87,24 +86,6 @@ function GamePlayContent() {
     router.push('/game');
   };
 
-  const handleShareScore = async () => {
-    if (!user || !user.nickname) {
-      return;
-    }
-
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-    // 캐시 무효화를 위한 타임스탬프 추가
-    const timestamp = Date.now();
-    const shareUrl = `${baseUrl}/game?nickname=${encodeURIComponent(user.nickname)}&t=${timestamp}`;
-
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setShowShareCopied(true);
-      setTimeout(() => setShowShareCopied(false), 2000);
-    } catch (error) {
-      // 복사 실패 시 무시
-    }
-  };
 
   return (
     <div className="min-h-[75vh] md:min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 flex flex-col relative overflow-hidden">
@@ -200,31 +181,11 @@ function GamePlayContent() {
 
               {/* 공유하기 버튼 (로그인한 사용자 + 신기록 달성 시만) */}
               {user && user.nickname && isNewRecord && (
-                <div className="relative">
-                  <CuteButton
-                    onClick={handleShareScore}
-                    variant="primary"
-                    size="lg"
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                  >
-                    <div className="flex items-center justify-center space-x-2">
-                      <Share2 className="w-5 h-5" />
-                      <span>점수 공유하기</span>
-                    </div>
-                  </CuteButton>
-
-                  {/* 복사 완료 알림 */}
-                  {showShareCopied && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm whitespace-nowrap"
-                    >
-                      링크가 복사되었습니다! 📋
-                    </motion.div>
-                  )}
-                </div>
+                <GameShareButton
+                  nickname={user.nickname}
+                  score={finalScore}
+                  variant="button"
+                />
               )}
 
               <CuteButton
